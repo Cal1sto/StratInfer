@@ -1,0 +1,5 @@
+logs/
+proto/vocab.json
+__pycache__/
+*.bak
+node_modules/
