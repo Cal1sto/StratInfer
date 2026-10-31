@@ -80,3 +80,7 @@ Point everything at your server with `STRATINFER_BASE` (default `http://127.0.0.
   contribution is in that thread, not duplicated here.
 
 MIT — see `LICENSE`.
+
+## Attribution
+
+`src/core/verify.cpp.patched`, `verify.hpp.patched` and the upstream commit graph referenced here derive from **Strata** (Copyright (c) 2026 Niko1221 and the Strata contributors, MIT - see `LICENSE.Strata`). The S2 grammar module is original StratInfer code offered under the same MIT terms.
