@@ -126,3 +126,30 @@ reuses windows that would commit fewer tokens anyway - hence zero net decode cos
 Host-side machinery in simulation: ~35 us per tour (Python; in-engine it is a
 set-intersection over <= 64 candidate entries). This retires the main correctness
 risk of the in-engine grammar before any C++ is written.
+
+## S2 C++ port: the engine patch exists and its module tests pass (2026-10-31)
+
+The offline simulation above retired the correctness risk, so the algorithm was ported
+to the engine's own language on branch `stratinfer-s2` (patch exported as
+`src/core/verify.cpp.patched` + `verify.hpp.patched` alongside the originals):
+
+| component | file | status |
+|---|---|---|
+| byte-wise schema automaton (fixed POD state, no hot-path allocs) | `include/strata/grammar/json_automaton.hpp` | compiles standalone, tests green |
+| draft-chain rule: provisional advance, `confirm(k)` reconciliation, vocab filter, masked redraw | `include/strata/grammar/draft_chain.hpp` | tests green (truncation at first invalid draft; rollback on shorter real commit) |
+| strict-JSON schema subset loader | `include/strata/grammar/schema_loader.hpp` | tests green |
+| unit tests (same vectors as the Python reference) | `src/core/json_automaton_test.cpp` | **ALL OK** under MSVC 19 (`cl /std:c++17`) |
+| engine integration: 4 hunks in `verify.cpp`/`verify.hpp` | `src/core/*.patched` | authored, NOT compiled locally |
+
+Integration design (zero-GPU-kernel): `pl_finish` copies `out[]` to the host, the
+automaton truncates the window at the first grammar-invalid draft using the engine's
+own `kProposalSamplerErrorToken` reject channel, `pl_commit_async(n_keep)` reconciles
+the automaton with the rows actually committed, and the ban-list for the current
+automaton state class rides the existing `logit_bias` device array (-100 hard
+exclusion). Feature is inert (`grammar_ == null`) unless a caller injects a schema.
+
+Honest limits: full engine build not run here (this machine has CUDA 11.2, the engine
+needs 12.9/sm_120); the caller-side plumbing of the token->bytes table (`tokText`)
+belongs to the serve layer; bonus-row redraw at a banned position can livelock if the
+unmasked head keeps proposing invalid ids, which the mask recomputed per state class
+is meant to prevent but has not been stress-tested on real GPU runs.
