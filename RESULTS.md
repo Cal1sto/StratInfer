@@ -153,3 +153,29 @@ needs 12.9/sm_120); the caller-side plumbing of the token->bytes table (`tokText
 belongs to the serve layer; bonus-row redraw at a banned position can livelock if the
 unmasked head keeps proposing invalid ids, which the mask recomputed per state class
 is meant to prevent but has not been stress-tested on real GPU runs.
+
+## Engine builds green on RTX 5090 (2026-10-31, 14:57)
+
+Both engines built from this toolchain, same flags (Release, sm_120-real, tests on):
+
+| build | branch | binary | grammar tests in-build |
+|---|---|---|---|
+| reference-of-source | main (v0.2.8 / engine 0.1.54) | `strata.exe` 76-80 MB | n/a (module only exists on the S2 branch) |
+| S2 patched | `stratinfer-s2` (+ serve wiring `f36cd9a`) | `strata.exe` 79.8 MB | `json_automaton_test` **ALL OK** (CMake target) |
+
+Build gotchas found and fixed:
+- **CUDA 13 required**, not 12.x, for RTX 50 prompt kernels (upstream issues #220/#224
+  are explicit); CUDA 13.1 no longer bundles the driver - that also means no driver
+  update risk when installing the toolkit.
+- **llama.cpp must be pinned** to `third_party/ggml/VERSION.txt` (`3cf0325`, 2026-09-20);
+  the 2026-10-30 tree dies in the MMQ overlay (`new_pool_for_device` signature drift).
+- MSVC: forward-declared `DraftChain` in verify.hpp is not enough for consumers that own
+  a `unique_ptr<DraftChain>` member - `generate.cpp` includes `draft_chain.hpp` directly.
+
+S2 is now wired end to end at engine level: `serve` attaches the automaton to the
+verifier(s) when `STRATA_GRAMMAR_SCHEMA` points to a schema file, taking the token byte
+table from the native GGUF metadata (the engine has no tokenizer by design). Unset env =
+byte-for-byte original behaviour. GPU A/B (reference engine vs 0.1.54 vs 0.1.54+S2) and
+a live schema-constrained battery on the built engine are the remaining steps; known
+limits to test around: global per-process schema (no per-request schema yet), control
+tokens (EOS) pass unmasked, multi-stage layer-split verifiers not wired.

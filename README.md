@@ -22,7 +22,7 @@ and the same benches; baseline variance ≤ 3%:
 | Server-side schema validation (missing optional dep) | `response_format: json_schema` silently degraded to "is a JSON object" → now actually validates | **fixed** |
 | Schema-constrained decoding prototype (S1) | **3/3 outputs fully schema-valid vs 3/6 unconstrained** | works, see caveat |
 | Draft-chain grammar masks (S2 rule, simulated offline) | 100 % valid, **zero per-attempt decode cost** (48.60 vs 48.62 windows), **1.93x** effective vs regenerate-loop | algorithm validated |
-| S2 C++ engine port (automaton + draft chain + verify.cpp patch) | unit tests ALL OK (MSVC); inert unless a schema is injected | patch authored; GPU build pending upstream toolchain |
+| S2 C++ engine port (automaton + draft chain + verify.cpp + serve wiring) | unit tests ALL OK inside the real engine build (CUDA 13.1, sm_120); both engines link | built green; GPU A/B in progress |
 | Chunked Gated-DeltaNet prefill (C1, doc promises 1.8×) | **+0.6 %** (under noise) — the 1.8× applies to the isolated recurrence, not full MoE prefill on this card+quant | **rejected** |
 | Speculation depth sweep (C4) | spec5: −10.6 %, spec3: −3.5 % — shipped default already optimal | **rejected** |
 | Confidence-scheduled speculation ("DSpark localized", RFC-02) | offline simulation on 2 759 real requests: **+0.1 %** | **refuted as stated** |
@@ -84,3 +84,49 @@ MIT — see `LICENSE`.
 ## Attribution
 
 `src/core/verify.cpp.patched`, `verify.hpp.patched` and the upstream commit graph referenced here derive from **Strata** (Copyright (c) 2026 Niko1221 and the Strata contributors, MIT - see `LICENSE.Strata`). The S2 grammar module is original StratInfer code offered under the same MIT terms.
+
+## Install, build, use
+
+### Prerequisites (Windows + RTX 50, validated on a 5090)
+| item | requirement | why |
+|---|---|---|
+| GPU driver | recent (561+) | sm_120 |
+| CUDA Toolkit | **13.0 or newer** (used: 13.1.1, network or local installer) | upstream: RTX 50 engines built on CUDA 12.8 crash on long prompts (Strata issues #220/#224); since 13.1 the driver is no longer bundled with the toolkit - keep your own |
+| Visual Studio | VS 2022 (BuildTools is enough) | MSVC + `vcvars64.bat` |
+| cmake / ninja | `pip install -r requirements-build.txt` (pinned: cmake 4.4.3, ninja 1.13.2) | upstream build helpers |
+| llama.cpp | **pinned to the commit in `<checkout>	hird_party\ggml\VERSION.txt`** (v0.2.8 -> `3cf0325`, 2026-09-20) | the MMQ overlay patches llama.cpp headers; a newer tree breaks `new_pool_for_device` signatures (we hit exactly this: build dies in `ggml_cuda_host.cu`) |
+
+### Build (vanilla and S2, same command)
+```bat
+git clone https://github.com/Niko1221/Strata ; cd Strata
+git checkout -b s2 <s2-branch-or-apply-src-core-verify.cpp.patched>
+git clone https://github.com/ggml-org/llama.cpp ../llama.cpp
+git -C ../llama.cpp fetch --depth 1 origin 3cf03257f219afbe7334045ff7c6a06ac68c627d
+git -C ../llama.cpp checkout FETCH_HEAD
+set GGML=..\..\llama.cpp
+scriptsuild-engine.bat . ..uild\s2
+..uild\s2\json_automaton_test.exe    :: ALL OK = grammar module good on your toolchain
+```
+First full build: ~45 min on a 16-core box (the IQ/MMQ kernel objects dominate);
+incremental after that is minutes.
+
+### Use the grammar (this repo's S2)
+The engine reads one environment variable at startup; unset means zero code-path change:
+```
+STRATA_GRAMMAR_SCHEMA=C:\path\schema.json
+```
+The schema JSON must be inside the supported subset (see docs/rfc-structured-outputs.md):
+object/properties/required/additionalProperties, array/items, string, number,
+boolean, null, enum. The token->bytes table is taken from `tokenizer.ggml.tokens`
+in your own `--native` GGUF - no tokenizer needed on the engine side.
+Attach confirmation: `strata: grammar attached (schema ..., vocab ... tokens)` in the engine log.
+
+### A/B methodology against a running reference (the pattern that keeps a live agent up)
+1. Keep the reference engine installed and its profile/args saved verbatim.
+2. Run the test engine from a **separate profile** (same args, exe = your build), never
+   editing the reference profile.
+3. Swap only the serving port within one short window (stop reference, start test,
+   health-poll); on any failure, the failsafe restarts the reference. Both scripts in
+   `scripts/` are templates with the stop/start commands as parameters.
+4. Same fixed benches (this repo: `bench_ab.mjs`, `bench_fresh.mjs`), same 48 h passive
+   telemetry, verdict only on paired numbers.
