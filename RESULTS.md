@@ -103,3 +103,26 @@ of the measured 35.0) produced a spurious +5.4 %. The scheduling gain depends mo
 cost-curve fidelity than on the confidence signal. Any headroom that remains needs a
 **per-rank** acceptance signal (drafts 2+), which engine logs do not expose — the concrete
 upstream ask that came out of this study.
+
+## S2 — draft-chain grammar masks: algorithm validated offline (2026-10-31)
+
+`proto/s2_draftchain.py` simulates the proposed in-engine rule — automaton advanced
+along the MTP draft chain, first grammar-invalid draft kills its row and all later
+rows in the window, window commits the surviving prefix and draws a replacement from
+the masked candidate list — using the real schema automaton (the `s1_grammar`
+implementation), measured window cost (35 ms at spec4) and measured pooled draft
+acceptance (0.613), with the off-grammar proposal rate calibrated to reproduce the
+observed free-decode tour validity (3/6 -> 51.9% in sim).
+
+| metric (2 000 tours/arm) | free | grammar ON |
+|---|---|---|
+| schema validity | 51.9 % | **100 %** (0 violations committed, property holds) |
+| windows per complete tour | 48.62 | 48.60 (**cost per attempt unchanged**) |
+| attempts per guaranteed-valid output | 1.93 | 1.00 |
+| **effective wall-clock, valid output** | — | **1.93x faster** |
+
+Grammar blocked on average 0.83 off-grammar drafts per tour; the masked replacement
+reuses windows that would commit fewer tokens anyway - hence zero net decode cost.
+Host-side machinery in simulation: ~35 us per tour (Python; in-engine it is a
+set-intersection over <= 64 candidate entries). This retires the main correctness
+risk of the in-engine grammar before any C++ is written.

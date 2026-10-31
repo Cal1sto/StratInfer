@@ -1,0 +1,12 @@
+{
+  "id": "C7",
+  "title": "Conversation-cache budget 4096 -> 8192 MiB (c2 follow-up; documented cap)",
+  "inspiration": "DeepInfer: 72h KV persistence. Strata docs: default 40% free RAM capped at 8 GiB - 8192 is the documented ceiling.",
+  "evidence": "MEASURED 2026-10-31 (post-C2 evening): 1450 'skip parking (... exceeds)' lines in the current engine log - now total-budget rejections, not per-snapshot: parked bytes reach 2.8-3.4 GiB from SINGLE sessions (parked 210552 tokens -> snapshot_bytes 3438997384 = 3.44 GB; ~16.5 KiB/token at k8v4). 12-14 explicit cache evictions followed. Cost of the eviction cycle is directly visible: 191 requests with >=100k cold re-read = 6729 s of GPU prefill in 2.5 days (37% of all 18058 prefill seconds); 27 requests >=200k tokens each costing 55-112 s of re-prefill. Machine currently has 42.3 GiB free RAM; 8192 MiB = 19% of free.",
+  "delta": { "args": ["--conversation-cache-mib", "8192"], "env": {} },
+  "replaces": ["--conversation-cache-mib 4096"],
+  "conditions": "pairs naturally with C5 (prompt-cache-spread: history rewrites currently force the cold 250k re-reads that then consume parking budget). Keep min-free-mib guard (2560). Watch that free RAM does not trend below 4 GiB over 24h.",
+  "acceptance": "budget 'exceeds' skip lines -> ~0 with 8 GiB (projected from observed parked-set ~5-6 GB); evictions/day < 2; cold re-read >=100k seconds drop >=50% over matched 48h windows (audit + log parse); no swap pressure.",
+  "rollback": "restore --conversation-cache-mib 4096 from named backup",
+  "verdict": "PENDING - needs a cutover window (user consent)."
+}

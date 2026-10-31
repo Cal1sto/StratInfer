@@ -21,6 +21,7 @@ and the same benches; baseline variance ≤ 3%:
 | KV cache `k8v4` (C3a) | decode **91.4 → 98.7 tok/s (+8 %)**; cost: fresh prefill −4.2 % | **kept** |
 | Server-side schema validation (missing optional dep) | `response_format: json_schema` silently degraded to "is a JSON object" → now actually validates | **fixed** |
 | Schema-constrained decoding prototype (S1) | **3/3 outputs fully schema-valid vs 3/6 unconstrained** | works, see caveat |
+| Draft-chain grammar masks (S2 rule, simulated offline) | 100 % valid, **zero per-attempt decode cost** (48.60 vs 48.62 windows), **1.93x** effective vs regenerate-loop | algorithm validated |
 | Chunked Gated-DeltaNet prefill (C1, doc promises 1.8×) | **+0.6 %** (under noise) — the 1.8× applies to the isolated recurrence, not full MoE prefill on this card+quant | **rejected** |
 | Speculation depth sweep (C4) | spec5: −10.6 %, spec3: −3.5 % — shipped default already optimal | **rejected** |
 | Confidence-scheduled speculation ("DSpark localized", RFC-02) | offline simulation on 2 759 real requests: **+0.1 %** | **refuted as stated** |
@@ -39,6 +40,7 @@ node scripts/bench_fresh.mjs --label fresh --tokens 16000 --trials 3  # fresh pr
 python proto/extract_vocab.py <model.gguf>    # dump vocabulary cache
 python proto/s1_grammar.py --selftest         # schema automaton unit tests (no network)
 python proto/dspark_sim.py --log <engine.log> # speculative-scheduling simulation
+python proto/s2_draftchain.py             # draft-chain grammar-mask simulation (no network)
 ```
 
 Point everything at your server with `STRATINFER_BASE` (default `http://127.0.0.1:11440`).
