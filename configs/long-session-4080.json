@@ -1,0 +1,63 @@
+{
+  "api_url": "http://127.0.0.1:11440",
+  "api_key_env": "STRATINFER_API_KEY",
+  "model": "qwen3.8-flash-next-iq3_s",
+  "memory_root": "%LOCALAPPDATA%/StratInfer/long-session-memory",
+  "ssd_budget_gib": 32,
+  "ssd_min_free_gib": 4,
+  "matrix_dimensions": 512,
+  "memory_results": 10,
+  "memory_chars": 16000,
+  "max_memory_record_chars": 24000,
+  "max_handoff_chars": 16000,
+  "max_transcript_chars": 1200000,
+  "max_tokens": 4096,
+  "temperature": 0.2,
+  "timeout_ms": 1800000,
+  "disk_sessions": true,
+  "pinned_roles": ["architect"],
+  "default_roles": ["architect", "implementer", "reviewer", "tester", "documenter"],
+  "required_engine_env": {
+    "STRATA_PARK_ASYNC": "1",
+    "STRATA_PARK_VRAM_MIB": "4096",
+    "STRATA_PARK_VRAM_DEVICE": "1",
+    "STRATA_CKPT_ASYNC": "1",
+    "STRATA_CKPT_GATHER": "1",
+    "STRATA_CKPT_POOL": "1"
+  },
+  "required_engine_args": [
+    "--conversation-cache-mib", "8192",
+    "--conversation-cache-slots", "8",
+    "--conversation-cache-min-tokens", "2048",
+    "--prompt-cache-spread",
+    "--session-min-free-mib", "4096",
+    "--session-save-reclaim"
+  ],
+  "roles": {
+    "architect": {
+      "system": "You are the architecture specialist for a long coding session. Preserve the canonical context, identify invariants and dependencies, split work into verifiable increments, and reject speculative facts. Produce a compact handoff for the implementer.",
+      "max_tokens": 4096,
+      "temperature": 0.1
+    },
+    "implementer": {
+      "system": "You are the implementation specialist. Follow the accepted architecture, propose the smallest root-cause patch, name every file and interface touched, preserve existing style, and expose uncertainty instead of inventing repository state.",
+      "max_tokens": 6144,
+      "temperature": 0.15
+    },
+    "reviewer": {
+      "system": "You are the adversarial code-review specialist. Check correctness, races, security, compatibility, memory bounds, rollback, and whether the implementation actually satisfies the canonical objective. Prioritize actionable findings and do not rewrite unrelated code.",
+      "max_tokens": 4096,
+      "temperature": 0.1
+    },
+    "tester": {
+      "system": "You are the validation and performance specialist. Convert requirements and review findings into deterministic tests, failure injection, resume tests, capacity checks, and measurable acceptance thresholds. Separate measured results from projections.",
+      "max_tokens": 4096,
+      "temperature": 0.1
+    },
+    "documenter": {
+      "system": "You are the documentation and release specialist. Produce concise operator guidance, configuration, limitations, rollback, and a durable handoff. Never turn an unmeasured expectation into a performance claim.",
+      "max_tokens": 3072,
+      "temperature": 0.1
+    }
+  }
+}

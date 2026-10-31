@@ -1,0 +1,12 @@
+{
+  "entries": 2000,
+  "queries": 100,
+  "dimensions": 512,
+  "matrix_bytes": 4096000,
+  "write_ms": 666.3057,
+  "writes_per_second": 3001.625229980773,
+  "query_ms_total": 1379.157,
+  "query_ms_mean": 13.79157,
+  "top5_recall": 1.0,
+  "used_bytes": 4497632
+}

@@ -24,9 +24,12 @@ testable equivalent.
 | Strict JSON-Schema overlay | 4/4 `sm_120` tests and 6/6 constrained smoke outputs | Functional smoke passed |
 | Packed grammar-mask CUDA kernel | median 7.931 us kernel-only; 94.652 us pinned upload plus kernel | Component result only |
 | End-to-end constrained RTX 5090 throughput | final constrained cutover not run | Pending |
+| Long-session memory on RTX 4080 + SSD | 12,585 exact snapshot checks; 10.84/11.46 GiB/s peer copies; 9/9 orchestration tests | Offline validated; cutover pending |
 
 Full measurements and caveats are in [`RESULTS.md`](RESULTS.md). The latest raw battery
 and analysis are in [`reports/rtx5090-2026-10-31.md`](reports/rtx5090-2026-10-31.md).
+The long-session report is
+[`reports/long-session-memory-2026-11-01.md`](reports/long-session-memory-2026-11-01.md).
 
 ## DeepInfer capabilities
 
@@ -36,6 +39,8 @@ The overlay implements or validates the portable parts:
 - position-keyed Philox sampling and an interleaving determinism test;
 - concurrency, exact replay, fixed-prompt, fresh-prompt, and schema-validity benchmarks;
 - packed `sm_120` grammar masks with a GPU parity test;
+- exact parked K/V on a helper RTX 4080, bounded SSD sessions, canonical context,
+  matrix retrieval, and specialist-agent handoffs;
 - acceptance gates and reversible cutover tooling.
 
 DeepInfer's FlashMLA, DeepGEMM, DeepEP, DeepSelect, TileLang, attention DP/CP,
@@ -50,8 +55,10 @@ topologies. They are mapped to native Strata equivalents rather than copied. See
 - `patches/strata-integration.patch`: CMake, engine wiring, and Qwen3.6 sampler
   integration against the pinned Strata revision.
 - `scripts/apply-to-strata.ps1`: clean preflight and overlay installation.
-- `scripts/build-engine.bat`: CUDA 13.1, `120-real`, both engines, and four tests.
+- `scripts/build-engine.bat`: CUDA 13.1, `120-real`, both engines, grammar tests,
+  and standard/helper-device snapshot tests.
 - `scripts/bench_*.mjs`: fixed, fresh, concurrency, replay, and grammar measurements.
+- `scripts/long_session.mjs`: durable context and specialist-agent orchestration.
 - `scripts/verify_determinism.mjs`: serial versus interleaved output hashes.
 - `configs/candidates/`: changes, acceptance criteria, rollback, and verdicts.
 - `proto/`: Python reference automaton and simulations.
@@ -66,6 +73,8 @@ python proto/s2_draftchain.py --runs 2000 --seed 7
 node --check scripts/bench_concurrency.mjs
 node --check scripts/bench_grammar.mjs
 node --check scripts/verify_determinism.mjs
+node --test scripts/tests/context-memory.test.mjs scripts/tests/agent-orchestrator.test.mjs
+node scripts/bench_long_memory.mjs 2000 100
 node scripts/audit.mjs --once
 ```
 
@@ -118,7 +127,31 @@ The build requests `CMAKE_CUDA_ARCHITECTURES=120-real`, produces `strata.exe` an
 - `json_automaton_test`;
 - `gguf_tokens_test`;
 - `qwen35_philox_test`;
-- `grammar_mask_parity`.
+- `grammar_mask_parity`;
+- `conversation_snapshot_test`, `conversation_snapshot_test_park_peer`, and the
+  constrained-budget helper-GPU fallback variant.
+
+The build also produces `peer_cache_bench.exe` for repeatable RTX 5090 to RTX 4080
+copy measurements.
+
+## Long coding sessions
+
+The opt-in long-session profile keeps the model on RTX 5090, reserves up to 4,096 MiB
+on RTX 4080 for exact parked K/V, and bounds per-project SSD sessions at 32 GiB. Five
+isolated roles share a canonical context and explicit handoffs:
+
+```powershell
+node scripts/long_session.mjs init --project stratinfer `
+  --objective "Improve StratInfer without losing accepted invariants"
+node scripts/long_session.mjs status --project stratinfer
+node scripts/long_session.mjs run --project stratinfer `
+  --task "Implement and validate the next accepted change"
+```
+
+The server must use the status command's `sessions_path` as `--slot-save-path`, with
+parallel slots disabled. Use a dedicated server or a controlled cutover because a
+session restore replaces the engine's current conversation. Full setup, recovery and
+limits are in [`docs/long-coding-sessions.md`](docs/long-coding-sessions.md).
 
 `CUDA_ARCH` defaults to `120-real`; set `CUDA_ARCH=89-real` only for a separate Ada
 functional-smoke build. Use a clean build after changing overlay headers.

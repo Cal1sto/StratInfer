@@ -32,6 +32,7 @@ $copies = @{
   'src\core\verify.hpp.patched' = 'include\strata\core\verify.hpp'
   'src\kernels\cuda\grammar_mask.cu' = 'src\kernels\cuda\grammar_mask.cu'
   'src\kernels\grammar_mask_parity.cu' = 'src\kernels\grammar_mask_parity.cu'
+  'src\kernels\peer_cache_bench.cu' = 'src\kernels\peer_cache_bench.cu'
   'src\program\grammar_wiring.inc' = 'src\program\grammar_wiring.inc'
   'src\qwen35\philox_test.cpp' = 'src\qwen35\philox_test.cpp'
 }

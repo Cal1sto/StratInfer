@@ -35,6 +35,34 @@ The complete protocol, limitations, raw-file links, and per-case tables are publ
 The constrained functional smoke passed 6/6 on the secondary RTX 4080 SUPER. It is not
 reported as RTX 5090 performance. The final `sm_120` clean build passes all four tests.
 
+## Long-session memory, 2026-11-01
+
+The opt-in C11 profile adds exact K/V parking on CUDA device 1 (RTX 4080 SUPER), a
+32 GiB per-project SSD session budget, an always-injected canonical context, and five
+isolated specialist roles. The active full-model engine was not restarted, so these are
+clean-build, exact-state and component results rather than a full-model throughput A/B.
+
+| Measurement | Result |
+|---|---:|
+| standard snapshot test | 4,195 checks, pass |
+| RTX 5090 to RTX 4080 snapshot test | 4,195 checks, pass |
+| helper-GPU budget fallback test | 4,195 checks, pass |
+| 5090 to 4080 copy, 512 MiB x5 | 10.836 GiB/s |
+| 4080 to 5090 copy, 512 MiB x5 | 11.460 GiB/s |
+| memory/orchestrator tests | 9/9 pass |
+| matrix insertion, 2,000 records | 3,002 records/s |
+| matrix retrieval, 100 queries | 13.792 ms mean |
+| synthetic keyed top-5 recall | 100% |
+
+Both directions report no direct peer access. `cudaMemcpyPeerAsync` still passes the
+byte validation, but the result is a driver-staged PCIe path, not an NVLink claim. The
+observed 2.2-3.44 GiB long-conversation snapshots fit under the 4 GiB helper budget;
+larger snapshots retain Strata's host fallback. The 32 GiB quota policy was tested at a
+reduced scale, not by writing 32 GiB physically.
+
+See [`reports/long-session-memory-2026-11-01.md`](reports/long-session-memory-2026-11-01.md)
+for protocol, raw files, limits and the pending 24-hour cutover gate.
+
 ## Live configuration results
 
 | Candidate | Primary result | Verdict |
