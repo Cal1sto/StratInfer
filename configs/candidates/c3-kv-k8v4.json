@@ -1,0 +1,10 @@
+{
+  "id": "C3a",
+  "title": "KV cache k8v4: 8-bit keys, rotated 4-bit values",
+  "inspiration": "DeepInfer: KV budget vs compute trade-off. Strata docs: -23% KV memory -> more experts resident; better long-document accuracy than q4_0; prefill cost 2-5%.",
+  "delta": { "args": ["--kv", "k8v4"], "env": {} },
+  "replaces": ["--kv int8"],
+  "acceptance": "hit_rate >= 0.96 (vs 0.90-0.94 baseline) AND decode_tok_s > baseline; if fresh prefill costs 2-5%, require decode >= +5% to accept.",
+  "verdict": "KEPT (2026-10-30): decode +8.0% (98.65 vs 91.38 mean, 6 trials); fresh prefill -4.2% (inside the documented 2-5% window) -> acceptance rule satisfied. hit_rate unchanged at 0.94 and expert_slots unchanged: the documented mechanism (more resident experts via -23% KV memory) did NOT materialize on this machine (other budget terms bind first) - the win arrived via another path (cheaper KV reads/ops), unproven, so reported as measurement without mechanism.",
+  "rollback": "restore --kv int8 via scripted cutover from named backup"
+}

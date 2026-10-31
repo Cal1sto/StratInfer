@@ -1,0 +1,10 @@
+{
+  "id": "C5",
+  "title": "prompt-cache-spread (history rewrites near the tail)",
+  "inspiration": "DeepInfer: SWA bounded replay (re-decode the useful suffix, not everything). Strata: --prompt-cache-spread keeps checkpoints geometrically spaced from the end.",
+  "delta": { "args": ["--prompt-cache-spread"], "env": {} },
+  "conditions": "Targets the agent pattern of rewriting history a few thousand tokens before the tail - the exact use case cited by the flag's documentation.",
+  "acceptance": "on 24h agent traces: reused/prompt_total +5 points; no regression on linear chats (bench_ab suite).",
+  "verdict": "NOT YET TESTED - needs a cutover window.",
+  "rollback": "remove the flag"
+}

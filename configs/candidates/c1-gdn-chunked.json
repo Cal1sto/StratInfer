@@ -1,0 +1,10 @@
+{
+  "id": "C1",
+  "title": "Chunked Gated-DeltaNet prefill (32-token chunks)",
+  "inspiration": "Strata opt-in switch documented at 1.8x prefill on RTX 5090 (docs/DETAILS.md, CUDA opt-in section); DeepInfer-style kernel tuning as context",
+  "delta": { "args": [], "env": { "STRATA_GDN_CHUNKED": "1" } },
+  "conditions": "CUDA. The doc's own caveat: rounding changes - compare quality, not just speed. The 1.8x claim is for the isolated recurrence; verify end-to-end before believing it.",
+  "acceptance": "fresh-prompt prefill tok/s >= +10% at 16K and 32K (measured with bench_fresh.mjs only); 10-prompt suite with no visible quality loss; raw tok/s recorded.",
+  "verdict": "TESTED AND REJECTED (2026-10-30): clean A/B with fresh prompts, 65K and 16K tokens, 3+2 trials per side = +0.6% both, under the +/-3% noise band. The 1.8x applies to the DeltaNet recurrence in isolation; diluted by attention + MoE routing + expert traffic in a full prefill on this card and quantization. Removed from the live config.",
+  "rollback": "unset the env var (scripted cutover)"
+}

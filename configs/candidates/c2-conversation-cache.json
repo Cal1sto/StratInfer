@@ -1,0 +1,12 @@
+{
+  "id": "C2",
+  "title": "Conversation-cache (parking) budget x8: 512 -> 4096 MiB",
+  "inspiration": "DeepInfer: 72h KV persistence, ~96% average hit. Strata: --conversation-cache-mib (documented default: 40% of free RAM, capped 8 GiB).",
+  "evidence": "MEASURED before applying: engine log showed 'conversation cache: skip parking (snapshot 2303 MiB exceeds available budget)' - 1441 occurrences in one day, observed snapshots 2225-2577 MiB against a 512 MiB budget: the feature was structurally inoperative for agent-sized conversations. Machine had 43 GiB free RAM; 4096 MiB = 3% of it. The budget must exceed observed snapshots plus margin, hence 4096 not 2048.",
+  "delta": { "args": ["--conversation-cache-mib", "4096", "--conversation-cache-slots", "8", "--conversation-cache-min-tokens", "2048"], "env": {} },
+  "replaces": ["--conversation-cache-mib 512", "--conversation-cache-slots 4"],
+  "conditions": "system RAM headroom; the --conversation-cache-min-free-mib floor stays as the guard-rail. min-tokens=2048 keeps short queries from evicting long agent conversations.",
+  "acceptance": "engine log shows zero budget 'skip parking' lines; reused/prompt_total +5 points under agent load (24h audit); no memory alerts; free RAM never below 4 GiB.",
+  "verdict": "KEPT (2026-10-30): rejections 1441/day -> 0; real 131363-token agent conversation resumes with 130990 tokens reused, 373 read, in 1.3s (vs ~24s cold). Park=3 restores=2 in the A/B window. Biggest single win of the project - found by counting log lines, not by having an idea.",
+  "rollback": "restore 512/4 via scripted cutover from named backup"
+}

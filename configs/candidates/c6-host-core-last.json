@@ -1,0 +1,10 @@
+{
+  "id": "C6",
+  "title": "Place the host-core thread away from the core receiving GPU interrupts",
+  "inspiration": "DeepInfer: zero-overhead CPU/GPU scheduling. Strata: STRATA_HOST_CORE=last (Windows).",
+  "delta": { "args": [], "env": { "STRATA_HOST_CORE": "last" } },
+  "conditions": "Windows only. Upstream doc reports one machine going from +/-6% run variability to stable and +8%. On hybrid-architecture CPUs also try the pool-affinity variant and measure.",
+  "acceptance": "standard deviation of decode_tok_s across interleaved runs halved (stability, not mean, is the target).",
+  "verdict": "NOT YET TESTED - needs a cutover window.",
+  "rollback": "unset the env var"
+}

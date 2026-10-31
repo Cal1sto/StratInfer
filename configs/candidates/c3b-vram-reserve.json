@@ -1,0 +1,11 @@
+{
+  "id": "C3b",
+  "title": "VRAM reserve 1280 -> 896 MiB (alternative to C3a; do not combine at first)",
+  "inspiration": "Free expert-cache slots: vram_free_mib = 0 at baseline; expert cache ~20.3 GiB.",
+  "delta": { "args": ["--vram-reserve-mib", "896"], "env": {} },
+  "replaces": ["--vram-reserve-mib 1280"],
+  "conditions": "WARNING: on this box the reserve absorbs other local GPU consumers (vision encoder process, image/video generation peaks via the shared-GPU profile). Verify with nvidia-smi DURING a heavy non-inference job before committing to a smaller reserve.",
+  "acceptance": "expert_slots increases beyond baseline AND hit_rate >= 0.96, with zero OOM/crash while the other local GPU workloads run.",
+  "verdict": "NOT ATTEMPTED (2026-10-30): deliberately shelved - the freed margin belongs to workloads that are not inference, and the KV saving from C3a already showed slots may not be the binding term here.",
+  "rollback": "restore 1280 via scripted cutover"
+}

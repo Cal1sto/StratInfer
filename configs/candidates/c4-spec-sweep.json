@@ -1,0 +1,11 @@
+{
+  "id": "C4",
+  "title": "Speculation depth sweep (mirror of DeepInfer's 5-token NextN default)",
+  "inspiration": "DeepInfer: DEEPINFER_USE_NEXTN_DECODE=5 by default, per-token confidence. Strata: --spec / --spec-min-p, static threshold.",
+  "delta": { "args": ["--spec", "5", "--spec-min-p", "0.45"], "env": {} },
+  "replaces": ["--spec 4", "--spec-min-p 0.5"],
+  "sweep": "grid: spec in {3,4,5} x min-p in {0.35,0.5,0.6}; record decode_tok_s and drafts_accepted/drafts_offered per cell.",
+  "acceptance": "winning cell: decode_tok_s > baseline AND acceptance >= 0.65.",
+  "verdict": "REJECTED (2026-10-30): spec5/0.45 = decode -10.6% vs stock; spec3/0.5 = -3.5% (acceptance rises to 0.683 but net loss). Stock spec4/0.5 restored from named backup. The curve brackets the optimum at the default; any future gain must come from confidence-scheduled depth, not a different constant -> see docs/rfc-speculative-scheduling.md (simulation: +0.1%, refuted as stated).",
+  "rollback": "restore --spec 4 --spec-min-p 0.5"
+}
