@@ -87,6 +87,7 @@ class Automaton {
         if (isWs(c)) return true;
         if (c == '}' && !s.frames[s.top].hadMember) return closeObject(s);
         if (c == '"') {
+          if (!hasUnseenKey(s)) return false;
           s.mode = 2; s.inKey = true; s.keyLen = 0;
           s.strEsc = false; s.unicodeRemain = 0; s.unicodeValue = 0;
           return true;
@@ -103,7 +104,7 @@ class Automaton {
         return s.pending && beginValue(s, c);
       case 5:
         if (isWs(c)) return true;
-        if (c == ',') { s.mode = 1; return true; }
+        if (c == ',' && hasUnseenKey(s)) { s.mode = 1; return true; }
         if (c == '}') return closeObject(s);
         return false;
       case 6:
@@ -179,27 +180,95 @@ class Automaton {
            pushKey(s, (char)(0x80 | ((cp >> 6) & 63))) && pushKey(s, (char)(0x80 | (cp & 63)));
   }
 
+  bool keyPrefixAllowed(const State& s) const {
+    const State::Frame& frame = s.frames[s.top];
+    const Spec* sp = frame.spec;
+    for (size_t index = 0; index < sp->keys.size(); ++index) {
+      const std::string& key = sp->keys[index];
+      if (!frame.seen[index] && key.size() >= (size_t)s.keyLen &&
+          std::memcmp(key.data(), s.key, (size_t)s.keyLen) == 0) return true;
+    }
+    return false;
+  }
+
+  static bool hasUnseenKey(const State& s) {
+    const State::Frame& frame = s.frames[s.top];
+    for (int index = 0; index < frame.nprops; ++index)
+      if (!frame.seen[index]) return true;
+    return false;
+  }
+
+  bool keyCanExtend(const State& s) const {
+    const State::Frame& frame = s.frames[s.top];
+    const Spec* sp = frame.spec;
+    for (size_t index = 0; index < sp->keys.size(); ++index) {
+      const std::string& key = sp->keys[index];
+      if (!frame.seen[index] && key.size() > (size_t)s.keyLen &&
+          std::memcmp(key.data(), s.key, (size_t)s.keyLen) == 0) return true;
+    }
+    return false;
+  }
+
+  static bool nextKeyCodepoint(const std::string& key, size_t offset, uint16_t& codepoint) {
+    if (offset >= key.size()) return false;
+    const uint8_t first = (uint8_t)key[offset];
+    if (first < 0x80) { codepoint = first; return true; }
+    if ((first & 0xE0) == 0xC0 && offset + 1 < key.size()) {
+      const uint8_t second = (uint8_t)key[offset + 1];
+      if ((second & 0xC0) != 0x80) return false;
+      codepoint = (uint16_t)(((first & 0x1F) << 6) | (second & 0x3F));
+      return true;
+    }
+    if ((first & 0xF0) == 0xE0 && offset + 2 < key.size()) {
+      const uint8_t second = (uint8_t)key[offset + 1];
+      const uint8_t third = (uint8_t)key[offset + 2];
+      if ((second & 0xC0) != 0x80 || (third & 0xC0) != 0x80) return false;
+      codepoint = (uint16_t)(((first & 0x0F) << 12) | ((second & 0x3F) << 6) | (third & 0x3F));
+      return true;
+    }
+    return false;
+  }
+
+  bool unicodePrefixAllowed(const State& s) const {
+    const State::Frame& frame = s.frames[s.top];
+    const Spec* sp = frame.spec;
+    for (size_t index = 0; index < sp->keys.size(); ++index) {
+      const std::string& key = sp->keys[index];
+      if (frame.seen[index] || key.size() <= (size_t)s.keyLen ||
+          std::memcmp(key.data(), s.key, (size_t)s.keyLen) != 0) continue;
+      uint16_t codepoint = 0;
+      if (nextKeyCodepoint(key, (size_t)s.keyLen, codepoint) &&
+          (codepoint >> (s.unicodeRemain * 4)) == s.unicodeValue) return true;
+    }
+    return false;
+  }
+
   bool feedKey(State& s, char c) const {
     if (s.unicodeRemain) {
       const int h = hex(c);
       if (h < 0) return false;
       s.unicodeValue = (uint16_t)((s.unicodeValue << 4) | h);
-      if (--s.unicodeRemain == 0 && !pushUtf8Key(s, s.unicodeValue)) return false;
-      return true;
+      --s.unicodeRemain;
+      if (s.unicodeRemain != 0) return unicodePrefixAllowed(s);
+      return pushUtf8Key(s, s.unicodeValue) && keyPrefixAllowed(s);
     }
     if (s.strEsc) {
       s.strEsc = false;
       if (c == 'u') { s.unicodeRemain = 4; s.unicodeValue = 0; return true; }
       const int decoded = escaped(c);
-      return decoded >= 0 && pushKey(s, (char)decoded);
+      return decoded >= 0 && pushKey(s, (char)decoded) && keyPrefixAllowed(s);
     }
-    if (c == '\\') { s.strEsc = true; return true; }
+    if (c == '\\') {
+      if (!keyCanExtend(s)) return false;
+      s.strEsc = true;
+      return true;
+    }
     if (c == '"') {
       s.inKey = false;
       return endKey(s, std::string(s.key, s.keyLen));
     }
     if ((uint8_t)c < 0x20) return false;
-    return pushKey(s, c);
+    return pushKey(s, c) && keyPrefixAllowed(s);
   }
 
   bool beginValue(State& s, char c) const {

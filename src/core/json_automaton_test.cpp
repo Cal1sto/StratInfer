@@ -45,11 +45,57 @@ int main() {
   check(!run("{\"category\":\"characterx\""), "closed enum literal cannot extend");
   check(!run("{\"title\":\"x\",\"category\":\"object\",}"), "object trailing comma rejected");
   check(!run("{\"title\":\"x\",\"title\":\"y\",\"category\":\"object\"}"), "duplicate key rejected");
+  {
+    State state = A.initial();
+    check(A.feed(state, '{') && A.feed(state, '"') && !A.feed(state, 'x'),
+          "unknown object-key prefix rejected immediately");
+  }
+  {
+    State state = A.initial();
+    const char* prefix = "{\"title\":\"x\",\"";
+    bool ok = true;
+    for (const char* p = prefix; *p; ++p) ok = ok && A.feed(state, (uint8_t)*p);
+    check(ok && !A.feed(state, 't'), "seen object-key prefix cannot be generated again");
+  }
   check(!run("{\"title\":\"bad\\q\",\"category\":\"object\"}"), "invalid string escape rejected");
   check(run("{\"ti\\u0074le\":\"x\",\"category\":\"object\"}"), "escaped key decoded");
   check(!run("{\"title\":\"x\",\"category\":\"object\",\"confidence\":01}"), "leading-zero number rejected");
   check(!run("{\"title\":\"x\",\"category\":\"object\",\"confidence\":1.}"), "missing fraction rejected");
   check(!run("{\"title\":\"x\",\"category\":\"object\",\"confidence\":1e}"), "missing exponent rejected");
+
+  {
+    const char* schema =
+        "{\"type\":\"object\",\"properties\":{"
+        "\"titre\":{\"type\":\"string\"},"
+        "\"categorie\":{\"enum\":[\"personnage\",\"objet\",\"lieu\"]},"
+        "\"confiance\":{\"type\":\"number\"},"
+        "\"verifie\":{\"type\":\"boolean\"}},"
+        "\"required\":[\"titre\",\"categorie\"],\"additionalProperties\":false}";
+    std::vector<Spec> store;
+    Spec* root = nullptr;
+    std::string error;
+    check(loadSchema(schema, store, root, error) && root != nullptr, "French benchmark schema loads");
+    if (root != nullptr) {
+      DraftChain chain(*root);
+      const char* prefix = "{\"titre\":\"x\",\"categorie\":\"objet\",\"confiance";
+      check(chain.commitWindow(std::vector<const char*>{prefix}) == 1,
+            "French confiance key prefix is feasible");
+      check(chain.feasible("\""), "French confiance key can close");
+      check(!chain.feasible("\\"), "French complete key rejects a dead-end escape");
+      DraftChain unicode(*root);
+      check(unicode.commitWindow(std::vector<const char*>{
+                "{\"titre\":\"x\",\"categorie\":\"objet\",\"con"}) == 1,
+            "French key Unicode-escape prefix starts feasible");
+      check(!unicode.feasible("\\u007"), "impossible partial Unicode key escape is rejected early");
+      check(unicode.feasible("\\u0066iance\""), "valid Unicode key escape remains feasible");
+      DraftChain exhausted(*root);
+      check(exhausted.commitWindow(std::vector<const char*>{
+                "{\"titre\":\"x\",\"categorie\":\"objet\",\"confiance\":1,\"verifie\":true"}) == 1,
+            "all French schema properties are feasible");
+      check(!exhausted.feasible(","), "comma is rejected after all object properties are seen");
+      check(exhausted.feasible("}"), "object can close after all properties are seen");
+    }
+  }
 
   // Empty containers, nested containers, and root scalars.
   {

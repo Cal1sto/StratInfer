@@ -40,7 +40,30 @@ void fixture(const std::string& path, bool malformed) {
 
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
+    if (argc == 2) {
+        std::vector<std::string> tokens;
+        std::vector<uint8_t> control, terminal;
+        if (!strata::grammar::loadTokenMetadata(argv[1], tokens, control, &terminal)) {
+            std::fprintf(stderr, "cannot load token metadata from %s\n", argv[1]);
+            return 2;
+        }
+        size_t controls = 0, terminals = 0;
+        for (uint8_t value : control) controls += value != 0;
+        for (uint8_t value : terminal) terminals += value != 0;
+        std::printf("vocab=%zu controls=%zu terminals=%zu\n", tokens.size(), controls, terminals);
+        for (const char* needle : {"\"", "e", "e\"", "confiance", "confiance\""}) {
+            bool found = false;
+            for (size_t token = 0; token < tokens.size(); ++token) {
+                if (tokens[token] != needle) continue;
+                std::printf("exact '%s': id=%zu control=%d terminal=%d\n", needle, token,
+                            control[token] ? 1 : 0, terminal[token] ? 1 : 0);
+                found = true;
+            }
+            if (!found) std::printf("exact '%s': absent\n", needle);
+        }
+        return 0;
+    }
     const std::string good = "gguf_tokens_test-good.gguf";
     const std::string bad = "gguf_tokens_test-bad.gguf";
     fixture(good, false); fixture(bad, true);

@@ -72,11 +72,19 @@ diff --git a/src/program/generate.cpp b/src/program/generate.cpp
              }
              ver.set_sampling(req_sp);
              if (pipe) ver_b.set_sampling(req_sp);   // (reaches the later stage's odd verifier)
-+            if (!ver.reset_grammar(err) || (pipe && !ver_b.reset_grammar(err))) {
++            if (!ver.suspend_grammar(err) || (pipe && !ver_b.suspend_grammar(err))) {
 +                std::printf("ERR %s\n", err.c_str());
 +                return 1;
 +            }
              if (use_mtp) mtp.set_draft_sampling(req_sp);   // STRATA_SPEC_COUPLED=1: sampled drafts (a no-op otherwise)
+@@ -15770,6 +15781,10 @@ int main(int argc, char** argv) {
+             std::printf("REUSED %lld\n", (long long) resume);   // the prompt is read; the first window comes next
+             std::fflush(stdout);
++            if (!ver.reset_grammar(err) || (pipe && !ver_b.reset_grammar(err))) {
++                std::printf("ERR %s\n", err.c_str());
++                return 1;
++            }
+             // the verify windows: the first holds the last prompt token alone (STRATA_ADMIT_MERGE_FIRST: the prompt
 diff --git a/src/qwen35/q36_engine.cu b/src/qwen35/q36_engine.cu
 --- a/src/qwen35/q36_engine.cu
 +++ b/src/qwen35/q36_engine.cu

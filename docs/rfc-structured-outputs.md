@@ -1,7 +1,8 @@
 # RFC: strict structured output inside Strata
 
-Status: opt-in overlay implemented, compiled, and unit/GPU tested. Live 10,000-sample
-correctness and end-to-end throughput gates remain pending.
+Status: opt-in overlay implemented, compiled, unit/GPU tested, and validated by a 6/6
+adversarial functional smoke. The live 10,000-sample correctness and RTX 5090
+end-to-end throughput gates remain pending.
 
 ## Problem
 
@@ -60,11 +61,16 @@ For 248,320 tokens on CUDA 13.1, Release, `120-real`:
 
 | isolated operation | measurement |
 |---|---:|
-| kernel only | 7.337 us per launch |
-| pinned 30.3 KiB upload plus kernel | 104.321 us per state change |
+| kernel only, median of 10 | 7.931 us per launch (7.657-8.396) |
+| pinned 30.3 KiB upload plus kernel, median of 10 | 94.652 us per state change (89.388-101.457) |
 | equivalent dense FP32 bias | about 970 KiB |
 
 These are isolated component measurements. They do not establish end-to-end decode speed.
+
+The six-prompt smoke covers adversarial requests for Markdown, forbidden properties,
+wrong types, and invalid enums. All six committed outputs satisfy the schema. Regression
+tests also cover impossible key prefixes, dead-end escapes, partial Unicode escapes, and
+commas after all properties are consumed.
 
 ## Safety boundary
 

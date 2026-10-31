@@ -68,8 +68,8 @@ Measured locally on the RTX 5090 with CUDA 13.1, Release and `120-real`:
 
 | isolated operation | result |
 |---|---:|
-| kernel only, 248,320 tokens | 7.337 microseconds per launch |
-| pinned bitset upload plus kernel | 104.321 microseconds per state change |
+| kernel only, 248,320 tokens, median of 10 | 7.931 microseconds per launch |
+| pinned bitset upload plus kernel, median of 10 | 94.652 microseconds per state change |
 | packed transfer | 30.3 KiB |
 | equivalent dense FP32 bias | about 970 KiB |
 
@@ -88,6 +88,7 @@ live property: the same seeded request must match when run alone and beside othe
 
 - `scripts/bench_concurrency.mjs`: aggregate throughput and p50/p95 latency by concurrency.
 - `scripts/bench_replay.mjs`: cold prompt versus exact continuation reuse.
+- `scripts/bench_grammar.mjs`: adversarial schema validity and constrained-output timing.
 - `scripts/verify_determinism.mjs`: serial and interleaved seeded-output hashes.
 - `scripts/bench_ab.mjs`: fixed workload A/B and offline comparison of result files.
 - `scripts/bench_fresh.mjs`: unique prompts that cannot hide prefill behind cache reuse.
@@ -111,6 +112,7 @@ The overlay is opt-in and must keep the default path unchanged when
 - Startup-scoped JSON Schema only; no per-request native protocol field yet.
 - JSON-Schema subset only; regex and EBNF are not implemented.
 - Serial, single-GPU request stream only while a single automaton is shared.
-- No end-to-end grammar throughput result yet; only module, build and isolated kernel data.
+- A 6/6 constrained functional smoke passes on the secondary GPU; constrained RTX 5090
+  throughput and the 10,000-output correctness gate remain open.
 - No SM100 library is presented as an RTX 5090 port. Equivalent Strata kernels remain the
   supported path until a model-correct A/B result demonstrates a replacement is better.

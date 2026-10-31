@@ -790,7 +790,7 @@ bool Verifier::set_logit_bias(const std::vector<float>& bias, std::string& err) 
     grammar_base_bias_ = bias;
     grammar_base_uploaded_ = false;
     grammar_sig_valid_ = false;
-    return grammar_ ? grammar_refresh_mask(err) : apply_logit_bias(bias, err);
+    return grammar_active_ ? grammar_refresh_mask(err) : apply_logit_bias(bias, err);
 }
 
 bool Verifier::init(const WeightTable& wt, const ModelGeometry& g, SessionState& ss, const VerifyHits& hits,
@@ -843,7 +843,12 @@ bool Verifier::init(const WeightTable& wt, const ModelGeometry& g, SessionState&
     if (le_ < 0) le_ = g.n_layers;
     if (lb_ < 0 || lb_ >= le_ || le_ > g.n_layers || (lb_ > 0 && hand_in_ == nullptr) ||
         (le_ < g.n_layers && hand_out_ == nullptr)) {
-        err = "verify: the stage's layer range or its hand-off buffers are wrong";
+        char detail[256];
+        std::snprintf(detail, sizeof detail,
+                      "verify: stage range/hand-off mismatch (lb=%lld le=%lld layers=%lld in=%p out=%p)",
+                      (long long)lb_, (long long)le_, (long long)g.n_layers,
+                      (const void*)hand_in_, (void*)hand_out_);
+        err = detail;
         return false;
     }
     const WeightRef* wo = wt.find("output.weight");
@@ -3638,7 +3643,7 @@ bool Verifier::commit(int n_keep, std::string& err) {
 #endif
     const OnDevice on_device(device_);
     if (n_keep < 1 || n_keep > last_t_) { err = "verify: commit count out of range"; return false; }
-    if (grammar_) {
+    if (grammar_active_) {
         if (!grammar_->confirm(n_keep)) { err = "verify: grammar commit exceeds valid prefix"; return false; }
         if (!grammar_refresh_mask(err)) return false;
     }
@@ -5047,7 +5052,7 @@ bool Verifier::pl_finish(int32_t* out, std::string& err) {
 bool Verifier::pl_commit_async(int n_keep, std::string& err) {
     const OnDevice on_device(device_);
     if (n_keep < 1 || n_keep > last_t_) { err = "verify: commit count out of range"; return false; }
-    if (grammar_) {
+    if (grammar_active_) {
         if (!grammar_->confirm(n_keep)) { err = "verify: grammar commit exceeds valid prefix"; return false; }
         if (!grammar_refresh_mask(err)) return false;
     }
@@ -5092,18 +5097,23 @@ void Verifier::absorb_stats(Verifier& o) {
 void Verifier::set_grammar(std::unique_ptr<strata::grammar::DraftChain> chain, const char* const* tokText) {
     grammar_ = std::move(chain);
     grammar_toktext_ = tokText;
+    grammar_active_ = false;
     grammar_sig_valid_ = false;
-    if (n_vocab_ > 0 && device_ >= 0) {
-        std::string err;
-        if (!grammar_refresh_mask(err))
-            std::fprintf(stderr, "strata: grammar mask initialization failed: %s\n", err.c_str());
-    }
+}
+
+bool Verifier::suspend_grammar(std::string& err) {
+    if (next_ && !next_->suspend_grammar(err)) return false;
+    if (le_ < g_->n_layers || !grammar_) return true;
+    grammar_active_ = false;
+    grammar_sig_valid_ = false;
+    return apply_logit_bias(grammar_base_bias_, err);
 }
 
 bool Verifier::reset_grammar(std::string& err) {
     if (next_ && !next_->reset_grammar(err)) return false;
     if (le_ < g_->n_layers || !grammar_) return true;
     grammar_->reset();
+    grammar_active_ = true;
     grammar_sig_valid_ = false;
     return grammar_refresh_mask(err);
 }
@@ -5140,7 +5150,7 @@ static uint64_t grammar_state_sig(const strata::grammar::State& s) {
 }
 
 bool Verifier::grammar_refresh_mask(std::string& err) {
-    if (!grammar_) {
+    if (!grammar_ || !grammar_active_) {
         grammar_sig_valid_ = false;
         return apply_logit_bias(grammar_base_bias_, err);
     }
@@ -5165,15 +5175,49 @@ bool Verifier::grammar_refresh_mask(std::string& err) {
     uint32_t* allowed = allowedStorage.data();
 #endif
     int64_t allowedCount = 0;
+    int64_t terminalCount = 0;
+    bool quoteFound = false, quoteFeasible = false;
     for (int64_t id = 0; id < n_vocab_; ++id) {
         const char* bytes = grammar_toktext_[id];
+        if (bytes != nullptr && *bytes == '\0') ++terminalCount;
         const bool feasible = bytes != nullptr && (*bytes == '\0' ? grammar_->done() : grammar_->feasible(bytes));
+        if (bytes != nullptr && std::strcmp(bytes, "\"") == 0) {
+            quoteFound = true;
+            quoteFeasible = feasible;
+        }
         if (feasible) {
             allowed[(size_t)id >> 5] |= 1u << (id & 31);
             ++allowedCount;
         }
     }
-    if (allowedCount == 0) { err = "grammar admits no vocabulary token"; return false; }
+    if (allowedCount == 0) {
+        const auto& state = grammar_->state();
+        uint32_t seen = 0;
+        int keyMatch = -1;
+        size_t specKeys = 0;
+        if (state.top >= 0)
+            for (int index = 0; index < state.frames[state.top].nprops; ++index) {
+                if (state.frames[state.top].seen[index]) seen |= 1u << index;
+                const auto* spec = state.frames[state.top].spec;
+                if (spec != nullptr && (size_t)index < spec->keys.size() &&
+                    spec->keys[index].size() == (size_t)state.keyLen &&
+                    std::memcmp(spec->keys[index].data(), state.key, (size_t)state.keyLen) == 0) keyMatch = index;
+            }
+        if (state.top >= 0 && state.frames[state.top].spec != nullptr)
+            specKeys = state.frames[state.top].spec->keys.size();
+        char detail[416];
+        std::snprintf(detail, sizeof detail,
+                      "grammar admits no vocabulary token (done=%d mode=%d top=%d in_string=%d escape=%d unicode=%u/0x%x key_len=%d key='%.*s' seen=0x%x props=%u/%zu match=%d quote=%d/%d terminals=%lld)",
+                      state.done ? 1 : 0, (int)state.mode, state.top, state.inStr ? 1 : 0,
+                      state.strEsc ? 1 : 0, (unsigned)state.unicodeRemain, (unsigned)state.unicodeValue,
+                      (int)state.keyLen,
+                      state.keyLen, state.key, seen,
+                      state.top >= 0 ? (unsigned)state.frames[state.top].nprops : 0u, specKeys, keyMatch,
+                      quoteFound ? 1 : 0, quoteFeasible ? 1 : 0,
+                      (long long)terminalCount);
+        err = detail;
+        return false;
+    }
 
 #if !defined(STRATA_USE_HIP) && !defined(STRATA_HIP_GFX906) && !defined(STRATA_GPU_METAL)
     if (!grammar_base_bias_.empty() && !grammar_base_uploaded_) {
@@ -5204,7 +5248,7 @@ bool Verifier::grammar_refresh_mask(std::string& err) {
 }
 
 bool Verifier::grammar_window(const int32_t* tokens, int32_t* out, int T, std::string& err) {
-    if (!grammar_ || !grammar_toktext_) return true;
+    if (!grammar_ || !grammar_active_ || !grammar_toktext_) return true;
     grammar_->beginWindow();
     for (int t = 0; t < T; ++t) {
         int64_t id = out[t];

@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-31",
+  "gpu_primary": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "memory_mib": 32607,
+    "compute_capability": "12.0",
+    "pci_bus_id": "00000000:01:00.0"
+  },
+  "gpu_secondary": {
+    "name": "NVIDIA GeForce RTX 4080 SUPER",
+    "memory_mib": 16376,
+    "compute_capability": "8.9",
+    "pci_bus_id": "00000000:02:00.0"
+  },
+  "driver": "610.88",
+  "cpu": "Intel Core i9-14900K",
+  "cpu_cores": 24,
+  "cpu_threads": 32,
+  "ram_gib": 127.7,
+  "os": "Windows 11 Professionnel 10.0.22631",
+  "cuda": "13.1.115",
+  "cmake": "4.0.0-rc4",
+  "node": "24.19.0",
+  "cuda_architecture": "120-real",
+  "model": "Qwen3.8-Flash-Next IQ3_S",
+  "vocabulary": 248320,
+  "strata": "0.1.54"
+}
+

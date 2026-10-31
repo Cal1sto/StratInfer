@@ -1,0 +1,105 @@
+{
+  "base": "http://127.0.0.1:11440",
+  "at": "2026-10-31T20:01:21.736Z",
+  "max_tokens": 256,
+  "summary": [
+    {
+      "concurrency": 1,
+      "aggregate_tok_s_median": 136.61,
+      "latency_p95_ms": 2686.5
+    },
+    {
+      "concurrency": 2,
+      "aggregate_tok_s_median": 144.09,
+      "latency_p95_ms": 3569.4
+    },
+    {
+      "concurrency": 4,
+      "aggregate_tok_s_median": 143.68,
+      "latency_p95_ms": 7204.2
+    }
+  ],
+  "rows": [
+    {
+      "concurrency": 1,
+      "trial": 1,
+      "wall_ms": 2686.5,
+      "output_tokens": 256,
+      "aggregate_tok_s": 95.29,
+      "latency_p50_ms": 2686.5,
+      "latency_p95_ms": 2686.5
+    },
+    {
+      "concurrency": 1,
+      "trial": 2,
+      "wall_ms": 1874,
+      "output_tokens": 256,
+      "aggregate_tok_s": 136.61,
+      "latency_p50_ms": 1873.9,
+      "latency_p95_ms": 1873.9
+    },
+    {
+      "concurrency": 1,
+      "trial": 3,
+      "wall_ms": 1845.2,
+      "output_tokens": 256,
+      "aggregate_tok_s": 138.74,
+      "latency_p50_ms": 1845.1,
+      "latency_p95_ms": 1845.1
+    },
+    {
+      "concurrency": 2,
+      "trial": 1,
+      "wall_ms": 3553.3,
+      "output_tokens": 512,
+      "aggregate_tok_s": 144.09,
+      "latency_p50_ms": 1784,
+      "latency_p95_ms": 3552.5
+    },
+    {
+      "concurrency": 2,
+      "trial": 2,
+      "wall_ms": 3569.9,
+      "output_tokens": 512,
+      "aggregate_tok_s": 143.42,
+      "latency_p50_ms": 1758.2,
+      "latency_p95_ms": 3569.4
+    },
+    {
+      "concurrency": 2,
+      "trial": 3,
+      "wall_ms": 3438,
+      "output_tokens": 512,
+      "aggregate_tok_s": 148.92,
+      "latency_p50_ms": 1752.8,
+      "latency_p95_ms": 3437.5
+    },
+    {
+      "concurrency": 4,
+      "trial": 1,
+      "wall_ms": 7127.1,
+      "output_tokens": 1024,
+      "aggregate_tok_s": 143.68,
+      "latency_p50_ms": 3550.8,
+      "latency_p95_ms": 7126
+    },
+    {
+      "concurrency": 4,
+      "trial": 2,
+      "wall_ms": 7204.7,
+      "output_tokens": 1024,
+      "aggregate_tok_s": 142.13,
+      "latency_p50_ms": 3580.4,
+      "latency_p95_ms": 7204.2
+    },
+    {
+      "concurrency": 4,
+      "trial": 3,
+      "wall_ms": 7094.4,
+      "output_tokens": 1024,
+      "aggregate_tok_s": 144.34,
+      "latency_p50_ms": 3488.2,
+      "latency_p95_ms": 7093.9
+    }
+  ]
+}

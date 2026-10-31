@@ -6,14 +6,34 @@ promoted to another.
 
 ## Test environment
 
-- one RTX 5090, 32 GiB;
-- Windows workstation;
+- RTX 5090, 32,607 MiB, compute capability 12.0, driver 610.88;
+- Intel Core i9-14900K, 24 cores / 32 threads, 127.7 GiB RAM;
+- Windows 11 Professional 10.0.22631;
 - approximately 28 GiB IQ3_S quantized MoE;
 - 248,320-token vocabulary and up to 512K context;
 - CUDA 13.1 for the overlay build;
 - Strata overlay based on commit `870aedd`;
 - llama.cpp pinned to `3cf0325` for the validated build;
 - repeated live baseline noise at or below approximately 3%.
+
+## RTX 5090 battery, 2026-10-31
+
+The complete protocol, limitations, raw-file links, and per-case tables are published in
+[`reports/rtx5090-2026-10-31.md`](reports/rtx5090-2026-10-31.md).
+
+| Measurement | Reference | Overlay | Delta / verdict |
+|---|---:|---:|---|
+| fixed decode, 9 runs | 113.46 tok/s | 115.29 tok/s | +1.62%, inside historical noise |
+| fresh prefill, 5 runs | 4,885 tok/s | 4,955 tok/s | +1.43% |
+| concurrency 1 | 128.01 tok/s | 136.61 tok/s | +6.72%, p95 -20.11% |
+| concurrency 2 | 138.92 tok/s | 144.09 tok/s | +3.72%, p95 -6.60% |
+| concurrency 4 | 137.47 tok/s | 143.68 tok/s | +4.52%, p95 -4.36% |
+| exact replay | 99.89% reused | 99.89% reused | exact in both arms |
+| unconstrained schema validity | 0/30 | 0/30 | engine constraint is necessary |
+| live determinism | 6/7 mismatches | 6/7 mismatches | failed in both arms |
+
+The constrained functional smoke passed 6/6 on the secondary RTX 4080 SUPER. It is not
+reported as RTX 5090 performance. The final `sm_120` clean build passes all four tests.
 
 ## Live configuration results
 
@@ -152,8 +172,8 @@ For a 248,320-token vocabulary:
 
 | Isolated operation | Result |
 |---|---:|
-| kernel only | 7.337 us/launch |
-| pinned 30.3 KiB upload plus kernel | 104.321 us/state change |
+| kernel only, median of 10 | 7.931 us/launch (7.657-8.396) |
+| pinned 30.3 KiB upload plus kernel, median of 10 | 94.652 us/state change (89.388-101.457) |
 | packed allowed-token transfer | 30.3 KiB |
 | equivalent dense FP32 bias | about 970 KiB |
 
@@ -166,19 +186,19 @@ The Qwen3.8 verifier already keys Philox by seed and token position. The overlay
 live serial/interleaving hash harness. The separate Qwen3.6 host sampler was changed from
 a mutable `mt19937_64` stream to the same position-keyed contract, and its unit test passes.
 
-The live interleaving matrix is still pending because it must run against a separate test
-profile without disrupting the active engine.
+The live matrix ran with seed 424242. Both the reference and overlay produced six hashes
+different from the first result across seven observations. The unit-level Philox property
+passes, but the live deterministic-output gate fails and its remaining cause is unresolved.
 
 ## Remaining gates
 
 No result in this section is claimed complete yet:
 
 - at least 10,000 grammar-constrained live samples over representative schemas;
-- zero invalid committed output with speculation on and off;
-- at least 95% of unconstrained decode throughput;
+- zero invalid committed output with speculation on and off at that scale;
+- at least 95% of unconstrained decode throughput on the RTX 5090;
 - serial/interleaved determinism across multiple seeds;
-- concurrency 1/2/4 aggregate throughput and p95 latency baseline;
-- exact replay cold/resume measurements from the new harness.
+- longer concurrency runs to confirm the observed +3.72% to +6.72% signal.
 
-The running engine was not restarted to manufacture these results. They require an
-explicit, reversible cutover window.
+Concurrency and exact replay now have live baselines. The remaining constrained RTX 5090
+gates require an explicit, reversible cutover window.

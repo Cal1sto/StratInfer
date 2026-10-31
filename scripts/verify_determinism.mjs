@@ -26,8 +26,10 @@ try {
   };
   const run = async payload => {
     const response = await chat(payload);
-    const content = response.choices?.[0]?.message?.content;
-    if (typeof content !== "string") throw new Error("chat response has no text content");
+    const message = response.choices?.[0]?.message ?? {};
+    const content = typeof message.content === "string" ? message.content :
+      (typeof message.reasoning_content === "string" ? message.reasoning_content : message.reasoning);
+    if (typeof content !== "string") throw new Error("chat response has no content or reasoning text");
     return { hash: digest(content), content, usage: response.usage };
   };
 

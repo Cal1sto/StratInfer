@@ -131,7 +131,7 @@ public:
     /// parameters would otherwise be baked forever - so this can change between requests freely.
     void set_sampling(const strata::kernels::SamplerParams& sp) {
         sampling_ = sp;   // row t of a window at pos0 draws Philox(seed, pos0 + t): see run()
-        sampling_.logit_bias = (grammar_ || !logit_bias_host_.empty()) ? logit_bias_device_ : nullptr;
+        sampling_.logit_bias = (grammar_active_ || !logit_bias_host_.empty()) ? logit_bias_device_ : nullptr;
         if (next_) next_->set_sampling(sp);
     }
     // One request's fixed vocabulary bias. Empty clears it; copied only when changed, on the final stage's device.
@@ -146,6 +146,7 @@ public:
     // whose bytes would make the committed prefix infeasible - recomputed only when the
     // automaton's state class changes, so free-text spans pay nothing.
     void set_grammar(std::unique_ptr<strata::grammar::DraftChain> chain, const char* const* tokText);
+    bool suspend_grammar(std::string& err);
     bool reset_grammar(std::string& err);
 
     /// The penalty histories for `sampling_.penalty_last_n`: ONE ROW PER WINDOW ROW, T rows of `history_len`
@@ -538,6 +539,7 @@ private:
     // ---- StratInfer S2 (grammar): null chain = feature off for this verifier. ----
     std::unique_ptr<strata::grammar::DraftChain> grammar_;
     const char* const* grammar_toktext_ = nullptr;
+    bool grammar_active_ = false;
     uint64_t grammar_sig_ = 0;     // fingerprint of the confirmed automaton state class
     bool grammar_sig_valid_ = false;
     bool grammar_window(const int32_t* tokens, int32_t* out, int T, std::string& err);

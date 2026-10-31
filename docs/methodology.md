@@ -16,6 +16,7 @@ Repeat fixed benches to establish the noise band before changing anything.
 - `bench_fresh.mjs`: unique prompts so cache reuse cannot fake prefill speed.
 - `bench_concurrency.mjs`: aggregate throughput and p50/p95 request latency by load.
 - `bench_replay.mjs`: cold prompt cost versus exact continuation reuse.
+- `bench_grammar.mjs`: adversarial JSON-Schema validity and request performance.
 - `verify_determinism.mjs`: same seeded output alone and under interleaving.
 
 All live scripts read `STRATINFER_BASE` and write machine-readable JSON reports. Use

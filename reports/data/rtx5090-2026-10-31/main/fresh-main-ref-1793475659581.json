@@ -1,0 +1,64 @@
+{
+  "label": "main-ref",
+  "base": "http://127.0.0.1:11440",
+  "tokens": 16000,
+  "at": "2026-10-31T19:40:59.581Z",
+  "mean_prompt_tok_s": 4885,
+  "results": [
+    {
+      "trial": 1,
+      "request_id": "53b82a894b12",
+      "marker": "1793475622832-3zzrd4vu972",
+      "prompt_total": 30564,
+      "prompt_read": 30564,
+      "reused": 0,
+      "prompt_ms": 6208.5,
+      "prompt_tok_s": 4923,
+      "finish": "length"
+    },
+    {
+      "trial": 2,
+      "request_id": "73e0ca4e9380",
+      "marker": "1793475630152-qf8193bi32",
+      "prompt_total": 30564,
+      "prompt_read": 30564,
+      "reused": 0,
+      "prompt_ms": 6361.7,
+      "prompt_tok_s": 4804,
+      "finish": "length"
+    },
+    {
+      "trial": 3,
+      "request_id": "6c2c61be8cc7",
+      "marker": "1793475637602-vo2giwxmp0f",
+      "prompt_total": 30563,
+      "prompt_read": 30563,
+      "reused": 0,
+      "prompt_ms": 6197.9,
+      "prompt_tok_s": 4931,
+      "finish": "length"
+    },
+    {
+      "trial": 4,
+      "request_id": "53d1233bb9d6",
+      "marker": "1793475644894-yhhsnxsttiq",
+      "prompt_total": 30562,
+      "prompt_read": 30562,
+      "reused": 0,
+      "prompt_ms": 6262.3,
+      "prompt_tok_s": 4880,
+      "finish": "length"
+    },
+    {
+      "trial": 5,
+      "request_id": "a2847ed21ca5",
+      "marker": "1793475652252-5kbendaqqql",
+      "prompt_total": 30561,
+      "prompt_read": 30561,
+      "reused": 0,
+      "prompt_ms": 6254.9,
+      "prompt_tok_s": 4886,
+      "finish": "length"
+    }
+  ]
+}
