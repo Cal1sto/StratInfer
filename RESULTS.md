@@ -1,181 +1,184 @@
-# RESULTS — every measured number
+# Results
 
-Machine: consumer Windows workstation, one RTX 5090 (32 GiB), engine serving a ~28 GiB
-IQ3_S-quantized MoE (248 320-token vocab, 512K context) through a llama.cpp-style
-CPU-offloaded expert cache. Engine 0.1.45. All benches `temperature 0`, same suite,
-same GPU idle before each run. Baseline run-to-run variance measured at ≤ 3 %.
+This file separates live end-to-end measurements, offline simulations, build/test
+evidence, and isolated kernel microbenchmarks. Numbers from one evidence level are not
+promoted to another.
 
-## Baseline (stock configuration)
+## Test environment
 
-| metric | value |
+- one RTX 5090, 32 GiB;
+- Windows workstation;
+- approximately 28 GiB IQ3_S quantized MoE;
+- 248,320-token vocabulary and up to 512K context;
+- CUDA 13.1 for the overlay build;
+- Strata overlay based on commit `870aedd`;
+- llama.cpp pinned to `3cf0325` for the validated build;
+- repeated live baseline noise at or below approximately 3%.
+
+## Live configuration results
+
+| Candidate | Primary result | Verdict |
+|---|---|---|
+| C2 conversation cache, 512 to 4096 MiB | 1,441 parking budget rejections/day to 0 | Kept |
+| C3 `k8v4` | decode 91.38 to 98.65 tok/s (+8.0%); fresh prefill about -4.2% | Kept |
+| C1 chunked GDN | +0.6% fresh prefill, inside noise | Rejected |
+| C4 speculation depth | depth 5: -10.6%; depth 3: -3.5% against depth 4 | Rejected |
+
+### C2: conversation cache
+
+The initial 512 MiB budget was smaller than observed 2.2-2.6 GiB snapshots and made
+parking structurally unavailable for long agent conversations. Raising it to 4096 MiB,
+with eight slots and a 2,048-token minimum, produced:
+
+- zero budget rejections in the matched overnight log;
+- a 131,363-token continuation with 130,990 reused tokens and 373 read tokens in 1.3 s,
+  instead of roughly 24 s cold;
+- a 15,383-token continuation in 55 ms instead of roughly 3.5 s cold;
+- about 3.5 GiB additional host-memory budget on a machine with ample free RAM.
+
+### C3: `k8v4`
+
+The acceptance rule was written before cutover: a 2-5% fresh-prefill cost required at
+least 5% decode improvement.
+
+- decode: 98.65 versus 91.38 tok/s across six trials (+8.0%);
+- fresh 65K prefill: -4.3%;
+- fresh 16K prefill: -4.1%;
+- expert-cache hit rate remained about 0.94.
+
+The candidate passed its declared trade-off and stayed enabled.
+
+### C1: chunked GDN
+
+Fresh unique prompts were required so the conversation cache could not convert a prefill
+test into reuse.
+
+| Prompt | GDN on | GDN off | Delta |
+|---|---:|---:|---:|
+| 65K tokens | 4,502 tok/s | 4,475 tok/s | +0.6% |
+| 16K tokens | 4,179 tok/s | 4,153 tok/s | +0.6% |
+
+The result is inside the +/-3% noise band. An isolated recurrence multiplier did not
+translate to full MoE prefill on this quantization and hardware, so the option was removed.
+
+### C4: speculation depth
+
+| Configuration | Decode | Pooled acceptance |
+|---|---:|---:|
+| depth 4, stock | 98.6 tok/s | 0.613 |
+| depth 5, min-p 0.45 | 88.2 tok/s | 0.566 |
+| depth 3, min-p 0.50 | 95.2 tok/s | 0.683 |
+
+Higher draft acceptance did not compensate for verification cost. The stock depth 4
+configuration remained enabled.
+
+## Structured-output studies
+
+### Client-side prototype
+
+The Python reference automaton uses byte-level whole-token validation against the real
+248,320-token vocabulary.
+
+- exhaustive HTTP `logit_bias`: semantically correct but 39.1 s per generated token with
+  an approximately 3.7 MB request payload;
+- partial assistant prefill: rejected by the serving template, which closes the assistant
+  turn and restarts generation;
+- turn-level lazy rejection: 3/3 strictly schema-valid outputs versus 3/6 unconstrained
+  in the small battery.
+
+The prototype established that token-level enforcement belongs inside the engine. It did
+not establish production throughput.
+
+### Draft-chain simulation
+
+`proto/s2_draftchain.py` advances the grammar along the speculative chain, rejects the
+first invalid draft and its dependent suffix, then draws a masked replacement. A fresh
+2,000-tour run with seed 7 used the measured 35 ms depth-4 window cost and 0.613 pooled
+acceptance.
+
+| Metric | Free generation | Grammar rule |
+|---|---:|---:|
+| schema validity | 52.9% | 100% |
+| windows per completed tour | 48.28 | 48.70 |
+| attempts per guaranteed-valid output | 1.89 | 1.00 |
+| simulated effective valid-output wall time | baseline | 1.87x |
+
+This is an offline algorithm result. The 1.87x value comes from avoiding regenerate loops
+in that calibrated workload; it is not a live Strata speedup claim.
+
+## DeepInfer-style speculation policy
+
+`proto/dspark_sim.py` uses 2,759 real requests and exact interpolation through measured
+verification costs: 32.0 ms at depth 3, 35.0 ms at depth 4, and 43.4 ms at depth 5.
+
+- fixed-policy simulation reproduced the measured ordering: depth 3 -5.0%, depth 4
+  baseline, depth 5 -10.4%;
+- the per-request best-depth policy improved only +0.1%;
+- an earlier affine cost fit had falsely reported +5.4%.
+
+The confidence policy is rejected as stated. A future policy needs per-rank acceptance
+evidence and a cost model that reproduces all fixed baselines inside the measured noise.
+
+## Integrated `sm_120` overlay
+
+The overlay was applied to a fresh Strata worktree and built in Release mode with CUDA
+13.1 and `CMAKE_CUDA_ARCHITECTURES=120-real`.
+
+### Build products
+
+- `strata.exe`, approximately 79.9 MB;
+- `strata-q36.exe`, approximately 60.6 MB;
+- `grammar_mask_parity.exe` with embedded `sm_120` cubins.
+
+`cuobjdump` reported both grammar parity cubins as `sm_120`.
+
+### Tests
+
+CTest result: 4/4 passed.
+
+| Test | Coverage |
 |---|---|
-| decode | 91.4 tok/s mean (code 96–99, prose 91–97, 32K-token agent case 83) |
-| expert-cache hit rate | 0.90–0.94 |
-| draft acceptance (speculation) | 0.60 pooled |
-| fresh-prompt prefill | 4 475 tok/s (65K), 4 153 tok/s (16K) |
-| telemetry gaps | 1441 `skip parking` engine-log lines/day (see C2) |
+| `json_automaton_test` | strict JSON, schema, enum, duplicate-key, and draft-chain cases |
+| `gguf_tokens_test` | bounded token metadata and EOS/EOT control-token policy |
+| `qwen35_philox_test` | position-keyed draw and order invariance |
+| `grammar_mask_parity` | CPU/GPU effective-bias parity on CUDA |
 
-## C2 — conversation-cache budget 512→4096 MiB — KEPT
+The fresh overlay installer also passed `git apply --check --recount`, a real apply, and
+`git diff --check` against an unmodified Strata worktree.
 
-Problem was in the engine's own log: `conversation cache: skip parking (snapshot 2303 MiB
-exceeds available budget)` — 1 441 occurrences/day, snapshots 2 225–2 577 MiB vs a 512 MiB
-budget. The feature was structurally inoperative for agent-sized conversations.
+### Grammar-mask microbenchmark
 
-- After raising the budget (+slots 4→8, min-tokens 2048 to protect long conversations from
-  short-query eviction): **0 budget rejections**, overnight log.
-- Resuming a real 131 363-token agent conversation: **130 990 tokens reused, 373 read, 1.3 s**
-  (vs ~24 s cold re-prefill). A 15 383-token case: 55 ms vs 3.5 s.
-- Cost: ~3.5 GiB of otherwise-free RAM (machine had 43 GiB free; budget = 3 % of it).
+For a 248,320-token vocabulary:
 
-## C3a — KV cache int8→k8v4 — KEPT
+| Isolated operation | Result |
+|---|---:|
+| kernel only | 7.337 us/launch |
+| pinned 30.3 KiB upload plus kernel | 104.321 us/state change |
+| packed allowed-token transfer | 30.3 KiB |
+| equivalent dense FP32 bias | about 970 KiB |
 
-Acceptance rule written before the cutover: "if fresh prefill costs 2–5 %, require decode
-≥ +5 %".
+The state-signature cache avoids rebuilding or uploading an unchanged mask. These are
+component measurements only; the end-to-end decode gate remains open.
 
-- decode: **98.65 vs 91.38 tok/s (+8.0 %)**, 6 trials
-- fresh prefill: **−4.3 %** (65K), **−4.1 %** (16K) — inside the documented 2–5 % cost window
-- hit rate unchanged (0.94): the ~180 MiB KV savings did not convert into more resident
-  experts on this machine (other budget terms bind first)
+## Determinism
 
-## C1 — chunked Gated-DeltaNet prefill (`STRATA_GDN_CHUNKED=1`) — REJECTED
+The Qwen3.8 verifier already keys Philox by seed and token position. The overlay adds a
+live serial/interleaving hash harness. The separate Qwen3.6 host sampler was changed from
+a mutable `mt19937_64` stream to the same position-keyed contract, and its unit test passes.
 
-Upstream docs claim **1.8× prefill on RTX 5090**. Measured with fresh unique prompts
-(the only way to measure prefill once C2 is active — cached prompts reuse instead of re-read):
+The live interleaving matrix is still pending because it must run against a separate test
+profile without disrupting the active engine.
 
-| prompt | GDN on | GDN off | delta |
-|---|---|---|---|
-| 65K tokens | 4 502 tok/s | 4 475 tok/s | **+0.6 %** |
-| 16K tokens | 4 179 tok/s | 4 153 tok/s | **+0.6 %** |
+## Remaining gates
 
-Trial-to-trial noise ±3 %. Verdict: the 1.8× applies to the isolated DeltaNet recurrence;
-diluted in a full MoE prefill (attention + expert routing + expert PCIe traffic) on this
-card and quantization it is invisible. Removed from the live config.
+No result in this section is claimed complete yet:
 
-## C4 — speculation depth sweep — REJECTED (default already optimal)
+- at least 10,000 grammar-constrained live samples over representative schemas;
+- zero invalid committed output with speculation on and off;
+- at least 95% of unconstrained decode throughput;
+- serial/interleaved determinism across multiple seeds;
+- concurrency 1/2/4 aggregate throughput and p95 latency baseline;
+- exact replay cold/resume measurements from the new harness.
 
-Same bench suite, only the speculation flags change:
-
-| config | decode | acceptance |
-|---|---|---|
-| spec 4 (stock default) | **98.6 tok/s** | 0.613 |
-| spec 5 / min-p 0.45 | 88.2 (−10.6 %) | 0.566 |
-| spec 3 / min-p 0.50 | 95.2 (−3.5 %) | 0.683 |
-
-More drafts ≠ more throughput: window verification cost grows superlinearly at the top
-(see RFC-02 cost curve). Restored the stock default via scripted backup revert.
-
-## S1 — schema-constrained generation prototype — WORKS (with an adoption caveat)
-
-Automaton: JSON-schema prefix validator over the model's real 248 320-token vocabulary
-(byte-level, whole-token validation, `--selftest` covers 14 cases).
-
-- Exhaustive per-step mask via `logit_bias` over HTTP: semantically correct,
-  **39.1 s per token** (3.7 MB payload). Dead end outside the engine.
-- Partial assistant prefill: **refused by the chat template** (the server closes the
-  assistant turn; `{"ville":` → model restarts from scratch). Token-level constraint is
-  not bolt-on-able from HTTP — which is the argument for engine-side grammars.
-- **Turn-level lazy rejection** (generate whole JSON → replay automaton → ban the first
-  illegal token's ids → regenerate): battery result **3/3 strictly schema-valid, 0
-  regenerations needed, vs 3/6 valid unconstrained**.
-- Demand reality check: 0 of 3 091 logged requests used `response_format` at all — the
-  clients used native tool calls. The win is real but gated on adoption.
-
-## jsonschema quick-win
-
-The server's optional `jsonschema` dependency was missing from the running venv, so
-`response_format: json_schema` validation silently degraded to "parses as a JSON object"
-(warning logged exactly once, on startup). Installing it changed nothing observable except
-that invalid-schema answers now fail closed. Lesson: verify optional deps of the *running*
-environment by reading its stdout log, not the docs.
-
-## RFC-02 — confidence-scheduled speculation (the DSpark idea) — REFUTED as stated
-
-Offline simulation (`proto/dspark_sim.py`) on **2 759 real requests** from the engine log
-(`drafts accepted X of Y` lines), model calibrated to reproduce the three measured C4 pools
-(error ≤ 0.019), window cost interpolated exactly through the three measured points
-(t3=32.0 ms, t4=35.0 ms, t5=43.4 ms; convex).
-
-- fixed depths: k=3 −5.0 %, k=4 0 %, k=5 −10.4 % — reproduces the measured C4 table
-- per-request best-depth policy: **+0.1 %** (k=4 chosen for 2 376/2 759 requests)
-
-Method warning that cost us a false positive: an **affine** cost fit (t4 → 37.7 ms instead
-of the measured 35.0) produced a spurious +5.4 %. The scheduling gain depends more on the
-cost-curve fidelity than on the confidence signal. Any headroom that remains needs a
-**per-rank** acceptance signal (drafts 2+), which engine logs do not expose — the concrete
-upstream ask that came out of this study.
-
-## S2 — draft-chain grammar masks: algorithm validated offline (2026-10-31)
-
-`proto/s2_draftchain.py` simulates the proposed in-engine rule — automaton advanced
-along the MTP draft chain, first grammar-invalid draft kills its row and all later
-rows in the window, window commits the surviving prefix and draws a replacement from
-the masked candidate list — using the real schema automaton (the `s1_grammar`
-implementation), measured window cost (35 ms at spec4) and measured pooled draft
-acceptance (0.613), with the off-grammar proposal rate calibrated to reproduce the
-observed free-decode tour validity (3/6 -> 51.9% in sim).
-
-| metric (2 000 tours/arm) | free | grammar ON |
-|---|---|---|
-| schema validity | 51.9 % | **100 %** (0 violations committed, property holds) |
-| windows per complete tour | 48.62 | 48.60 (**cost per attempt unchanged**) |
-| attempts per guaranteed-valid output | 1.93 | 1.00 |
-| **effective wall-clock, valid output** | — | **1.93x faster** |
-
-Grammar blocked on average 0.83 off-grammar drafts per tour; the masked replacement
-reuses windows that would commit fewer tokens anyway - hence zero net decode cost.
-Host-side machinery in simulation: ~35 us per tour (Python; in-engine it is a
-set-intersection over <= 64 candidate entries). This retires the main correctness
-risk of the in-engine grammar before any C++ is written.
-
-## S2 C++ port: the engine patch exists and its module tests pass (2026-10-31)
-
-The offline simulation above retired the correctness risk, so the algorithm was ported
-to the engine's own language on branch `stratinfer-s2` (patch exported as
-`src/core/verify.cpp.patched` + `verify.hpp.patched` alongside the originals):
-
-| component | file | status |
-|---|---|---|
-| byte-wise schema automaton (fixed POD state, no hot-path allocs) | `include/strata/grammar/json_automaton.hpp` | compiles standalone, tests green |
-| draft-chain rule: provisional advance, `confirm(k)` reconciliation, vocab filter, masked redraw | `include/strata/grammar/draft_chain.hpp` | tests green (truncation at first invalid draft; rollback on shorter real commit) |
-| strict-JSON schema subset loader | `include/strata/grammar/schema_loader.hpp` | tests green |
-| unit tests (same vectors as the Python reference) | `src/core/json_automaton_test.cpp` | **ALL OK** under MSVC 19 (`cl /std:c++17`) |
-| engine integration: 4 hunks in `verify.cpp`/`verify.hpp` | `src/core/*.patched` | authored, NOT compiled locally |
-
-Integration design (zero-GPU-kernel): `pl_finish` copies `out[]` to the host, the
-automaton truncates the window at the first grammar-invalid draft using the engine's
-own `kProposalSamplerErrorToken` reject channel, `pl_commit_async(n_keep)` reconciles
-the automaton with the rows actually committed, and the ban-list for the current
-automaton state class rides the existing `logit_bias` device array (-100 hard
-exclusion). Feature is inert (`grammar_ == null`) unless a caller injects a schema.
-
-Honest limits: full engine build not run here (this machine has CUDA 11.2, the engine
-needs 12.9/sm_120); the caller-side plumbing of the token->bytes table (`tokText`)
-belongs to the serve layer; bonus-row redraw at a banned position can livelock if the
-unmasked head keeps proposing invalid ids, which the mask recomputed per state class
-is meant to prevent but has not been stress-tested on real GPU runs.
-
-## Engine builds green on RTX 5090 (2026-10-31, 14:57)
-
-Both engines built from this toolchain, same flags (Release, sm_120-real, tests on):
-
-| build | branch | binary | grammar tests in-build |
-|---|---|---|---|
-| reference-of-source | main (v0.2.8 / engine 0.1.54) | `strata.exe` 76-80 MB | n/a (module only exists on the S2 branch) |
-| S2 patched | `stratinfer-s2` (+ serve wiring `f36cd9a`) | `strata.exe` 79.8 MB | `json_automaton_test` **ALL OK** (CMake target) |
-
-Build gotchas found and fixed:
-- **CUDA 13 required**, not 12.x, for RTX 50 prompt kernels (upstream issues #220/#224
-  are explicit); CUDA 13.1 no longer bundles the driver - that also means no driver
-  update risk when installing the toolkit.
-- **llama.cpp must be pinned** to `third_party/ggml/VERSION.txt` (`3cf0325`, 2026-09-20);
-  the 2026-10-30 tree dies in the MMQ overlay (`new_pool_for_device` signature drift).
-- MSVC: forward-declared `DraftChain` in verify.hpp is not enough for consumers that own
-  a `unique_ptr<DraftChain>` member - `generate.cpp` includes `draft_chain.hpp` directly.
-
-S2 is now wired end to end at engine level: `serve` attaches the automaton to the
-verifier(s) when `STRATA_GRAMMAR_SCHEMA` points to a schema file, taking the token byte
-table from the native GGUF metadata (the engine has no tokenizer by design). Unset env =
-byte-for-byte original behaviour. GPU A/B (reference engine vs 0.1.54 vs 0.1.54+S2) and
-a live schema-constrained battery on the built engine are the remaining steps; known
-limits to test around: global per-process schema (no per-request schema yet), control
-tokens (EOS) pass unmasked, multi-stage layer-split verifiers not wired.
+The running engine was not restarted to manufacture these results. They require an
+explicit, reversible cutover window.

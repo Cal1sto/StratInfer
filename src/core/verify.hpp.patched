@@ -131,7 +131,7 @@ public:
     /// parameters would otherwise be baked forever - so this can change between requests freely.
     void set_sampling(const strata::kernels::SamplerParams& sp) {
         sampling_ = sp;   // row t of a window at pos0 draws Philox(seed, pos0 + t): see run()
-        sampling_.logit_bias = logit_bias_host_.empty() ? nullptr : logit_bias_device_;
+        sampling_.logit_bias = (grammar_ || !logit_bias_host_.empty()) ? logit_bias_device_ : nullptr;
         if (next_) next_->set_sampling(sp);
     }
     // One request's fixed vocabulary bias. Empty clears it; copied only when changed, on the final stage's device.
@@ -146,6 +146,7 @@ public:
     // whose bytes would make the committed prefix infeasible - recomputed only when the
     // automaton's state class changes, so free-text spans pay nothing.
     void set_grammar(std::unique_ptr<strata::grammar::DraftChain> chain, const char* const* tokText);
+    bool reset_grammar(std::string& err);
 
     /// The penalty histories for `sampling_.penalty_last_n`: ONE ROW PER WINDOW ROW, T rows of `history_len`
     /// int32 slots at that stride (`strata::kernels::penalty_rows` builds them), most recent token LAST, unused
@@ -528,12 +529,20 @@ private:
     void* metal_ = nullptr;              ///< the Metal decode window (metal/src/engine/window.cpp): init/run/commit go there
 #endif
     std::vector<float> logit_bias_host_;
+    std::vector<float> grammar_base_bias_;  ///< request bias before grammar exclusions are merged
     float* logit_bias_device_ = nullptr;
+    float* grammar_base_bias_device_ = nullptr;
+    uint32_t* grammar_mask_device_ = nullptr;
+    uint32_t* grammar_mask_host_ = nullptr;
+    bool grammar_base_uploaded_ = false;
     // ---- StratInfer S2 (grammar): null chain = feature off for this verifier. ----
     std::unique_ptr<strata::grammar::DraftChain> grammar_;
     const char* const* grammar_toktext_ = nullptr;
-    std::string grammar_sig_;      // fingerprint of the automaton state class
-    void grammar_window(int32_t* out, int T);
+    uint64_t grammar_sig_ = 0;     // fingerprint of the confirmed automaton state class
+    bool grammar_sig_valid_ = false;
+    bool grammar_window(const int32_t* tokens, int32_t* out, int T, std::string& err);
+    bool grammar_refresh_mask(std::string& err);
+    bool apply_logit_bias(const std::vector<float>& bias, std::string& err);
     int device_ = -1;                    ///< the device `init` ran on: run/commit switch to it (layer split)
     unsigned long long* rr_stats_ = nullptr;   ///< STRATA_ROUTE_RESIDENT's counters on device_ (#1578); null: none
     std::atomic<bool> released_{false};  ///< #267: release_gpu_waits ran (maybe on the watchdog thread): no more windows

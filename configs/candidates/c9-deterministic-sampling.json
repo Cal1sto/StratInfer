@@ -1,0 +1,13 @@
+{
+  "id": "C9",
+  "title": "Position-keyed deterministic and batch-invariant sampling",
+  "inspiration": "DeepInfer batch-invariant inference; Qwen3.8 already uses Philox keyed by seed and token position.",
+  "delta": {
+    "qwen38": "No engine behavior change; add live serial/interleaving verification.",
+    "qwen36": "Replace mutable mt19937_64 host draws with the same position-keyed Philox contract."
+  },
+  "evidence": "qwen35_philox_test passes in the CUDA 13.1 120-real build; scripts/verify_determinism.mjs records SHA-256 hashes for serial and interleaved runs.",
+  "acceptance": "For each tested seed and sampling configuration, all serial target hashes and all target hashes produced beside unrelated concurrent requests are identical.",
+  "rollback": "Use the unpatched reference engine profile.",
+  "verdict": "UNIT_TESTED; LIVE_INTERLEAVING_PENDING"
+}

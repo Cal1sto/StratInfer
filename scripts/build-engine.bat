@@ -28,8 +28,9 @@ cmake -G Ninja -S "%SRCD%" -B "%BD%" ^
   "-DCUDAToolkit_ROOT=%CUDA_ROOT%" ^
   -DSTRATA_GGML_DIR="%GGML%"
 if errorlevel 1 exit /b 4
-cmake --build "%BD%" -j 8 --target strata
+cmake --build "%BD%" -j 8 --target strata strata-q36 json_automaton_test gguf_tokens_test qwen35_philox_test grammar_mask_parity
 if errorlevel 1 exit /b 5
-if exist "%SRCD%\src\core\json_automaton_test.cpp" cmake --build "%BD%" -j 8 --target json_automaton_test
+ctest --test-dir "%BD%" -R "json_automaton_test|gguf_tokens_test|qwen35_philox_test|grammar_mask_parity" --output-on-failure
+if errorlevel 1 exit /b 7
 echo BUILT: %BD%
 exit /b 0

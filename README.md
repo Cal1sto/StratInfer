@@ -1,132 +1,156 @@
 # StratInfer
 
-Measurement-first convergence of [DeepInfer](https://github.com/deepseek-ai/DeepInfer) ideas
-into [Strata](https://github.com/Niko1221/Strata), validated with real A/B runs against a live
-inference engine. Not a fork, not a runtime: a harness + RFCs + verdicts.
+StratInfer is a measurement-first port of useful
+[DeepInfer](https://github.com/deepseek-ai/DeepInfer) ideas to
+[Strata](https://github.com/Niko1221/Strata), Qwen3.8-Flash-Next, and one RTX 5090
+(`sm_120`). It combines an opt-in engine overlay, reproducible benchmark harnesses,
+and documented accept/reject decisions.
 
-The premise: DeepInfer is a datacenter framework (SM100-class GPUs, Linux) — its kernels are not
-importable onto a consumer card, and its ideas are documented in benchmark prose nobody verifies
-on other hardware. Strata is a strong consumer-GPU MoE engine that documents opt-in switches with
-promises ("1.8× prefill on RTX 5090") that are true only for isolated components. **StratInfer
-measures everything on one live machine and keeps only what survives.**
+The project does not relabel SM100 datacenter kernels as RTX 5090 kernels. DeepInfer
+features are imported only when their model, numerical, and hardware invariants match.
+Otherwise StratInfer keeps Strata's native implementation or re-derives a small,
+testable equivalent.
 
-## What shipped (net effect vs the engine's stock configuration)
+## Current status
 
-All numbers from the same machine (RTX 5090, 248k-vocab quantized MoE at IQ3_S, 512K context)
-and the same benches; baseline variance ≤ 3%:
-
-| Change | Measured effect | Verdict |
+| Work item | Evidence | Verdict |
 |---|---|---|
-| Conversation-cache budget 512→4096 MiB (C2) | parking rejections 1 441/day → **0**; resuming a 131 363-token agent conversation: **1.3 s** instead of ~24 s | **kept** |
-| KV cache `k8v4` (C3a) | decode **91.4 → 98.7 tok/s (+8 %)**; cost: fresh prefill −4.2 % | **kept** |
-| Server-side schema validation (missing optional dep) | `response_format: json_schema` silently degraded to "is a JSON object" → now actually validates | **fixed** |
-| Schema-constrained decoding prototype (S1) | **3/3 outputs fully schema-valid vs 3/6 unconstrained** | works, see caveat |
-| Draft-chain grammar masks (S2 rule, simulated offline) | 100 % valid, **zero per-attempt decode cost** (48.60 vs 48.62 windows), **1.93x** effective vs regenerate-loop | algorithm validated |
-| S2 C++ engine port (automaton + draft chain + verify.cpp + serve wiring) | unit tests ALL OK inside the real engine build (CUDA 13.1, sm_120); both engines link | built green; GPU A/B in progress |
-| Chunked Gated-DeltaNet prefill (C1, doc promises 1.8×) | **+0.6 %** (under noise) — the 1.8× applies to the isolated recurrence, not full MoE prefill on this card+quant | **rejected** |
-| Speculation depth sweep (C4) | spec5: −10.6 %, spec3: −3.5 % — shipped default already optimal | **rejected** |
-| Confidence-scheduled speculation ("DSpark localized", RFC-02) | offline simulation on 2 759 real requests: **+0.1 %** | **refuted as stated** |
+| Conversation cache, 512 to 4096 MiB | 1,441 daily parking rejections to 0; 131k-token resume in 1.3 s | Kept |
+| KV cache `k8v4` | decode 91.4 to 98.7 tok/s; fresh prefill about -4.2% | Kept |
+| Chunked GDN prefill | +0.6%, inside the measured +/-3% noise band | Rejected |
+| Speculation depth sweep | spec5 -10.6%, spec3 -3.5% against spec4 | Rejected |
+| Confidence-scheduled speculation | +0.1% in a calibrated 2,759-request simulation | Rejected as stated |
+| Strict JSON-Schema overlay | both engines and four tests build with CUDA 13.1 for `120-real` | Built and tested |
+| Packed grammar-mask CUDA kernel | 7.337 us kernel-only; 104.321 us pinned upload plus kernel | Component result only |
+| End-to-end grammar throughput | live A/B not run yet | Pending |
 
-The last three rows are the useful part: negative results, reproducible, with the measurement
-error bars. `RESULTS.md` has every table; `docs/` has the RFCs and methodology.
+Full measurements and caveats are in [`RESULTS.md`](RESULTS.md).
 
-## Quick start
+## DeepInfer capabilities
 
-```bash
-node scripts/audit.mjs --once          # read-only live snapshot (/health /metrics /status)
-node scripts/audit.mjs --watch --every 300   # baseline telemetry -> logs/baseline.jsonl
-node scripts/bench_ab.mjs --label baseline --repeat 2   # fixed suite A/B harness
-node scripts/bench_fresh.mjs --label fresh --tokens 16000 --trials 3  # fresh prompts (prefill)
+The overlay implements or validates the portable parts:
 
-python proto/extract_vocab.py <model.gguf>    # dump vocabulary cache
-python proto/s1_grammar.py --selftest         # schema automaton unit tests (no network)
-python proto/dspark_sim.py --log <engine.log> # speculative-scheduling simulation
-python proto/s2_draftchain.py             # draft-chain grammar-mask simulation (no network)
+- strict JSON-Schema constrained decoding inside the verifier;
+- position-keyed Philox sampling and an interleaving determinism test;
+- concurrency, exact replay, fixed-prompt, and fresh-prompt benchmarks;
+- packed `sm_120` grammar masks with a GPU parity test;
+- acceptance gates and reversible cutover tooling.
+
+DeepInfer's FlashMLA, DeepGEMM, DeepEP, DeepSelect, TileLang, attention DP/CP,
+MoE EP/EPLB, and YoCo kernels target different models, dtypes, and multi-GPU
+topologies. They are mapped to native Strata equivalents rather than copied. See
+[`docs/deepinfer-sm120-port.md`](docs/deepinfer-sm120-port.md) for the complete matrix.
+
+## Repository layout
+
+- `include/strata/` and `src/`: grammar, GGUF token handling, Philox, CUDA mask,
+  parity tests, and patched Strata verifier sources.
+- `patches/strata-integration.patch`: CMake, engine wiring, and Qwen3.6 sampler
+  integration against the pinned Strata revision.
+- `scripts/apply-to-strata.ps1`: clean preflight and overlay installation.
+- `scripts/build-engine.bat`: CUDA 13.1, `120-real`, both engines, and four tests.
+- `scripts/bench_*.mjs`: fixed, fresh, concurrency, and replay measurements.
+- `scripts/verify_determinism.mjs`: serial versus interleaved output hashes.
+- `configs/candidates/`: changes, acceptance criteria, rollback, and verdicts.
+- `proto/`: Python reference automaton and simulations.
+
+## Quick checks
+
+These commands do not restart an engine:
+
+```powershell
+python proto/s1_grammar.py --selftest
+python proto/s2_draftchain.py --runs 2000 --seed 7
+node --check scripts/bench_concurrency.mjs
+node --check scripts/verify_determinism.mjs
+node scripts/audit.mjs --once
 ```
 
-Point everything at your server with `STRATINFER_BASE` (default `http://127.0.0.1:11440`).
+Live scripts use `STRATINFER_BASE`, defaulting to `http://127.0.0.1:11440`:
 
-## The rules this project enforces
+```powershell
+$env:STRATINFER_BASE = "http://127.0.0.1:11440"
+node scripts/bench_ab.mjs --label baseline --repeat 2
+node scripts/bench_fresh.mjs --label baseline --tokens 16000 --trials 3
+node scripts/bench_concurrency.mjs --levels 1,2,4 --trials 3 --tokens 256
+node scripts/bench_replay.mjs --tokens 16000
+node scripts/verify_determinism.mjs --seed 424242 --concurrency 4
+```
 
-1. **Baseline first.** 48 h of read-only telemetry before touching any config.
-2. **Acceptance criteria are written before the cutover**, inside each candidate
-   (`configs/candidates/`), with rollback defined. Examples: "decode ≥ +5 % to accept a
-   −4 % prefill cost", "noise band measured on repeated runs, no cherry-picking".
-3. **Cutovers are scripted** (backup → stop → start → health probe → failsafe restore),
-   see `scripts/cutover-template.ps1`. A live engine restart means real downtime: never
-   without consent, never without the failsafe.
-4. **Negative results are first-class deliverables** (see C1/C4/RFC-02 above).
-5. Component benchmarks from upstream docs are hypotheses, not budgets — the GDN case.
+## Apply the overlay
 
-## Layout
+The installer refuses a dirty Strata checkout unless `-AllowDirty` is explicit.
+Validate first, then apply:
 
-- `docs/deepinfer-vs-strata.md` — idea-by-idea mapping and importability verdicts
-- `docs/methodology.md` — how the A/B protocol works (fixed vs fresh prompts, noise, metrics)
-- `docs/rfc-structured-outputs.md` — grammar-constrained decoding: where it must live and why
-  (host-side sampling discovery, measured HTTP walls)
-- `docs/rfc-speculative-scheduling.md` — the DSpark-style idea, its simulation, and its refutation
-- `RESULTS.md` — every measured number, per experiment
-- `configs/candidates/` — the patch corpus: deltas, inspirations, acceptance criteria, verdicts
-- `proto/` — working prototypes (schema automaton, GGUF vocabulary extractor, DSpark simulator)
+```powershell
+powershell -File scripts/apply-to-strata.ps1 `
+  -StrataPath C:\src\Strata -CheckOnly
+powershell -File scripts/apply-to-strata.ps1 `
+  -StrataPath C:\src\Strata
+```
 
-## Honest caveats
+The patch is pinned and validated against Strata commit `870aedd`. Review upstream
+changes before applying it to another revision.
 
-- All numbers are for one consumer rig (one GPU, one quantization, one agent-heavy workload
-  mix). The method is portable; the numbers are not.
-- The schema-constraint win is measured on a battery, not demand: 0 of 3 091 logged requests
-  on that box even used `response_format`. Adoption, not availability, was the bottleneck.
-- Upstream tracking exists: grammar-constrained decoding is open as Strata issue
-  [Niko1221/Strata#3758](https://github.com/Niko1221/Strata/issues/3758) — our measured
-  contribution is in that thread, not duplicated here.
+## Build for RTX 5090
 
-MIT — see `LICENSE`.
+Validated prerequisites:
+
+- Visual Studio 2022 Build Tools;
+- CUDA Toolkit 13.1;
+- CMake and Ninja from `requirements-build.txt`;
+- llama.cpp at the commit recorded by Strata's
+  `<strata-checkout>\third_party\ggml\VERSION.txt` (`3cf0325` in the validated build).
+
+```powershell
+python -m pip install -r requirements-build.txt
+$env:GGML = "C:\src\llama.cpp"
+cmd /c scripts\build-engine.bat C:\src\Strata C:\build\strata-sm120
+```
+
+The build requests `CMAKE_CUDA_ARCHITECTURES=120-real`, produces `strata.exe` and
+`strata-q36.exe`, then runs:
+
+- `json_automaton_test`;
+- `gguf_tokens_test`;
+- `qwen35_philox_test`;
+- `grammar_mask_parity`.
+
+## Enable structured output
+
+Grammar mode is opt-in and startup-scoped:
+
+```powershell
+$env:STRATA_GRAMMAR_SCHEMA = "C:\schemas\response.schema.json"
+```
+
+Unset means the original path is unchanged. The supported strict subset is `object`,
+`array`, `string`, `number`, `boolean`, `null`, `enum`, `properties`, `required`,
+`items`, and `additionalProperties`. Unsupported schema features fail closed.
+
+Current constraints are deliberate:
+
+- one schema per process, not a per-request protocol field;
+- one serial, single-GPU request stream;
+- no batch slots, pipeline windows, or layer split in grammar mode;
+- JSON Schema only; regex and EBNF are not implemented;
+- no end-to-end throughput claim until the 10,000-sample live gate passes.
+
+See [`docs/rfc-structured-outputs.md`](docs/rfc-structured-outputs.md) for exact
+semantics, speculative-row handling, and acceptance gates.
+
+## Measurement rules
+
+1. Establish a repeated baseline and noise band first.
+2. Write acceptance criteria and rollback before a cutover.
+3. Use fresh prompts for prefill and fixed prompts for decode regressions.
+4. Separate component microbenchmarks from end-to-end claims.
+5. Never restart the live engine without an explicit cutover window.
+6. Publish negative results.
+
+The full protocol is in [`docs/methodology.md`](docs/methodology.md).
 
 ## Attribution
 
-`src/core/verify.cpp.patched`, `verify.hpp.patched` and the upstream commit graph referenced here derive from **Strata** (Copyright (c) 2026 Niko1221 and the Strata contributors, MIT - see `LICENSE.Strata`). The S2 grammar module is original StratInfer code offered under the same MIT terms.
-
-## Install, build, use
-
-### Prerequisites (Windows + RTX 50, validated on a 5090)
-| item | requirement | why |
-|---|---|---|
-| GPU driver | recent (561+) | sm_120 |
-| CUDA Toolkit | **13.0 or newer** (used: 13.1.1, network or local installer) | upstream: RTX 50 engines built on CUDA 12.8 crash on long prompts (Strata issues #220/#224); since 13.1 the driver is no longer bundled with the toolkit - keep your own |
-| Visual Studio | VS 2022 (BuildTools is enough) | MSVC + `vcvars64.bat` |
-| cmake / ninja | `pip install -r requirements-build.txt` (pinned: cmake 4.4.3, ninja 1.13.2) | upstream build helpers |
-| llama.cpp | **pinned to the commit in `<checkout>	hird_party\ggml\VERSION.txt`** (v0.2.8 -> `3cf0325`, 2026-09-20) | the MMQ overlay patches llama.cpp headers; a newer tree breaks `new_pool_for_device` signatures (we hit exactly this: build dies in `ggml_cuda_host.cu`) |
-
-### Build (vanilla and S2, same command)
-```bat
-git clone https://github.com/Niko1221/Strata ; cd Strata
-git checkout -b s2 <s2-branch-or-apply-src-core-verify.cpp.patched>
-git clone https://github.com/ggml-org/llama.cpp ../llama.cpp
-git -C ../llama.cpp fetch --depth 1 origin 3cf03257f219afbe7334045ff7c6a06ac68c627d
-git -C ../llama.cpp checkout FETCH_HEAD
-set GGML=..\..\llama.cpp
-scriptsuild-engine.bat . ..uild\s2
-..uild\s2\json_automaton_test.exe    :: ALL OK = grammar module good on your toolchain
-```
-First full build: ~45 min on a 16-core box (the IQ/MMQ kernel objects dominate);
-incremental after that is minutes.
-
-### Use the grammar (this repo's S2)
-The engine reads one environment variable at startup; unset means zero code-path change:
-```
-STRATA_GRAMMAR_SCHEMA=C:\path\schema.json
-```
-The schema JSON must be inside the supported subset (see docs/rfc-structured-outputs.md):
-object/properties/required/additionalProperties, array/items, string, number,
-boolean, null, enum. The token->bytes table is taken from `tokenizer.ggml.tokens`
-in your own `--native` GGUF - no tokenizer needed on the engine side.
-Attach confirmation: `strata: grammar attached (schema ..., vocab ... tokens)` in the engine log.
-
-### A/B methodology against a running reference (the pattern that keeps a live agent up)
-1. Keep the reference engine installed and its profile/args saved verbatim.
-2. Run the test engine from a **separate profile** (same args, exe = your build), never
-   editing the reference profile.
-3. Swap only the serving port within one short window (stop reference, start test,
-   health-poll); on any failure, the failsafe restarts the reference. Both scripts in
-   `scripts/` are templates with the stop/start commands as parameters.
-4. Same fixed benches (this repo: `bench_ab.mjs`, `bench_fresh.mjs`), same 48 h passive
-   telemetry, verdict only on paired numbers.
+Files derived from Strata remain under Strata's MIT terms; see `LICENSE.Strata`.
+The StratInfer grammar, harness, and integration overlay are provided under `LICENSE`.

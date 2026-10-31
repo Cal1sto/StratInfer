@@ -1,0 +1,157 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -187,6 +187,18 @@ if(STRATA_BUILD_CONVERSATION_TESTS)
+   add_test(NAME session_save_reclaim_test COMMAND session_save_reclaim_test)
+ endif()
+-
++
++if(STRATA_BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/core/json_automaton_test.cpp)
++  add_executable(json_automaton_test src/core/json_automaton_test.cpp)
++  target_include_directories(json_automaton_test PRIVATE include)
++  add_test(NAME json_automaton_test COMMAND json_automaton_test)
++  add_executable(gguf_tokens_test src/core/gguf_tokens_test.cpp)
++  target_include_directories(gguf_tokens_test PRIVATE include)
++  add_test(NAME gguf_tokens_test COMMAND gguf_tokens_test)
++  add_executable(qwen35_philox_test src/qwen35/philox_test.cpp)
++  target_include_directories(qwen35_philox_test PRIVATE include)
++  add_test(NAME qwen35_philox_test COMMAND qwen35_philox_test)
++endif()
++
+ if(STRATA_HIP_GFX906)
+   if(NOT DEFINED CMAKE_HIP_ARCHITECTURES)
+     set(CMAKE_HIP_ARCHITECTURES gfx906 CACHE STRING "HIP architectures" FORCE)
+@@ -509,6 +521,15 @@ if(STRATA_ENABLE_CUDA OR STRATA_ENABLE_HIP)
+                           src/ngram/ple_reader.cpp
+                           src/platform/direct_file.cpp)
+   target_link_libraries(strata_kernels PUBLIC strata_core strata_artifact)
++  if(STRATA_ENABLE_CUDA)
++    target_sources(strata_kernels PRIVATE src/kernels/cuda/grammar_mask.cu)
++    if(STRATA_BUILD_TESTS)
++      add_executable(grammar_mask_parity src/kernels/grammar_mask_parity.cu)
++      target_include_directories(grammar_mask_parity PRIVATE include ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
++      target_link_libraries(grammar_mask_parity PRIVATE strata_kernels CUDA::cudart)
++      add_test(NAME grammar_mask_parity COMMAND grammar_mask_parity)
++    endif()
++  endif()
+   # Exact gfx1100 prompt scorer (PR1825 method port): optional standalone test,
+   # also available where the published source omits tests/.
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -110,6 +110,7 @@
+ #define NOMINMAX   // gguf_reader.hpp includes windows.h
+ #endif
+ #include "strata/artifact/gguf_reader.hpp"
++#include "grammar_wiring.inc"
+ #include "strata/core/family_layout.hpp"
+ #if defined(STRATA_HAVE_QWEN35)
+ #include "strata/qwen35/engine.hpp"
+@@ -10110,6 +10111,7 @@ int main(int argc, char** argv) {
+                                      "%s (raise --vram-reserve-mib by ~200, or --pipeline-windows 0)\n", err.c_str());
+                 return 1;
+             }
++            stratinfer_grammar_wiring::attach(ver_b, o.native_preset);
+             // the setters reach the later stages; the pipeline never chains run/commit
+             for (int st = 0; st + 1 < n_stages; ++st) stage_ver_p(st, 1).set_next(&stage_ver_p(st + 1, 1), &split_drive_b);
+         }
+@@ -10125,6 +10127,7 @@ int main(int argc, char** argv) {
+         }
+         if (prefill_head_alias_bound) mtp.set_window_R(ver.final_R_all());
+         if (pipe) mtp.set_source_R(ver.final_R_all());   // the serial decode's rows (the last stage's even verifier)
++        stratinfer_grammar_wiring::attach(ver, o.native_preset);
++        if (const char* schema = std::getenv("STRATA_GRAMMAR_SCHEMA"); schema != nullptr && *schema != '\0' &&
++            (o.batch > 0 || pipe || !stages.empty())) {
++            std::fprintf(stderr, "strata: grammar mode requires one serial single-GPU request stream (--batch 0, --pipeline-windows 0, no layer split)\n");
++            return 1;
++        }
+         auto free_slot_mtp_rows = [](float* p) { if (p != nullptr) (void) cudaFree(p); };
+         std::vector<std::unique_ptr<float, decltype(free_slot_mtp_rows)>> slot_mtp_rows;
+         if (batch_mtp) {
+@@ -15542,6 +15549,10 @@ int main(int argc, char** argv) {
+             }
+             ver.set_sampling(req_sp);
+             if (pipe) ver_b.set_sampling(req_sp);   // (reaches the later stage's odd verifier)
++            if (!ver.reset_grammar(err) || (pipe && !ver_b.reset_grammar(err))) {
++                std::printf("ERR %s\n", err.c_str());
++                return 1;
++            }
+             if (use_mtp) mtp.set_draft_sampling(req_sp);   // STRATA_SPEC_COUPLED=1: sampled drafts (a no-op otherwise)
+diff --git a/src/qwen35/q36_engine.cu b/src/qwen35/q36_engine.cu
+--- a/src/qwen35/q36_engine.cu
++++ b/src/qwen35/q36_engine.cu
+@@ -30,6 +30,7 @@
+ #include "strata/prefill/moe_mmq.hpp"
+ #include "strata/qwen35/engine.hpp"
++#include "strata/qwen35/philox.hpp"
+ #include "strata/qwen35/sampling.hpp"
+ #include "q36_kernels.cuh"
+ #if defined(STRATA_Q36_CPU_POOL)
+@@ -3012,7 +3013,7 @@ bool Engine::load(const std::string& model, int max_ctx, int prompt_chunk, int mt
+ // ------------------------------------------------------------------------------------------------ sampling
+ using strata::qwen35::Sampling;
+-
++
+-int sample(std::vector<float>& lg, const Sampling& s, const std::vector<int32_t>& hist, std::mt19937_64& rng) {
++int sample(std::vector<float>& lg, const Sampling& s, const std::vector<int32_t>& hist, uint64_t token_index) {
+     strata::qwen35::apply_penalties(lg, s, hist);
+     if (s.temperature <= 0.f) return (int) (std::max_element(lg.begin(), lg.end()) - lg.begin());
+     const int kk = std::max(1, std::min(s.top_k > 0 ? s.top_k : 64, (int) lg.size()));
+@@ -3034,8 +3035,7 @@ int sample(std::vector<float>& lg, const Sampling& s, const std::vector<int32_t>&
+     keep = std::max<size_t>(1, keep);
+     double tot = 0;
+     for (size_t i = 0; i < keep; ++i) tot += p[i];
+-    std::uniform_real_distribution<double> u(0.0, tot);
+-    double r = u(rng);
++    double r = (double)strata::qwen35::philox_uniform(s.seed, token_index) * tot;
+     for (size_t i = 0; i < keep; ++i) {
+         if ((r -= p[i]) <= 0) return idx[i];
+     }
+@@ -3150,7 +3150,6 @@ struct Slot {
+     int32_t x = 0;
+     int64_t produced = 0, max_new = 0;
+     Sampling smp;
+-    std::mt19937_64 rng;
+     std::vector<int32_t> hist;
+     Clock::time_point t0;
+@@ -3260,7 +3259,7 @@ struct Serve {
+             int y0 = E.rows_pick[r0];
+             if (sl.smp.needs_logits()) {
+                 E.host_logits_row(r0, lg);
+-                y0 = sample(lg, sl.smp, sl.hist, sl.rng);
++                y0 = sample(lg, sl.smp, sl.hist, (uint64_t)sl.produced);
+             }
+@@ -3366,7 +3365,7 @@ struct Serve {
+             sl.draft_ready = false;
+             ss.live.push_back(sl.x);
+             int y;
+             if (sl.smp.needs_logits()) {
+                 E.host_logits_row((int) r, lg);
+-                y = sample(lg, sl.smp, sl.hist, sl.rng);
++                y = sample(lg, sl.smp, sl.hist, (uint64_t)sl.produced);
+             } else {
+@@ -3564,7 +3563,6 @@ struct Serve {
+             std::fflush(stdout);
+             return;
+         }
+-        std::mt19937_64 rng(smp.seed);
+         std::vector<int32_t> hist = ids;
+@@ -3578,7 +3576,7 @@ struct Serve {
+         if (adm) {
+             if (smp.needs_logits()) {
+                 E.host_logits(lg);
+-                nx = sample(lg, smp, hist, rng);
++                nx = sample(lg, smp, hist, (uint64_t)produced);
+             }
+@@ -3596,7 +3594,6 @@ struct Serve {
+                 sl.max_new = max_new;
+                 sl.smp = smp;
+-                sl.rng = rng;
+                 sl.hist = hist;
+@@ -3612,7 +3609,7 @@ struct Serve {
+         for (;;) {
+             if (smp.needs_logits()) {
+                 E.host_logits(lg);
+-                nx = sample(lg, smp, hist, rng);
++                nx = sample(lg, smp, hist, (uint64_t)produced);
+             }

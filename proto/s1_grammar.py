@@ -24,12 +24,13 @@ Usage:
 Config: env STRATINFER_BASE (default http://127.0.0.1:11440);
 vocab from proto/vocab.json (generate with proto/extract_vocab.py).
 """
-import argparse, json, os, sys, time, urllib.request
+import argparse, json, os, sys, time, urllib.error, urllib.request
 
 BASE = os.environ.get("STRATINFER_BASE", "http://127.0.0.1:11440")
 VOCAB = os.environ.get("STRATINFER_VOCAB", os.path.join(os.path.dirname(os.path.abspath(__file__)), "vocab.json"))
 try:
-    TOK = json.load(open(VOCAB, encoding="utf-8"))
+    with open(VOCAB, encoding="utf-8") as vocab_file:
+        TOK = json.load(vocab_file)
     TOKENS = [t.encode("utf-8", "surrogateescape") for t in TOK["tokens"]]
     EOS = TOK["eos"]
 except FileNotFoundError:
@@ -39,8 +40,6 @@ except FileNotFoundError:
 WS = frozenset({0x20, 0x09, 0x0A, 0x0D})
 DQ, LC, RC, CL, CM, BS = 0x22, 0x7B, 0x7D, 0x3A, 0x2C, 0x5C
 ESC_OK = frozenset({DQ, BS, 0x2F, 0x62, 0x66, 0x6E, 0x72, 0x74, 0x75})
-NUMCH = frozenset(ord(c) for c in "0123456789+-.eE")
-
 def stype(sc):
     if not isinstance(sc, dict): return "string"
     if "enum" in sc: return "enum"
@@ -51,18 +50,21 @@ def stype(sc):
 
 def initial_state(schema):
     return {"stack": [], "mode": "root", "buf": b"", "esc": False, "unicesc": 0,
-            "ikind": None, "cands": None, "vsc": schema, "lit": b""}
+            "ikind": None, "cands": None, "vsc": schema, "lit": b"", "numstate": 0}
 
 def clone(s):
     return {"stack": [list(e) for e in s["stack"]], "mode": s["mode"], "buf": s["buf"],
             "esc": s["esc"], "unicesc": s["unicesc"], "ikind": s["ikind"],
-            "cands": s["cands"], "vsc": s["vsc"], "lit": s["lit"]}
+            "cands": s["cands"], "vsc": s["vsc"], "lit": s["lit"],
+            "numstate": s["numstate"]}
 
 def _close_object(s):
     s["stack"].pop()
+    if s["stack"]: s["stack"][-1][4] = True
     s["mode"] = "done" if not s["stack"] else "sep"
 
 def _end_scalar(s, b):
+    if s["stack"]: s["stack"][-1][4] = True
     s["mode"] = "sep"
     if b in WS: return s
     return feed_byte(s, b)
@@ -74,12 +76,13 @@ def feed_byte(s, b):
     if m == "root":
         if b in WS: return s
         if b == LC and stype(s["vsc"]) == "object":
-            s["stack"].append([s["vsc"], None, frozenset(s["vsc"].get("required", []))])
+            s["stack"].append([s["vsc"], None, frozenset(s["vsc"].get("required", [])), set(), True])
             s["mode"] = "key"; return s
         return None
     if m == "key":
         if b in WS: return s
         if b == RC:
+            if not s["stack"][-1][4]: return None     # comma must be followed by another key
             if s["stack"][-1][2]: return None      # outstanding required keys -> no close
             _close_object(s); return s
         if b == DQ:
@@ -105,11 +108,14 @@ def feed_byte(s, b):
                 ent = s["stack"][-1]
                 props = ent[0].get("properties", {})
                 if key not in props: return None          # additionalProperties: false
+                if key in ent[3]: return None             # duplicate keys are ambiguous
+                ent[3].add(key)
                 ent[1] = key; ent[2] = ent[2] - {key}
                 s["mode"] = "colon"
             else:
                 if s["cands"] is not None and s["buf"] not in s["cands"]: return None
                 s["mode"] = "sep"
+                if s["stack"]: s["stack"][-1][4] = True
             s["buf"] = b""; s["cands"] = None
             return s
         if b < 0x20: return None
@@ -129,31 +135,64 @@ def feed_byte(s, b):
         if b in WS: return s
         t = stype(s["vsc"])
         if t == "object" and b == LC:
-            s["stack"].append([s["vsc"], None, frozenset(s["vsc"].get("required", []))])
+            s["stack"].append([s["vsc"], None, frozenset(s["vsc"].get("required", [])), set(), True])
             s["mode"] = "key"; return s
         if t in ("string", "enum") and b == DQ:
             s["mode"], s["ikind"], s["buf"], s["esc"], s["unicesc"] = "instr", "value", b"", False, 0
             s["cands"] = [e.encode() for e in s["vsc"]["enum"]] if t == "enum" else None
             return s
         if t == "number" and (0x30 <= b <= 0x39 or b == 0x2D):
-            s["mode"] = "num"; return s
+            s["mode"] = "num"
+            s["numstate"] = 1 if b == 0x2D else (2 if b == 0x30 else 3)
+            return s
         if t == "boolean" and b in (0x74, 0x66):
             s["mode"], s["lit"] = "lit", (b"true" if b == 0x74 else b"false")[1:]
             return s
         return None
     if m == "num":
-        if b in NUMCH: return s
+        state = s["numstate"]
+        digit = 0x30 <= b <= 0x39
+        if state == 1:
+            if not digit: return None
+            s["numstate"] = 2 if b == 0x30 else 3; return s
+        if state == 2:
+            if b == 0x2E: s["numstate"] = 4; return s
+            if b in (0x65, 0x45): s["numstate"] = 6; return s
+            if digit: return None
+        elif state == 3:
+            if digit: return s
+            if b == 0x2E: s["numstate"] = 4; return s
+            if b in (0x65, 0x45): s["numstate"] = 6; return s
+        elif state == 4:
+            if not digit: return None
+            s["numstate"] = 5; return s
+        elif state == 5:
+            if digit: return s
+            if b in (0x65, 0x45): s["numstate"] = 6; return s
+        elif state == 6:
+            if b in (0x2B, 0x2D): s["numstate"] = 7; return s
+            if digit: s["numstate"] = 8; return s
+            return None
+        elif state == 7:
+            if not digit: return None
+            s["numstate"] = 8; return s
+        elif state == 8:
+            if digit: return s
+        if state not in (2, 3, 5, 8): return None
         return _end_scalar(s, b)
     if m == "lit":
         if s["lit"] and b == s["lit"][0]:
             s["lit"] = s["lit"][1:]
             if not s["lit"]:
                 s["mode"] = "sep"   # last literal byte consumed; the next sees "sep"
+                if s["stack"]: s["stack"][-1][4] = True
             return s
         return None
     if m == "sep":
         if b in WS: return s
-        if b == CM: s["mode"] = "key"; return s
+        if b == CM:
+            s["stack"][-1][4] = False
+            s["mode"] = "key"; return s
         if b == RC:
             if s["stack"][-1][2]: return None
             _close_object(s); return s
@@ -203,12 +242,27 @@ def _ids_for_text(text, banned):
     tb = text.encode("utf-8", "surrogateescape")
     return [i for i in _rev_index().get(tb, []) if i not in banned]
 
+def _require_vocab():
+    if not TOKENS:
+        raise RuntimeError(f"vocabulary cache not found: run extract_vocab.py or set STRATINFER_VOCAB ({VOCAB})")
+
+def _post_json(body, timeout=180):
+    req = urllib.request.Request(BASE + "/v1/chat/completions", data=json.dumps(body).encode(),
+                                 headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace").strip()
+        raise RuntimeError(f"Strata returned HTTP {exc.code}: {detail[:1000]}") from exc
+
 def constrained_generate(schema, prompt, max_tokens=160, verbose=False, eager=False):
     """Lazy mode (default): ban only tokens the model actually attempts.
     Each generated token is replayed through the automaton; on a schema violation its
     ids join the ban set and the same step is re-requested. Tiny payloads, ~1-2 s/step,
     instead of ~39 s/step for an exhaustive 248k-ban mask (measured).
     Eager mode: exhaustive mask at every step — strict reference, slow."""
+    _require_vocab()
     user = prompt + "\nAnswer with the JSON object matching the schema ONLY, no surrounding text."
     partial = ""
     banned = set()
@@ -227,9 +281,7 @@ def constrained_generate(schema, prompt, max_tokens=160, verbose=False, eager=Fa
                                  {"role": "assistant", "content": partial}],
                     "max_tokens": 1, "temperature": 0, "logit_bias": lb,
                     "reasoning_effort": "none", "strata_checkpoint": False}
-            req = urllib.request.Request(BASE + "/v1/chat/completions", data=json.dumps(body).encode(),
-                                         headers={"Content-Type": "application/json"})
-            r = json.load(urllib.request.urlopen(req, timeout=180))
+            r = _post_json(body)
             choice = r["choices"][0]
             piece = choice["message"].get("content") or ""
             if piece == "" or choice.get("finish_reason") == "stop" and not piece:
@@ -306,6 +358,7 @@ def constrained_generate_turn(schema, prompt, max_tokens=500, max_regens=10, ver
     """Turn-level constraint: full generation, automaton replay over the text, ban the
     first illegal token (all its render variants), regenerate. Converges in 1-3 tries;
     the engine's prompt cache absorbs the common prefix."""
+    _require_vocab()
     user = prompt + "\nAnswer with the JSON object matching the schema ONLY, no surrounding text."
     banned, text = set(), ""
     for regen in range(max_regens):
@@ -315,9 +368,7 @@ def constrained_generate_turn(schema, prompt, max_tokens=500, max_regens=10, ver
                 "reasoning_effort": "none",
                 "response_format": {"type": "json_schema", "json_schema": {"name": "s1", "schema": schema}}}
         body = {k: v for k, v in body.items() if v is not None}
-        req = urllib.request.Request(BASE + "/v1/chat/completions", data=json.dumps(body).encode(),
-                                     headers={"Content-Type": "application/json"})
-        r = json.load(urllib.request.urlopen(req, timeout=180))
+        r = _post_json(body)
         text = r["choices"][0]["message"].get("content") or ""
         segs = _client_tokenize(text)
         st = initial_state(schema); pos = 0; bad = None
@@ -347,7 +398,11 @@ def battery(eager=False):
     print("== constrained (turn level: S1 automaton + logit_bias + lazy rejects) ==")
     okc = n = regens = 0
     for p in PROMPTS:
-        out, status, k = constrained_generate_turn(SCHEMA, p, max_tokens=300, verbose=True)
+        if eager:
+            out, status = constrained_generate(SCHEMA, p, max_tokens=300, verbose=True, eager=True)
+            k = 0
+        else:
+            out, status, k = constrained_generate_turn(SCHEMA, p, max_tokens=300, verbose=True)
         ok = validate(SCHEMA, out); okc += ok; n += 1; regens += k
         print(f"  {'OK  ' if ok else 'FAIL'} [{status}] regens={k} {out[:200]}", flush=True)
     print(f"constrained: {okc}/{n} valid, {regens} regenerations total")
@@ -357,9 +412,7 @@ def battery(eager=False):
         for _ in range(2):
             body = {"model": "strata", "messages": [{"role": "user", "content": p + " Answer with the JSON."}],
                     "max_tokens": 400, "temperature": 1.0, "reasoning_effort": "none"}
-            req = urllib.request.Request(BASE + "/v1/chat/completions", data=json.dumps(body).encode(),
-                                         headers={"Content-Type": "application/json"})
-            r = json.load(urllib.request.urlopen(req, timeout=180))
+            r = _post_json(body)
             okt += validate(SCHEMA, r["choices"][0]["message"].get("content") or "")
     print(f"  conforming: {okt}/6")
     print(f"== RESULT: constrained {okc}/{n} vs free {okt}/6 ==")
@@ -383,6 +436,11 @@ def selftest():
         (ok,  '{"title":"a","category":"object"}',  'required satisfied'),
         (bad, '{"title":"a","category":"object"}}', 'extra brace'),
         (ok,  '{"title":"e\\u0041", "category":"lieu"}', 'unicode escape') if False else (ok, '{"title":"e\\u0041","category":"location"}', 'unicode escape'),
+        (bad, '{"title":"a","category":"object",}', 'trailing comma'),
+        (bad, '{"title":"a","title":"b","category":"object"}', 'duplicate key'),
+        (bad, '{"title":"a","category":"object","confidence":01}', 'leading-zero number'),
+        (bad, '{"title":"a","category":"object","confidence":1.}', 'missing fraction'),
+        (bad, '{"title":"a","category":"object","confidence":1e}', 'missing exponent'),
     ]
     fails = 0
     for check, prefix, name in cases:
