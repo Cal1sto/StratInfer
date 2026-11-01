@@ -1,0 +1,209 @@
+{
+  "base": "http://127.0.0.1:11440",
+  "at": "2026-11-01T22:17:24.742Z",
+  "max_tokens": 256,
+  "summary": [
+    {
+      "concurrency": 1,
+      "aggregate_tok_s_median": 122.36,
+      "latency_p95_ms": 3074.6
+    },
+    {
+      "concurrency": 2,
+      "aggregate_tok_s_median": 122.43,
+      "latency_p95_ms": 4296.4
+    },
+    {
+      "concurrency": 4,
+      "aggregate_tok_s_median": 123.98,
+      "latency_p95_ms": 8606
+    },
+    {
+      "concurrency": 8,
+      "aggregate_tok_s_median": 124.61,
+      "latency_p95_ms": 16916.9
+    }
+  ],
+  "rows": [
+    {
+      "concurrency": 1,
+      "trial": 1,
+      "wall_ms": 3074.6,
+      "output_tokens": 256,
+      "aggregate_tok_s": 83.26,
+      "latency_p50_ms": 3074.6,
+      "latency_p95_ms": 3074.6
+    },
+    {
+      "concurrency": 1,
+      "trial": 2,
+      "wall_ms": 2248.3,
+      "output_tokens": 256,
+      "aggregate_tok_s": 113.86,
+      "latency_p50_ms": 2248.3,
+      "latency_p95_ms": 2248.3
+    },
+    {
+      "concurrency": 1,
+      "trial": 3,
+      "wall_ms": 2092.2,
+      "output_tokens": 256,
+      "aggregate_tok_s": 122.36,
+      "latency_p50_ms": 2092.2,
+      "latency_p95_ms": 2092.2
+    },
+    {
+      "concurrency": 1,
+      "trial": 4,
+      "wall_ms": 1966.4,
+      "output_tokens": 256,
+      "aggregate_tok_s": 130.18,
+      "latency_p50_ms": 1966.4,
+      "latency_p95_ms": 1966.4
+    },
+    {
+      "concurrency": 1,
+      "trial": 5,
+      "wall_ms": 1941.8,
+      "output_tokens": 256,
+      "aggregate_tok_s": 131.83,
+      "latency_p50_ms": 1941.8,
+      "latency_p95_ms": 1941.8
+    },
+    {
+      "concurrency": 2,
+      "trial": 1,
+      "wall_ms": 4297,
+      "output_tokens": 512,
+      "aggregate_tok_s": 119.15,
+      "latency_p50_ms": 2224,
+      "latency_p95_ms": 4296.4
+    },
+    {
+      "concurrency": 2,
+      "trial": 2,
+      "wall_ms": 4182.1,
+      "output_tokens": 512,
+      "aggregate_tok_s": 122.43,
+      "latency_p50_ms": 2097.9,
+      "latency_p95_ms": 4182.1
+    },
+    {
+      "concurrency": 2,
+      "trial": 3,
+      "wall_ms": 4286.9,
+      "output_tokens": 512,
+      "aggregate_tok_s": 119.43,
+      "latency_p50_ms": 2036.3,
+      "latency_p95_ms": 4286.2
+    },
+    {
+      "concurrency": 2,
+      "trial": 4,
+      "wall_ms": 4123.3,
+      "output_tokens": 512,
+      "aggregate_tok_s": 124.17,
+      "latency_p50_ms": 2064,
+      "latency_p95_ms": 4123.3
+    },
+    {
+      "concurrency": 2,
+      "trial": 5,
+      "wall_ms": 4110.8,
+      "output_tokens": 512,
+      "aggregate_tok_s": 124.55,
+      "latency_p50_ms": 2105.4,
+      "latency_p95_ms": 4110.5
+    },
+    {
+      "concurrency": 4,
+      "trial": 1,
+      "wall_ms": 8259.2,
+      "output_tokens": 1024,
+      "aggregate_tok_s": 123.98,
+      "latency_p50_ms": 4076.5,
+      "latency_p95_ms": 8258.8
+    },
+    {
+      "concurrency": 4,
+      "trial": 2,
+      "wall_ms": 8606.7,
+      "output_tokens": 1024,
+      "aggregate_tok_s": 118.98,
+      "latency_p50_ms": 4428.7,
+      "latency_p95_ms": 8606
+    },
+    {
+      "concurrency": 4,
+      "trial": 3,
+      "wall_ms": 8408.2,
+      "output_tokens": 1024,
+      "aggregate_tok_s": 121.79,
+      "latency_p50_ms": 4156.7,
+      "latency_p95_ms": 8408.2
+    },
+    {
+      "concurrency": 4,
+      "trial": 4,
+      "wall_ms": 8247.5,
+      "output_tokens": 1024,
+      "aggregate_tok_s": 124.16,
+      "latency_p50_ms": 4149,
+      "latency_p95_ms": 8247
+    },
+    {
+      "concurrency": 4,
+      "trial": 5,
+      "wall_ms": 8229.5,
+      "output_tokens": 1024,
+      "aggregate_tok_s": 124.43,
+      "latency_p50_ms": 4184.5,
+      "latency_p95_ms": 8228.7
+    },
+    {
+      "concurrency": 8,
+      "trial": 1,
+      "wall_ms": 16435.6,
+      "output_tokens": 2048,
+      "aggregate_tok_s": 124.61,
+      "latency_p50_ms": 8220.8,
+      "latency_p95_ms": 16435
+    },
+    {
+      "concurrency": 8,
+      "trial": 2,
+      "wall_ms": 16724.7,
+      "output_tokens": 2048,
+      "aggregate_tok_s": 122.45,
+      "latency_p50_ms": 8582.9,
+      "latency_p95_ms": 16724.7
+    },
+    {
+      "concurrency": 8,
+      "trial": 3,
+      "wall_ms": 16430.7,
+      "output_tokens": 2048,
+      "aggregate_tok_s": 124.64,
+      "latency_p50_ms": 8226.6,
+      "latency_p95_ms": 16430.2
+    },
+    {
+      "concurrency": 8,
+      "trial": 4,
+      "wall_ms": 16151.7,
+      "output_tokens": 2048,
+      "aggregate_tok_s": 126.8,
+      "latency_p50_ms": 8080.4,
+      "latency_p95_ms": 16150.8
+    },
+    {
+      "concurrency": 8,
+      "trial": 5,
+      "wall_ms": 16917.5,
+      "output_tokens": 2048,
+      "aggregate_tok_s": 121.06,
+      "latency_p50_ms": 8394.3,
+      "latency_p95_ms": 16916.9
+    }
+  ]
+}

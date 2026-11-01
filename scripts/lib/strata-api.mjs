@@ -41,12 +41,21 @@ export async function metrics() {
   return Array.isArray(payload.requests) ? payload.requests : [];
 }
 
+function metricKey(row) {
+  if (row?.id) return `id:${row.id}`;
+  if (!row || !Number.isFinite(row.time)) return null;
+  return `legacy:${row.time}:${row.prompt_total ?? row.prompt_tokens ?? ""}:${row.output_tokens ?? ""}:${row.duration_s ?? ""}`;
+}
+
 export function metricIds(rows) {
-  return new Set(rows.map(row => row?.id).filter(Boolean));
+  return new Set(rows.map(metricKey).filter(Boolean));
 }
 
 export function matchingMetric(rows, previousIds, usage) {
-  const fresh = rows.filter(row => row?.id && !previousIds.has(row.id));
+  const fresh = rows.filter(row => {
+    const key = metricKey(row);
+    return key && !previousIds.has(key);
+  });
   if (!fresh.length) return null;
   const completion = usage?.completion_tokens;
   const prompt = usage?.prompt_tokens;

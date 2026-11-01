@@ -1,0 +1,20 @@
+{
+  "base": "http://127.0.0.1:11440",
+  "at": "2026-11-01T22:17:55.780Z",
+  "marker": "1793571452985-0eeozet9yqzg",
+  "requested_tokens": 64000,
+  "cold": {
+    "prompt_total": 101430,
+    "prompt_read": 101430,
+    "reused": 0,
+    "prompt_ms": 21553.4
+  },
+  "resumed": {
+    "prompt_total": 101453,
+    "prompt_read": 28,
+    "reused": 101425,
+    "prompt_ms": 792.8
+  },
+  "replay_fraction": 0.0002759898672291603,
+  "exact_reuse": true
+}

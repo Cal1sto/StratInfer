@@ -21,6 +21,7 @@ testable equivalent.
 | Speculation depth sweep | spec5 -10.6%, spec3 -3.5% against spec4 | Rejected |
 | Confidence-scheduled speculation | +0.1% in a calibrated 2,759-request simulation | Rejected as stated |
 | RTX 5090 overlay A/B | +1.62% fixed decode; +1.43% fresh prefill; +3.72% to +6.72% concurrent throughput | Promising, sequential gain inside noise |
+| Live Strata 0.1.45 vs StratInfer 0.1.54 | +9.19% fixed decode; +9.64% fresh prefill; +16.77% to +20.45% concurrent throughput | StratInfer selected; hot replay +6.42% remains to fix |
 | Strict JSON-Schema overlay | 4/4 `sm_120` tests and 6/6 constrained smoke outputs | Functional smoke passed |
 | Packed grammar-mask CUDA kernel | median 7.931 us kernel-only; 94.652 us pinned upload plus kernel | Component result only |
 | End-to-end constrained RTX 5090 throughput | final constrained cutover not run | Pending |
@@ -32,6 +33,9 @@ The long-session report is
 [`reports/long-session-memory-2026-11-01.md`](reports/long-session-memory-2026-11-01.md).
 The live MOAI selector and voice-preservation validation are in
 [`reports/moai-live-cutover-2026-11-01.md`](reports/moai-live-cutover-2026-11-01.md).
+The complete deployed-engine comparison, including quality, TTFT, energy, concurrency,
+long context and negative results, is
+[`reports/strata-vs-stratinfer-2026-11-01.md`](reports/strata-vs-stratinfer-2026-11-01.md).
 
 ## DeepInfer capabilities
 
@@ -59,7 +63,8 @@ topologies. They are mapped to native Strata equivalents rather than copied. See
 - `scripts/apply-to-strata.ps1`: clean preflight and overlay installation.
 - `scripts/build-engine.bat`: CUDA 13.1, `120-real`, both engines, grammar tests,
   and standard/helper-device snapshot tests.
-- `scripts/bench_*.mjs`: fixed, fresh, concurrency, replay, and grammar measurements.
+- `scripts/bench_*.mjs`: fixed, fresh, concurrency, replay, quality, energy, and grammar measurements.
+- `scripts/summarize_comparison.mjs`: paired statistics and comparison summary.
 - `scripts/long_session.mjs`: durable context and specialist-agent orchestration.
 - `scripts/verify_determinism.mjs`: serial versus interleaved output hashes.
 - `configs/candidates/`: changes, acceptance criteria, rollback, and verdicts.
@@ -74,7 +79,10 @@ python proto/s1_grammar.py --selftest
 python proto/s2_draftchain.py --runs 2000 --seed 7
 node --check scripts/bench_concurrency.mjs
 node --check scripts/bench_grammar.mjs
+node --check scripts/bench_quality.mjs
+node --check scripts/bench_efficiency.mjs
 node --check scripts/verify_determinism.mjs
+node --check scripts/summarize_comparison.mjs
 node --test scripts/tests/context-memory.test.mjs scripts/tests/agent-orchestrator.test.mjs
 node scripts/bench_long_memory.mjs 2000 100
 node scripts/audit.mjs --once
@@ -88,6 +96,8 @@ node scripts/bench_ab.mjs --label baseline --repeat 2
 node scripts/bench_fresh.mjs --label baseline --tokens 16000 --trials 3
 node scripts/bench_concurrency.mjs --levels 1,2,4 --trials 3 --tokens 256
 node scripts/bench_replay.mjs --tokens 16000
+node scripts/bench_quality.mjs --label baseline --trials 2 --tokens 512 --nonce baseline-v1
+node scripts/bench_efficiency.mjs --label baseline --trials 5 --tokens 512
 node scripts/bench_grammar.mjs --label unconstrained --trials 5 --tokens 512
 node scripts/verify_determinism.mjs --seed 424242 --concurrency 4
 ```
