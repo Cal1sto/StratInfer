@@ -1,11 +1,20 @@
-# Candidate patches
+# Candidate changes
 
-Each file is one proposed engine-configuration change: the delta, where the idea came from,
-the **acceptance criteria written before applying it**, the rollback, and the verdict with
-numbers once measured. Nothing here is applied automatically — every candidate requires a
-scripted, consented cutover (see `scripts/cutover-template.ps1` and docs/methodology.md).
+Each JSON file records one proposed change: inspiration, exact delta, acceptance criteria,
+rollback, and verdict. Nothing here is applied automatically. Live changes require the
+reversible process in `scripts/cutover-template.ps1` and an explicit cutover window.
 
-Verdicts summary (details in RESULTS.md): C2 kept, C3a kept, C1 rejected (+0.6 % vs a
-1.8× component claim), C4 rejected (stock default already optimal), C3b not attempted
-(interacts with VRAM headroom reserved for other local workloads), C5/C6 pending a
-cutover window.
+| Candidate | Status |
+|---|---|
+| C1 chunked GDN | Rejected: +0.6%, inside noise |
+| C2 conversation cache | Kept: parking rejections eliminated |
+| C3 `k8v4` | Kept: +8% decode, about -4.2% fresh prefill |
+| C3b VRAM reserve | Not attempted |
+| C4 speculation depth | Rejected: stock depth 4 won |
+| C5 prompt cache spread | Pending |
+| C6 host core placement | Pending |
+| C7 cache budget 8 GiB | Pending |
+| C8 strict grammar mask | Built/tested; live correctness and throughput pending |
+| C9 deterministic sampling | Unit-tested; live interleaving gate pending |
+| C10 concurrency and replay | Harness ready; live baseline pending |
+| C11 RTX 4080 + SSD long-session memory | Offline validated; 24-hour cutover pending |

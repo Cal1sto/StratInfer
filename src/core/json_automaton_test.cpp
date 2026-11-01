@@ -43,6 +43,89 @@ int main() {
         "trailing space ok after done");
   check(!run("{\"category\":\"object\",\"title\":\"x\"}x"), "garbage after close");
   check(!run("{\"category\":\"characterx\""), "closed enum literal cannot extend");
+  check(!run("{\"title\":\"x\",\"category\":\"object\",}"), "object trailing comma rejected");
+  check(!run("{\"title\":\"x\",\"title\":\"y\",\"category\":\"object\"}"), "duplicate key rejected");
+  {
+    State state = A.initial();
+    check(A.feed(state, '{') && A.feed(state, '"') && !A.feed(state, 'x'),
+          "unknown object-key prefix rejected immediately");
+  }
+  {
+    State state = A.initial();
+    const char* prefix = "{\"title\":\"x\",\"";
+    bool ok = true;
+    for (const char* p = prefix; *p; ++p) ok = ok && A.feed(state, (uint8_t)*p);
+    check(ok && !A.feed(state, 't'), "seen object-key prefix cannot be generated again");
+  }
+  check(!run("{\"title\":\"bad\\q\",\"category\":\"object\"}"), "invalid string escape rejected");
+  check(run("{\"ti\\u0074le\":\"x\",\"category\":\"object\"}"), "escaped key decoded");
+  check(!run("{\"title\":\"x\",\"category\":\"object\",\"confidence\":01}"), "leading-zero number rejected");
+  check(!run("{\"title\":\"x\",\"category\":\"object\",\"confidence\":1.}"), "missing fraction rejected");
+  check(!run("{\"title\":\"x\",\"category\":\"object\",\"confidence\":1e}"), "missing exponent rejected");
+
+  {
+    const char* schema =
+        "{\"type\":\"object\",\"properties\":{"
+        "\"titre\":{\"type\":\"string\"},"
+        "\"categorie\":{\"enum\":[\"personnage\",\"objet\",\"lieu\"]},"
+        "\"confiance\":{\"type\":\"number\"},"
+        "\"verifie\":{\"type\":\"boolean\"}},"
+        "\"required\":[\"titre\",\"categorie\"],\"additionalProperties\":false}";
+    std::vector<Spec> store;
+    Spec* root = nullptr;
+    std::string error;
+    check(loadSchema(schema, store, root, error) && root != nullptr, "French benchmark schema loads");
+    if (root != nullptr) {
+      DraftChain chain(*root);
+      const char* prefix = "{\"titre\":\"x\",\"categorie\":\"objet\",\"confiance";
+      check(chain.commitWindow(std::vector<const char*>{prefix}) == 1,
+            "French confiance key prefix is feasible");
+      check(chain.feasible("\""), "French confiance key can close");
+      check(!chain.feasible("\\"), "French complete key rejects a dead-end escape");
+      DraftChain unicode(*root);
+      check(unicode.commitWindow(std::vector<const char*>{
+                "{\"titre\":\"x\",\"categorie\":\"objet\",\"con"}) == 1,
+            "French key Unicode-escape prefix starts feasible");
+      check(!unicode.feasible("\\u007"), "impossible partial Unicode key escape is rejected early");
+      check(unicode.feasible("\\u0066iance\""), "valid Unicode key escape remains feasible");
+      DraftChain exhausted(*root);
+      check(exhausted.commitWindow(std::vector<const char*>{
+                "{\"titre\":\"x\",\"categorie\":\"objet\",\"confiance\":1,\"verifie\":true"}) == 1,
+            "all French schema properties are feasible");
+      check(!exhausted.feasible(","), "comma is rejected after all object properties are seen");
+      check(exhausted.feasible("}"), "object can close after all properties are seen");
+    }
+  }
+
+  // Empty containers, nested containers, and root scalars.
+  {
+    Spec empty; empty.kind = K_OBJECT;
+    Automaton E(empty);
+    check(E.accept("{}", 2), "empty object accepted when no key is required");
+  }
+  {
+    Spec number; number.kind = K_NUMBER;
+    Spec array; array.kind = K_ARRAY; array.items = &number;
+    Automaton N(number), R(array);
+    check(N.accept("-0.25e+2", 8), "root number accepted at EOF");
+    check(R.accept("[]", 2), "empty array accepted");
+    check(R.accept("[1,2.5,-3e2]", 12), "number array accepted");
+    check(!R.accept("[1,]", 4), "array trailing comma rejected");
+  }
+  {
+    Spec shortEnum; shortEnum.kind = K_ENUM; shortEnum.literals = {"0", "01"};
+    Automaton E(shortEnum);
+    check(E.accept("0", 1), "one-byte enum accepted");
+    check(E.accept("01", 2), "enum with a shorter prefix accepted");
+    check(!E.accept("02", 2), "invalid prefix-sharing enum rejected");
+  }
+  {
+    Spec child; child.kind = K_OBJECT;
+    Spec parent; parent.kind = K_OBJECT; parent.keys = {"child"}; parent.children = {&child};
+    Automaton E(parent);
+    check(E.accept("{\"child\":{}}", 12), "nested empty object accepted");
+    check(!E.accept("{\"child\":{},}", 14), "nested object does not enable trailing comma");
+  }
 
   // candidate mask (the engine-side operation: kSelMax <= 64 byte candidates)
   {
@@ -100,6 +183,7 @@ int main() {
     int pick = D.redraw(42, allowed, 7);
     check(pick >= 0 && (std::string(repl[pick]) == "haracter" || std::string(repl[pick]) == "location"),
           "draftchain redraw picks a legal continuation");
+    check(pick == D.redraw(42, allowed, 7), "draftchain Philox redraw is deterministic");
     std::vector<int> none;
     check(D.redraw(43, none, 7) == -1, "draftchain redraw signals unsatisfiable on empty set");
   }
@@ -130,6 +214,32 @@ int main() {
     }
   }
 
+  // schema_loader rejects malformed JSON and schemas that exceed fixed-state limits.
+  {
+    auto rejects = [&](const std::string& schema) {
+      std::vector<Spec> store;
+      Spec* root = nullptr;
+      std::string err;
+      return !loadSchema(schema.c_str(), store, root, err) && !err.empty();
+    };
+    check(rejects("{\"type\":\"object\"} trailing"), "loader rejects trailing JSON");
+    check(rejects("{\"type\":\"object\",\"type\":\"string\"}"), "loader rejects duplicate JSON keys");
+    check(rejects("{\"type\":\"object\",\"additionalProperties\":true}"),
+          "loader rejects unsupported additionalProperties:true");
+    check(rejects("{\"type\":\"array\"}"), "loader requires array items");
+    check(rejects("{\"type\":\"integer\"}"), "loader rejects unsupported integer semantics");
+    check(rejects("{\"enum\":[]}"), "loader rejects empty enum");
+    check(rejects("{\"type\":\"number\",\"x\":1e}"), "loader rejects invalid number");
+
+    std::string tooMany = "{\"type\":\"object\",\"properties\":{";
+    for (int i = 0; i < MAX_PROPS + 1; ++i) {
+      if (i) tooMany += ',';
+      tooMany += "\"k" + std::to_string(i) + "\":{\"type\":\"string\"}";
+    }
+    tooMany += "}}";
+    check(rejects(tooMany), "loader enforces property limit");
+  }
+
   // DraftChain confirm(): provisional advance reconciled to a shorter real commit.
   // Bytes of the 5-token window: {"title":"x","category
   {
@@ -145,11 +255,19 @@ int main() {
     for (const char* m : more) Db.commitWindow(std::vector<const char*>{m});
     check(!Db.feasible("y"), "full advance: 'y' is an unknown key (additionalProperties=false)");
     // (b) same window, real commit only 5 rows: 'category' was NEVER fed
-    Da.confirm(5);
+    check(Da.confirm(5), "confirm accepts a real prefix no longer than the grammar prefix");
     check(!Da.feasible("\":"), "confirm(5): state before the key 'category'");
     DraftChain Dc = Da;
     check(Dc.commitWindow(std::vector<const char*>{w6[5]}) == 1 && Dc.feasible("\":"),
           "confirm(5): 'category' is again a valid key position");
+    check(!Da.confirm(7), "confirm rejects a commit beyond the grammar-valid prefix");
+    Da.reset();
+    check(Da.state().top == -1 && !Da.done(), "draft chain reset restores the initial state");
+
+    Da.beginWindow();
+    check(Da.appendWindowToken("{") && Da.appendWindowToken("\"title\"") &&
+          !Da.appendWindowToken("!"), "incremental window advance rejects without corrupting its prefix");
+    check(Da.confirm(2) && Da.feasible(":"), "incremental window prefix remains confirmable");
   }
 
   std::printf(failures ? "FAILED %d\n" : "ALL OK\n", failures);

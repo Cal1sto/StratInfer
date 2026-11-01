@@ -1,0 +1,26 @@
+{
+  "build_type": "Release",
+  "cuda": "13.1.115",
+  "cuda_architecture": "120-real",
+  "clean_build": true,
+  "tests": {
+    "json_automaton_test": "passed",
+    "gguf_tokens_test": "passed",
+    "qwen35_philox_test": "passed",
+    "grammar_mask_parity": "passed"
+  },
+  "tests_passed": 4,
+  "tests_total": 4,
+  "real_gguf": {
+    "vocabulary": 248320,
+    "control_tokens": 27,
+    "terminal_tokens": 1,
+    "exact_quote_token": {
+      "id": 1,
+      "control": false,
+      "terminal": false
+    }
+  },
+  "strata_exe_bytes": 79896064,
+  "strata_q36_exe_bytes": 60587520
+}

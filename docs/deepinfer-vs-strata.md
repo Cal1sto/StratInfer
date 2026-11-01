@@ -1,25 +1,38 @@
-# DeepInfer ↔ Strata — idea mapping and importability
+# DeepInfer to Strata mapping
 
-DeepInfer (deepseek-ai/DeepInfer, studied at `5537415`) is a DeepSeek-V4.1-Flash serving
-framework for SM100-class datacenter GPUs (B200/GB300 class) and Ascend 950. Strata
-(Niko1221/Strata, studied at `870aedd`) is a consumer/prosumer MoE engine (offloaded experts,
-hierarchical VRAM/RAM/SSD cache, speculative MTP). Mapping each DeepInfer idea to its Strata
-counterpart and whether it can be imported, ported, or must be re-derived and re-measured:
+This is the short decision log. The detailed hardware and implementation analysis is
+in [`deepinfer-sm120-port.md`](deepinfer-sm120-port.md).
 
-| DeepInfer idea | Strata counterpart | Importable? | What we did |
-|---|---|---|---|
-| Chunked GDN/linear-attention kernels | `STRATA_GDN_CHUNKED` opt-in | kernels: no (SM100-only); the switch exists | measured it: +0.6 % not 1.8× (see RESULTS C1) — doc claim is component-local |
-| KV budget vs compute tuning | `--kv k8v4`, KV streaming | technique: yes | adopted k8v4: +8 % decode, −4 % prefill (RESULTS C3a) |
-| NextN decode + per-token confidence scheduling (`DEEPINFER_USE_NEXTN_DECODE=5` default) | `--spec`/`--spec-min-p`, MTP draft chain | idea: testable | swept depth (C4: default optimal); simulated confidence scheduling (RFC-02: +0.1 %, refuted as stated) |
-| 72 h KV/context persistence, 96 % hit rate | conversation cache (`--conversation-cache-*`), session files | policy: yes | found the feature structurally off due to a 512 MiB budget; fixed → 0 rejections, 18× faster resume (RESULTS C2) |
-| Grammar-constrained decoding (regex / JSON schema / EBNF, precompiled automata) | none — `structured.py` documents prompting + validation | idea: port to engine | built the automaton, proved the insertion point (host-side sampling), proved why HTTP cannot do it (RFC-01/05) |
-| Zero-overhead CPU/GPU scheduler | per-size CUDA graphs, host-side sampler overlap | partial | identified free overlap window at the sampler (host computes masks while GPU verifies); C6 (thread placement) not yet measured |
-| NVFP4/BF16 datacenter kernels | IQ3_S/GGUF quant path | no (different hardware class) | nothing to port; noted to stop hoping |
+Studied revisions:
 
-Cross-cutting lessons taken from DeepInfer's engineering culture rather than its code:
-publish acceptance tests per feature; treat speculative-decoding depth as a scheduled
-resource, not a constant; make long-lived context the default customer experience.
+- DeepInfer `5537415`, DeepSeek-V4.1-Flash, SM100/Ascend-oriented;
+- Strata `870aedd`, Qwen3.8-Flash-Next, GGUF/offloaded-expert-oriented;
+- target hardware: one RTX 5090, CUDA architecture `sm_120`.
 
-Cross-cutting lessons about reading *any* upstream doc (Strata's own, in this case): a
-measured multiplier quoted "per card" may describe one component in isolation. Component
-claims → re-measure end-to-end on the real workload before believing the budget.
+| DeepInfer capability | Native Strata/Qwen counterpart | Decision |
+|---|---|---|
+| FlashMLA | QSA prompt/decode attention | Keep native layouts and kernels |
+| DeepGEMM | MMQ and IQ/NVFP4 paths | Keep native quantization kernels |
+| DeepEP and EPLB | expert cache, adaptive placement, PCIe streaming | Import measurement policy, not collectives |
+| DeepSelect | QSA selector/top-k | Already model-specific in Strata |
+| TileLang kernels | AOT CUDA plus captured graphs | Do not add a second runtime without evidence |
+| Attention DP/CP | layer split and pipeline windows | No one-GPU port |
+| DSpark/NextN | MTP, DFlash2, `DraftPolicy` | Sweep and simulate; fixed default won |
+| SWA bounded replay/YoCo | exact checkpoints, session and conversation cache | Measure exact replay; do not copy approximate model logic |
+| Zero-overhead scheduler | CUDA graphs, batch groups, async tiers | Add concurrency benchmark; no default change yet |
+| Batch-invariant sampling | position-keyed Philox | Verify live interleaving; repair Qwen3.6 sampler |
+| Structured outputs | previously absent | Implement strict JSON-Schema overlay and CUDA mask |
+| Persistent KV service | local conversation cache | Tune and measure local policy |
+| Disaggregated serving | no workstation cluster control plane | Out of scope |
+
+## Decisions backed by measurements
+
+- `STRATA_GDN_CHUNKED`: +0.6%, inside noise; rejected.
+- `k8v4`: +8.0% decode for about -4.2% fresh prefill; kept.
+- conversation cache 4096 MiB: eliminated measured budget rejections; kept.
+- speculation depth 3/5: slower than the default depth 4; rejected.
+- confidence scheduling: +0.1% in the calibrated simulation; rejected as stated.
+- strict grammar overlay: builds and passes four tests; live end-to-end gate pending.
+
+The central rule is model correctness before kernel reuse. Shared terminology does not
+make DeepSeek SM100 tensor layouts compatible with Qwen GGUF layouts on `sm_120`.

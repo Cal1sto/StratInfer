@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-01",
+  "strata_base_commit": "870aedd",
+  "cuda": "13.1.115",
+  "architecture": "120-real",
+  "overlay_applies_cleanly": true,
+  "build_targets": ["conversation_snapshot_test", "peer_cache_bench"],
+  "cuda_tests": {
+    "conversation_snapshot_test": {"passed": true, "checks": 4195, "seconds": 0.68},
+    "conversation_snapshot_test_park_peer": {"passed": true, "checks": 4195, "seconds": 0.82},
+    "conversation_snapshot_test_park_peer_fallback": {"passed": true, "checks": 4195, "seconds": 0.80}
+  },
+  "node_tests": {"passed": 9, "failed": 0},
+  "live_engine_restarted": false,
+  "full_model_cutover_run": false
+}

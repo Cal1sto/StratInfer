@@ -1,0 +1,33 @@
+{
+  "id": "C11",
+  "title": "Hierarchical long-session memory: RTX 4080 K/V cache plus 32 GiB SSD sessions",
+  "problem": "Long coding sessions alternate a main conversation with architecture, implementation, review, test and documentation work. Host-only parking preserves exact state but consumes RAM and can page; a transcript alone does not protect the canonical objective from compaction or role drift.",
+  "delta": {
+    "args": [
+      "--conversation-cache-mib", "8192",
+      "--conversation-cache-slots", "8",
+      "--conversation-cache-min-tokens", "2048",
+      "--prompt-cache-spread",
+      "--session-min-free-mib", "4096",
+      "--session-save-reclaim"
+    ],
+    "env": {
+      "STRATA_PARK_ASYNC": "1",
+      "STRATA_PARK_VRAM_MIB": "4096",
+      "STRATA_PARK_VRAM_DEVICE": "1",
+      "STRATA_CKPT_ASYNC": "1",
+      "STRATA_CKPT_GATHER": "1",
+      "STRATA_CKPT_POOL": "1"
+    },
+    "server": {
+      "slot_save_path": "the project sessions_path printed by scripts/long_session.mjs status",
+      "parallel": 0
+    },
+    "orchestrator": "configs/long-session-4080.json"
+  },
+  "evidence": "Measured 2026-11-01 on RTX 5090 device 0 and RTX 4080 SUPER device 1: the clean sm120 overlay passed the ordinary, helper-device and constrained-budget fallback snapshot tests, 4195 checks each. A 512 MiB cudaMemcpyPeerAsync benchmark over five rounds validated a distinct byte pattern after each direction and measured 10.836 GiB/s from 5090 to 4080 and 11.460 GiB/s back. The 512-dimensional context matrix indexed 2000 records at 3002 records/s and answered 100 retrievals in 13.792 ms mean with 100% top-5 recall on the synthetic keyed workload. Nine Node tests passed, including restart persistence, canonical-context injection, role isolation, native slot endpoints and scaled quota eviction.",
+  "conditions": "Opt-in only. Device 1 must be the RTX 4080 and have at least the requested 4096 MiB plus Strata's 1536 MiB safety floor free. The Strata server must use the printed slot_save_path and must not use parallel slots. Use a dedicated long-session server or a controlled cutover; save/restore changes the engine's live conversation.",
+  "acceptance": "Both snapshot tests pass byte-exactly; helper allocation appears on device 1; no active-engine restart during validation; project storage stays at or below 32 GiB and the filesystem keeps at least 4 GiB free; pinned canonical state is never evicted; a 24-hour coding trace has zero lost invariant and zero invalid session restore.",
+  "rollback": "Unset STRATA_PARK_VRAM_DEVICE, STRATA_PARK_VRAM_MIB and STRATA_PARK_ASYNC; stop the orchestrator; remove slot_save_path after saving any session that must be kept. The default Strata path is unchanged when the variables are unset.",
+  "verdict": "OFFLINE VALIDATED, NOT CUT OVER: source, sm120 build, exact-state tests and component benchmarks passed. A full-model 24-hour trace still needs a dedicated cutover window."
+}

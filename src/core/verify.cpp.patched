@@ -41,6 +41,9 @@
 #include "strata/kernels/route_prior.hpp"
 #include "strata/kernels/cvec.hpp"
 #include "strata/kernels/gr.hpp"
+#if !defined(STRATA_USE_HIP) && !defined(STRATA_HIP_GFX906) && !defined(STRATA_GPU_METAL)
+#include "strata/kernels/grammar_mask.hpp"
+#endif
 #include "strata/kernels/kv_q4.hpp"
 #include "strata/kernels/kv_q8.hpp"
 #include "strata/kernels/native_mmvq.hpp"
@@ -720,6 +723,9 @@ Verifier::~Verifier() {
     if (tap_scratch_) cudaFree(tap_scratch_);
     if (h_tap_) cudaFreeHost(h_tap_);
     if (logit_bias_device_) cudaFree(logit_bias_device_);
+    if (grammar_base_bias_device_) cudaFree(grammar_base_bias_device_);
+    if (grammar_mask_device_) cudaFree(grammar_mask_device_);
+    if (grammar_mask_host_) cudaFreeHost(grammar_mask_host_);
     if (cs_ && cs_ != ext_stream_) cudaStreamDestroy(cs_);   // set_stream: the stage's stream, shared, not ours
     if (sh_cs_) cudaStreamDestroy(sh_cs_);
     if (copy_) { cudaStreamSynchronize(copy_); cudaStreamDestroy(copy_); }
@@ -758,9 +764,7 @@ void Verifier::tap_write(int T, const int32_t* tokens, int64_t pos0) {
     std::fflush(tap_file_);
 }
 
-bool Verifier::set_logit_bias(const std::vector<float>& bias, std::string& err) {
-    if (next_ && !next_->set_logit_bias(bias, err)) return false;
-    if (le_ < g_->n_layers) return true;
+bool Verifier::apply_logit_bias(const std::vector<float>& bias, std::string& err) {
     const OnDevice on_device(device_);
     if (!bias.empty() && bias.size() != (size_t) n_vocab_) {
         err = "logit_bias vocabulary size mismatch"; return false;
@@ -775,6 +779,18 @@ bool Verifier::set_logit_bias(const std::vector<float>& bias, std::string& err) 
     logit_bias_host_ = bias;
     sampling_.logit_bias = bias.empty() ? nullptr : logit_bias_device_;
     return true;
+}
+
+bool Verifier::set_logit_bias(const std::vector<float>& bias, std::string& err) {
+    if (!bias.empty() && bias.size() != (size_t) n_vocab_) {
+        err = "logit_bias vocabulary size mismatch"; return false;
+    }
+    if (next_ && !next_->set_logit_bias(bias, err)) return false;
+    if (le_ < g_->n_layers) return true;
+    grammar_base_bias_ = bias;
+    grammar_base_uploaded_ = false;
+    grammar_sig_valid_ = false;
+    return grammar_active_ ? grammar_refresh_mask(err) : apply_logit_bias(bias, err);
 }
 
 bool Verifier::init(const WeightTable& wt, const ModelGeometry& g, SessionState& ss, const VerifyHits& hits,
@@ -827,7 +843,12 @@ bool Verifier::init(const WeightTable& wt, const ModelGeometry& g, SessionState&
     if (le_ < 0) le_ = g.n_layers;
     if (lb_ < 0 || lb_ >= le_ || le_ > g.n_layers || (lb_ > 0 && hand_in_ == nullptr) ||
         (le_ < g.n_layers && hand_out_ == nullptr)) {
-        err = "verify: the stage's layer range or its hand-off buffers are wrong";
+        char detail[256];
+        std::snprintf(detail, sizeof detail,
+                      "verify: stage range/hand-off mismatch (lb=%lld le=%lld layers=%lld in=%p out=%p)",
+                      (long long)lb_, (long long)le_, (long long)g.n_layers,
+                      (const void*)hand_in_, (void*)hand_out_);
+        err = detail;
         return false;
     }
     const WeightRef* wo = wt.find("output.weight");
@@ -3404,6 +3425,7 @@ bool Verifier::run(int T, const int32_t* tokens, int64_t pos0, PoolMultiFn pool,
             }
     }
     for (int t = 0; t < T; ++t) out[t] = ((volatile int32_t*) h_out_)[t];
+    if (!grammar_window(tokens, out, T, err)) return false;
     if (tap_file_ != nullptr && !batch_rec_) tap_write(T, tokens, pos0);
     note_nonfinite(T, nullptr);
     // STRATA_LOGITS_DUMP=<path> (debug tap, off by default): the window's logits as the sampler saw them, written
@@ -3621,6 +3643,10 @@ bool Verifier::commit(int n_keep, std::string& err) {
 #endif
     const OnDevice on_device(device_);
     if (n_keep < 1 || n_keep > last_t_) { err = "verify: commit count out of range"; return false; }
+    if (grammar_active_) {
+        if (!grammar_->confirm(n_keep)) { err = "verify: grammar commit exceeds valid prefix"; return false; }
+        if (!grammar_refresh_mask(err)) return false;
+    }
     const Clock::time_point t0 = Clock::now();
     h_commit_[0] = n_keep;
     h_commit_[1] = n_keep - 1;
@@ -5016,7 +5042,7 @@ bool Verifier::pl_finish(int32_t* out, std::string& err) {
     }
     if (out != nullptr) {
         for (int t = 0; t < T; ++t) out[t] = ((volatile int32_t*) h_out_)[t];
-        grammar_window(out, T);   // StratInfer S2: no-op unless a schema automaton is set
+        if (!grammar_window(last_tokens_, out, T, err)) return false;
     }
     note_nonfinite(T, nullptr);
     progress_beat();
@@ -5026,7 +5052,10 @@ bool Verifier::pl_finish(int32_t* out, std::string& err) {
 bool Verifier::pl_commit_async(int n_keep, std::string& err) {
     const OnDevice on_device(device_);
     if (n_keep < 1 || n_keep > last_t_) { err = "verify: commit count out of range"; return false; }
-    if (grammar_) grammar_->confirm(n_keep);   // StratInfer S2: reconcile the automaton with the real commit
+    if (grammar_active_) {
+        if (!grammar_->confirm(n_keep)) { err = "verify: grammar commit exceeds valid prefix"; return false; }
+        if (!grammar_refresh_mask(err)) return false;
+    }
     if (commit_exec_ == nullptr || ev_commit_ == nullptr) { err = "verify: pipelined commit not prepared"; return false; }
     const Clock::time_point t0 = Clock::now();
     if (commit_live_) {   // its graph reads the words below when it starts: the previous one has (a window ago)
@@ -5068,52 +5097,187 @@ void Verifier::absorb_stats(Verifier& o) {
 void Verifier::set_grammar(std::unique_ptr<strata::grammar::DraftChain> chain, const char* const* tokText) {
     grammar_ = std::move(chain);
     grammar_toktext_ = tokText;
-    grammar_sig_.clear();
+    grammar_active_ = false;
+    grammar_sig_valid_ = false;
 }
 
-// Fingerprint of the automaton's state CLASS (not the full state): the vocabulary mask
-// only needs rebuilding when this changes - inside a free-text span the class is stable,
-// so the O(vocabulary) filter runs once per schema transition, not per token.
-static std::string grammar_sig(const strata::grammar::State& s) {
-    char buf[96];
-    std::snprintf(buf, sizeof buf, "%d|%d|%d|%d|%d|%d|%d|%d", (int)s.mode, s.top, s.inStr ? 1 : 0, s.nbr,
-                  (int)s.keyLen, s.nStart ? 1 : 0, s.done ? 1 : 0, s.nbr ? (int)s.br[0].used : 0);
-    return std::string(buf);
+bool Verifier::suspend_grammar(std::string& err) {
+    if (next_ && !next_->suspend_grammar(err)) return false;
+    if (le_ < g_->n_layers || !grammar_) return true;
+    grammar_active_ = false;
+    grammar_sig_valid_ = false;
+    return apply_logit_bias(grammar_base_bias_, err);
 }
 
-void Verifier::grammar_window(int32_t* out, int T) {
-    if (!grammar_ || !grammar_toktext_) return;
-    std::vector<const char*> row((size_t) T);
-    for (int t = 0; t < T; ++t) {
-        const int64_t id = out[t];
-        if (id < 0) return;   // an error/special token already: the existing rejection path handles it
-        row[t] = grammar_toktext_[id];
-        if (row[t] == nullptr) return;
+bool Verifier::reset_grammar(std::string& err) {
+    if (next_ && !next_->reset_grammar(err)) return false;
+    if (le_ < g_->n_layers || !grammar_) return true;
+    grammar_->reset();
+    grammar_active_ = true;
+    grammar_sig_valid_ = false;
+    return grammar_refresh_mask(err);
+}
+
+static void grammar_sig_mix(uint64_t& hash, uint64_t value) {
+    for (int i = 0; i < 8; ++i) {
+        hash ^= (value >> (i * 8)) & 0xffu;
+        hash *= 1099511628211ull;
     }
-    const int keep = grammar_->commitWindow(row);
-    if (keep < T) {
-        // First grammar-invalid draft: its row and every later row of this window are
-        // marked with the established reject channel; rows before `keep` stand as drafted.
-        for (int t = keep; t < T; ++t) out[t] = strata::core::proposal::kProposalSamplerErrorToken;
+}
+
+// Hash every state field that changes candidate feasibility. Free-text spans keep the
+// same hash, while key prefixes, enum branches, number phases and seen required keys do not.
+static uint64_t grammar_state_sig(const strata::grammar::State& s) {
+    uint64_t hash = 1469598103934665603ull;
+    grammar_sig_mix(hash, s.mode); grammar_sig_mix(hash, (uint64_t)(s.top + 1));
+    grammar_sig_mix(hash, s.inStr); grammar_sig_mix(hash, s.strEsc);
+    grammar_sig_mix(hash, s.strClosed); grammar_sig_mix(hash, s.unicodeRemain);
+    grammar_sig_mix(hash, s.unicodeValue); grammar_sig_mix(hash, s.inKey);
+    grammar_sig_mix(hash, (uint64_t)s.keyLen); grammar_sig_mix(hash, s.numState);
+    grammar_sig_mix(hash, (uint64_t)s.nbr); grammar_sig_mix(hash, s.done);
+    grammar_sig_mix(hash, (uint64_t)(uintptr_t)s.pending);
+    for (int i = 0; i < s.keyLen; ++i) grammar_sig_mix(hash, (uint8_t)s.key[i]);
+    for (int level = 0; level <= s.top; ++level) {
+        const auto& frame = s.frames[level];
+        grammar_sig_mix(hash, (uint64_t)(uintptr_t)frame.spec);
+        grammar_sig_mix(hash, frame.hadMember); grammar_sig_mix(hash, frame.nprops);
+        for (int i = 0; i < frame.nprops; ++i) grammar_sig_mix(hash, frame.seen[i]);
     }
-    const std::string sig = grammar_sig(grammar_->state());
-    if (sig == grammar_sig_) return;
+    for (int i = 0; i < s.nbr; ++i) {
+        grammar_sig_mix(hash, s.br[i].lit); grammar_sig_mix(hash, s.br[i].used);
+    }
+    return hash;
+}
+
+bool Verifier::grammar_refresh_mask(std::string& err) {
+    if (!grammar_ || !grammar_active_) {
+        grammar_sig_valid_ = false;
+        return apply_logit_bias(grammar_base_bias_, err);
+    }
+    if (!grammar_toktext_ || n_vocab_ <= 0) { err = "grammar token table is unavailable"; return false; }
+    const uint64_t sig = grammar_state_sig(grammar_->state());
+    if (grammar_sig_valid_ && sig == grammar_sig_) return true;
+
+    const size_t wordCount = ((size_t)n_vocab_ + 31) / 32;
+#if !defined(STRATA_USE_HIP) && !defined(STRATA_HIP_GFX906) && !defined(STRATA_GPU_METAL)
+    const OnDevice on_device(device_);
+    const size_t biasBytes = (size_t)n_vocab_ * sizeof(float);
+    const size_t maskBytes = wordCount * sizeof(uint32_t);
+    if ((!logit_bias_device_ && cudaMalloc((void**)&logit_bias_device_, biasBytes) != cudaSuccess) ||
+        (!grammar_mask_device_ && cudaMalloc((void**)&grammar_mask_device_, maskBytes) != cudaSuccess) ||
+        (!grammar_mask_host_ && cudaMallocHost((void**)&grammar_mask_host_, maskBytes) != cudaSuccess)) {
+        err = "cannot allocate grammar mask buffers"; return false;
+    }
+    std::memset(grammar_mask_host_, 0, maskBytes);
+    uint32_t* allowed = grammar_mask_host_;
+#else
+    std::vector<uint32_t> allowedStorage(wordCount, 0);
+    uint32_t* allowed = allowedStorage.data();
+#endif
+    int64_t allowedCount = 0;
+    int64_t terminalCount = 0;
+    bool quoteFound = false, quoteFeasible = false;
+    for (int64_t id = 0; id < n_vocab_; ++id) {
+        const char* bytes = grammar_toktext_[id];
+        if (bytes != nullptr && *bytes == '\0') ++terminalCount;
+        const bool feasible = bytes != nullptr && (*bytes == '\0' ? grammar_->done() : grammar_->feasible(bytes));
+        if (bytes != nullptr && std::strcmp(bytes, "\"") == 0) {
+            quoteFound = true;
+            quoteFeasible = feasible;
+        }
+        if (feasible) {
+            allowed[(size_t)id >> 5] |= 1u << (id & 31);
+            ++allowedCount;
+        }
+    }
+    if (allowedCount == 0) {
+        const auto& state = grammar_->state();
+        uint32_t seen = 0;
+        int keyMatch = -1;
+        size_t specKeys = 0;
+        if (state.top >= 0)
+            for (int index = 0; index < state.frames[state.top].nprops; ++index) {
+                if (state.frames[state.top].seen[index]) seen |= 1u << index;
+                const auto* spec = state.frames[state.top].spec;
+                if (spec != nullptr && (size_t)index < spec->keys.size() &&
+                    spec->keys[index].size() == (size_t)state.keyLen &&
+                    std::memcmp(spec->keys[index].data(), state.key, (size_t)state.keyLen) == 0) keyMatch = index;
+            }
+        if (state.top >= 0 && state.frames[state.top].spec != nullptr)
+            specKeys = state.frames[state.top].spec->keys.size();
+        char detail[416];
+        std::snprintf(detail, sizeof detail,
+                      "grammar admits no vocabulary token (done=%d mode=%d top=%d in_string=%d escape=%d unicode=%u/0x%x key_len=%d key='%.*s' seen=0x%x props=%u/%zu match=%d quote=%d/%d terminals=%lld)",
+                      state.done ? 1 : 0, (int)state.mode, state.top, state.inStr ? 1 : 0,
+                      state.strEsc ? 1 : 0, (unsigned)state.unicodeRemain, (unsigned)state.unicodeValue,
+                      (int)state.keyLen,
+                      state.keyLen, state.key, seen,
+                      state.top >= 0 ? (unsigned)state.frames[state.top].nprops : 0u, specKeys, keyMatch,
+                      quoteFound ? 1 : 0, quoteFeasible ? 1 : 0,
+                      (long long)terminalCount);
+        err = detail;
+        return false;
+    }
+
+#if !defined(STRATA_USE_HIP) && !defined(STRATA_HIP_GFX906) && !defined(STRATA_GPU_METAL)
+    if (!grammar_base_bias_.empty() && !grammar_base_uploaded_) {
+        if ((!grammar_base_bias_device_ && cudaMalloc((void**)&grammar_base_bias_device_, biasBytes) != cudaSuccess) ||
+            cudaMemcpy(grammar_base_bias_device_, grammar_base_bias_.data(), biasBytes, cudaMemcpyHostToDevice) != cudaSuccess) {
+            err = "cannot upload base logit_bias"; return false;
+        }
+        grammar_base_uploaded_ = true;
+    }
+    if (grammar_base_bias_.empty()) grammar_base_uploaded_ = true;
+    if (cudaMemcpyAsync(grammar_mask_device_, allowed, maskBytes, cudaMemcpyHostToDevice, cs_) != cudaSuccess ||
+        !strata::kernels::grammar_mask_apply(grammar_base_bias_.empty() ? nullptr : grammar_base_bias_device_,
+                                             grammar_mask_device_, (int)n_vocab_, logit_bias_device_, cs_)) {
+        err = "cannot apply grammar vocabulary mask"; return false;
+    }
+    logit_bias_host_ = grammar_base_bias_;
+    sampling_.logit_bias = logit_bias_device_;
+#else
+    std::vector<float> effective = grammar_base_bias_;
+    if (effective.empty()) effective.assign((size_t)n_vocab_, 0.0f);
+    for (int64_t id = 0; id < n_vocab_; ++id)
+        if (((allowed[(size_t)id >> 5] >> (id & 31)) & 1u) == 0) effective[(size_t)id] = -INFINITY;
+    if (!apply_logit_bias(effective, err)) return false;
+#endif
     grammar_sig_ = sig;
-    // Ban every vocabulary id whose bytes make the committed prefix infeasible, through
-    // the ordinary logit_bias channel (-100 hard exclusion; the sampler already applies it
-    // on device). Merged with any per-request bias the caller had set.
-    std::vector<float> bias = logit_bias_host_;
-    if (bias.size() != (size_t) n_vocab_) bias.assign((size_t) n_vocab_, 0.0f);
-    bool any = false;
-    for (int id = 0; id < n_vocab_; ++id) {
-        const char* b = grammar_toktext_[id];
-        if (b == nullptr || *b == '\0') continue;
-        if (!grammar_->feasible(b)) { bias[id] = -100.0f; any = true; }
+    grammar_sig_valid_ = true;
+    return true;
+}
+
+bool Verifier::grammar_window(const int32_t* tokens, int32_t* out, int T, std::string& err) {
+    if (!grammar_ || !grammar_active_ || !grammar_toktext_) return true;
+    grammar_->beginWindow();
+    for (int t = 0; t < T; ++t) {
+        int64_t id = out[t];
+        if (id < 0 || id >= n_vocab_) { err = "grammar received an invalid sampler token"; return false; }
+        const char* bytes = grammar_toktext_[id];
+        if (bytes == nullptr || !grammar_->appendWindowToken(bytes)) {
+            // Row 0 was sampled with the committed-state mask. Later speculative rows used
+            // that same mask, so the first row invalid under its actual prefix is redrawn
+            // from this row's unchanged target logits with the newly advanced grammar mask.
+            if (!grammar_refresh_mask(err)) return false;
+            strata::kernels::SamplerParams sp = sampling_;
+            sp.counter = (uint64_t)(last_pos0_ + t);
+            const int32_t* rowHistory = hist_d_ == nullptr ? nullptr : hist_d_ + (size_t)t * (size_t)hist_len_;
+            strata::kernels::sample_tokens(head_logits_ + (size_t)t * (size_t)n_vocab_, 1, (int)n_vocab_, rowHistory,
+                                           hist_len_, sp, m_out_ + t, cs_);
+            if (cudaStreamSynchronize(cs_) != cudaSuccess) {
+                err = "grammar replacement sampling failed"; return false;
+            }
+            id = ((volatile int32_t*)h_out_)[t];
+            if (id < 0 || id >= n_vocab_) { err = "grammar replacement produced an invalid token"; return false; }
+            bytes = grammar_toktext_[id];
+            if (bytes == nullptr || !grammar_->appendWindowToken(bytes)) {
+                err = "grammar replacement escaped its vocabulary mask"; return false;
+            }
+            out[t] = (int32_t)id;
+        }
+        if (t + 1 >= T || out[t] != tokens[t + 1]) break;
     }
-    if (!any) return;
-    std::string err;
-    if (!set_logit_bias(bias, err))   // on failure: keep decoding unconstrained rather than stall
-        std::fprintf(stderr, "strata: grammar mask upload failed: %s\n", err.c_str());
+    return true;
 }
 
 }  // namespace strata::core

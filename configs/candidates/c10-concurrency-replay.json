@@ -1,0 +1,15 @@
+{
+  "id": "C10",
+  "title": "Concurrency and exact replay evidence suite",
+  "inspiration": "DeepInfer zero-overhead scheduling and bounded replay, evaluated through Strata's native scheduler and exact conversation cache.",
+  "delta": {
+    "runtime": "No default configuration change.",
+    "tools": [
+      "scripts/bench_concurrency.mjs",
+      "scripts/bench_replay.mjs"
+    ]
+  },
+  "acceptance": "Establish concurrency 1/2/4 aggregate tok/s and p50/p95 latency over at least three trials, then require any scheduler candidate to improve aggregate throughput outside the noise band without exceeding the declared p95 latency budget. Replay must report the cold/resumed prompt-read ratio and preserve exact conversation content.",
+  "rollback": "Not applicable to the read-only harness; any later runtime candidate must define its own rollback.",
+  "verdict": "HARNESS_READY; LIVE_BASELINE_PENDING"
+}

@@ -1,68 +1,104 @@
-# RFC — grammar-constrained decoding, and why it must live inside the engine
+# RFC: strict structured output inside Strata
 
-Status: prototype outside the engine proved the semantics; token-level enforcement proved
-impossible from the client side. Upstream tracking: Strata issue
-[Niko1221/Strata#3758](https://github.com/Niko1221/Strata/issues/3758) (independent author
-proposing the same feature; our measured contribution is in that thread — don't duplicate it).
+Status: opt-in overlay implemented, compiled, unit/GPU tested, and validated by a 6/6
+adversarial functional smoke. The live 10,000-sample correctness and RTX 5090
+end-to-end throughput gates remain pending.
 
-## The gap, in the engine's own words
+## Problem
 
-`serve/structured.py`: *"The native engine has no grammar decoder."* `response_format:
-json_schema` today = schema prompting + post-validation: the model may still wander outside
-the schema and the request fails; nothing constrains generation token by token. DeepInfer
-does have this (regex / JSON schema / EBNF, automata compiled ahead of the request).
+Prompting plus response validation detects invalid JSON only after generation. It does
+not prevent an invalid token from being sampled. Client-side exhaustive `logit_bias`
+was also measured at 39.1 seconds per generated token for a 248,320-token vocabulary,
+so the constraint must execute inside the engine.
 
-## Why the engine is closer than the docstring suggests
+DeepInfer demonstrates the product capability with precompiled regex, JSON Schema, and
+EBNF automata. StratInfer ports the portable JSON-Schema concept, not DeepInfer's
+model-specific kernels.
 
-Reading the engine source (pinned at `870aedd`, MIT):
+## Supported contract
 
-1. **Final sampling is host-side** — `run()'s host-side sampling, Philox(seed, pos0 + t)`
-   in `src/core/verify.cpp` (~line 5005) — over candidate lists capped at `kSelMax` ≤ 64
-   (`include/strata/core/spec_prob.hpp`). A grammar mask there is a set intersection on ≤ 64
-   entries: no new GPU kernel, no per-step device traffic.
-2. **The mask semantics already exist end to end**: `Verifier::set_logit_bias`
-   (`verify.cpp` ~759, propagates across layer split) and `include/strata/core/logit_bias.hpp`
-   already defines `-100` as a hard exclusion (its own tests exercise 103k-entry bans).
-3. **MTP drafts are a chain, not a tree.** Grammar over a chain reduces to: advance the
-   automaton along the draft prefix; the first draft token outside the grammar invalidates
-   the verify rows at and after it; the window commits at the divergence and the automaton
-   re-syncs on the replacement token.
+`STRATA_GRAMMAR_SCHEMA` points to one schema loaded at process startup. The loader accepts
+a bounded subset:
 
-## Why it cannot be bolted on over HTTP (both walls measured, not theorized)
+- types: `object`, `array`, `string`, `number`, `boolean`, `null`;
+- keywords: `properties`, `required`, `additionalProperties`, `items`, `enum`;
+- strict JSON strings, escapes, Unicode escapes, numbers, delimiters, and EOF.
 
-`proto/s1_grammar.py` implements the exact automaton client-side (JSON-schema prefix
-automaton over the model's real 248 320-token vocabulary; 14 selftests; whole-token
-byte-level validation):
+Unsupported keywords or malformed schemas fail closed. The automaton rejects duplicate
+keys, missing required keys, trailing commas, malformed numeric forms, invalid escapes,
+and tokens that only match an enum prefix.
 
-- **Exhaustive per-step mask**: banned-set = ~248k ids → 3.7 MB payload → **39.1 s per
-  generated token**. Semantics correct, economically dead. (The engine's own `logit_bias`
-  normalization is fast — ~170 ms cached — but the round trip plus engine-side handling of
-  248k biases dominates. In-engine, this cost simply does not exist.)
-- **Partial assistant prefill**: the chat template closes the assistant turn, so feeding a
-  half-written JSON prefix as a prefill is refused in practice (prefilling `{"ville":` makes
-  the model restart from scratch — direct test). There is also no raw-prompt/tokenize
-  endpoint on that server. Token-by-token steering from HTTP is structurally unavailable.
-- **What does work client-side**: *turn-level lazy rejection* — generate whole, replay the
-  automaton, ban the first illegal token's ids (pair-list `logit_bias` form, server-cached),
-  regenerate. Battery: 3/3 strictly valid vs 3/6 unconstrained, 0 regenerations needed on
-  those prompts. Good enough as an adoption ramp; not a substitute.
+The GGUF reader derives token bytes from `tokenizer.ggml.tokens` with explicit bounds.
+After a complete root value, only configured EOS/EOT IDs are admitted. Other control or
+empty tokens are forbidden rather than treated as valid JSON bytes.
 
-## Proposed shape (unchanged from our issue-thread contribution)
+## Verifier integration
 
-- incremental GBNF/JSON-schema prefix automaton in the engine, compiled once per schema
-  hash, cached process-wide (DeepInfer compiles ahead of the request — same idea);
-- per-request `grammar` on the native protocol, plumbed like `logit_bias`;
-  `response_format.grammar` passes through, existing validation kept as a safety net;
-- masks computed on the host at the sampler, overlapping GPU verification (the same
-  overlap principle as DeepInfer's zero-overhead scheduler).
+The verifier owns a `DraftChain` and resets it for every request. For each automaton state:
 
-Acceptance gates we would hold a PR to: 100 % schema-valid over ≥ 10k sampled runs across
-~20 schemas (with speculation both on and off); ≥ 95 % of unconstrained decode tok/s;
-bit-exactness under the engine's own reproducibility recipe; off by default.
+1. build the allowed-token bitset from the real GGUF token bytes;
+2. combine it with the request's existing base bias;
+3. upload the packed bitset only when the state signature changes;
+4. sample from target logits after forbidden IDs become negative infinity;
+5. confirm only the prefix actually committed by speculative verification.
 
-## Adoption caveat, measured honestly
+### Stale speculative rows
 
-On the study machine, **0 of 3 091 logged requests used `response_format`** — clients went
-through native tool calls. The grammar gap is real in the engine and valued in upstream
-discourse; locally it produced no time savings because nobody consumed the feature. Ship
-the guarantee, then move clients onto it, then re-measure.
+MTP rows can be sampled before preceding rows establish the final grammar state. Treating
+such a row as a sentinel is incorrect because the sentinel could be emitted. The overlay
+checks rows sequentially along the actual emitted path. If a later row is invalid under
+the advanced state, it refreshes the mask and re-samples that row from the unchanged
+target logits using the same position-keyed Philox draw. Rows after the first ordinary
+draft mismatch are unused. Commit/rollback then reconciles the automaton exactly.
+
+## RTX 5090 mask kernel
+
+`src/kernels/cuda/grammar_mask.cu` expands a packed allowed-token bitset into the effective
+device bias. One thread handles one vocabulary ID, preserves the request's base bias, and
+writes negative infinity for forbidden IDs.
+
+For 248,320 tokens on CUDA 13.1, Release, `120-real`:
+
+| isolated operation | measurement |
+|---|---:|
+| kernel only, median of 10 | 7.931 us per launch (7.657-8.396) |
+| pinned 30.3 KiB upload plus kernel, median of 10 | 94.652 us per state change (89.388-101.457) |
+| equivalent dense FP32 bias | about 970 KiB |
+
+These are isolated component measurements. They do not establish end-to-end decode speed.
+
+The six-prompt smoke covers adversarial requests for Markdown, forbidden properties,
+wrong types, and invalid enums. All six committed outputs satisfy the schema. Regression
+tests also cover impossible key prefixes, dead-end escapes, partial Unicode escapes, and
+commas after all properties are consumed.
+
+## Safety boundary
+
+The current automaton is process-shared. Grammar mode therefore refuses batch slots,
+pipeline windows, and layer split instead of sharing state incorrectly across requests.
+Unset `STRATA_GRAMMAR_SCHEMA` leaves the default path unchanged.
+
+Not implemented:
+
+- per-request schema fields and schema-hash cache;
+- regex or EBNF parsers;
+- independent per-slot automata;
+- an end-to-end performance verdict.
+
+## Acceptance gates
+
+Before enabling grammar mode for clients:
+
+1. build both engines and pass all four overlay tests for `120-real`;
+2. run at least 10,000 samples over roughly 20 representative schemas;
+3. require zero invalid committed outputs with speculation both on and off;
+4. require at least 95% of unconstrained decode throughput;
+5. verify identical seeded output in serial and interleaved request schedules;
+6. perform the test on a separate profile with scripted rollback.
+
+## Future protocol shape
+
+The next safe extension is an immutable automaton per request, backed by a process-wide
+cache keyed by schema hash. It can then be plumbed beside request sampling parameters and
+used by batch slots independently. Regex and EBNF should remain separate parsers sharing
+the same verifier mask interface rather than being advertised before implementation.

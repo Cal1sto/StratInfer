@@ -1,52 +1,66 @@
-# Methodology — how to A/B a live engine without wrecking it
+# Methodology: A/B a live engine safely
 
-The whole point of this harness: config changes on a live inference engine are downtime,
-and measurement noise on a single GPU is large enough to fake wins. The protocol below is
-what separated real gains (+8 %, 18× resume) from fake ones (+0.6 % noise, +5.4 % artifact)
-in this project.
+Single-GPU inference is noisy, prompt caches hide prefill work, and an engine restart is
+real downtime. StratInfer uses the following protocol to distinguish useful changes from
+component-only wins and simulation artifacts.
 
-## 1. Telemetry before anything (48 h)
+## 1. Record a baseline
 
-`scripts/audit.mjs --watch --every 300` appends one JSON line per sample from read-only
-endpoints (`/health`, `/metrics`, `/status`): decode tok/s, expert-cache hit rate, reused
-prompt ratio, draft acceptance, engine knobs in effect. `--report` aggregates mean/p95.
-Two purposes: a real baseline (not one lucky run), and surfacing silent pathologies — the
-biggest win of the whole project (C2) came from *counting log lines*, not from an idea.
+Run `scripts/audit.mjs --watch --every 300` for a representative window. Capture decode
+speed, prompt reuse, expert-cache hit rate, draft acceptance, and active configuration.
+Repeat fixed benches to establish the noise band before changing anything.
 
-## 2. Two benches, for two different lies
+## 2. Match each question to a benchmark
 
-- `bench_ab.mjs` — fixed suite (code / prose / 32K-token agent), repeats. Catches regressions
-  and measures decode speed. **Lies about prefill once a prompt cache exists**: the second
-  run reuses instead of re-prefilling.
-- `bench_fresh.mjs` — every trial embeds a unique random marker, zero cache reuse. This is
-  the only honest prefill measurement under an aggressive cache. Both are needed; C1 was
-  only decidable with the fresh one.
+- `bench_ab.mjs`: fixed prompts for decode and regression comparisons.
+- `bench_fresh.mjs`: unique prompts so cache reuse cannot fake prefill speed.
+- `bench_concurrency.mjs`: aggregate throughput and p50/p95 request latency by load.
+- `bench_replay.mjs`: cold prompt cost versus exact continuation reuse.
+- `bench_grammar.mjs`: adversarial JSON-Schema validity and request performance.
+- `verify_determinism.mjs`: same seeded output alone and under interleaving.
 
-## 3. Noise band first
+All live scripts read `STRATINFER_BASE` and write machine-readable JSON reports. Use
+`bench_ab.mjs --compare <files...>` to summarize saved runs instead of copying one lucky
+console number.
 
-Repeat runs before any change; record the spread (here ±3 %). Nothing is a "win" below
-2× the noise band. Acceptance criteria are written into each candidate file *before* the
-cutover, e.g. "prefill may cost 2–5 % only if decode gains ≥ 5 %" (C3a passed exactly this
-rule; C1 died by it).
+## 3. Define acceptance and rollback first
 
-## 4. Cutovers are scripted, reversible, and consented
+Every candidate records its delta, acceptance threshold, rollback, and final verdict in
+`configs/candidates/`. A change below twice the measured noise band is not a win. A local
+trade-off must satisfy its predeclared budget; for example, `k8v4` was accepted only if a
+2-5% prefill cost bought at least 5% decode speed.
 
-`scripts/cutover-template.ps1`: timestamped profile backup → validate anchor strings exist
-(stop/start commands, health URL, profile path) → stop engine → apply args/env delta →
-start → poll `/health` with timeout → **failsafe: if the engine does not come back, restore
-the backup automatically**. A restart kills whatever agents run on the engine — always
-schedule it explicitly, never as a side effect of "just testing". Keep named backups
-(`configs/backups/` is machine-local and gitignored); restore *by name*, not "latest".
+## 4. Separate evidence levels
 
-## 5. Model-based studies are only as good as their cost curve
+Report each result as one of:
 
-The DSpark simulation (RFC-02) flipped from "+5.4 %" to "+0.1 %" when the verification-cost
-model changed from an affine fit to exact interpolation through three measured points. Rule:
-a simulated policy gain is only trustworthy if the simulation reproduces the measured
-*fixed* baselines within noise first. `proto/dspark_sim.py` prints that calibration check.
+1. source analysis;
+2. unit or parity test;
+3. isolated component microbenchmark;
+4. offline calibrated simulation;
+5. live end-to-end A/B.
 
-## 6. Negative results ship
+Never turn a kernel launch time into an end-to-end throughput claim. A simulation must
+first reproduce measured fixed-policy baselines within the noise band.
 
-C1 (doc-promised 1.8× → +0.6 %), C4 (depth sweep → default optimal), RFC-02 (scheduling →
-refuted) are documented with their tables, because they bound what the next person should
-not spend a weekend on.
+## 5. Preserve invariants
+
+Correctness gates precede throughput:
+
+- constrained decoding commits no invalid token;
+- deterministic sampling is stable under request interleaving;
+- replay restores exact conversation state;
+- opt-in features leave the default path unchanged;
+- unsupported deployment modes fail closed.
+
+## 6. Use a reversible cutover
+
+`scripts/cutover-template.ps1` takes explicit stop and start command arrays, creates a
+timestamped backup, starts the candidate, and health-checks it. On failure it restores the
+backup and starts the reference profile. Never use the current live profile as a scratch
+configuration, and never restart it without an agreed cutover window.
+
+## 7. Publish negative results
+
+Rejected candidates prevent repeated work. This repository records the +0.6% GDN result,
+the slower speculation depths, and the +0.1% confidence policy alongside accepted wins.

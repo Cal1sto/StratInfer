@@ -1,0 +1,16 @@
+{
+  "id": "C8",
+  "title": "Strict JSON-Schema decoding with packed sm_120 grammar masks",
+  "inspiration": "DeepInfer structured outputs, re-derived for Strata's Qwen3.8 verifier and GGUF token table.",
+  "delta": {
+    "overlay": "scripts/apply-to-strata.ps1",
+    "env": {
+      "STRATA_GRAMMAR_SCHEMA": "<absolute schema path>"
+    }
+  },
+  "evidence": "CUDA 13.1 Release clean build for 120-real succeeded for strata and strata-q36. Four CTest targets pass. The adversarial constrained smoke is 6/6 valid on the secondary GPU. Isolated 248,320-token mask, median of 10: 7.931 us kernel-only and 94.652 us pinned upload plus kernel.",
+  "acceptance": "At least 10,000 outputs over about 20 schemas, zero invalid committed outputs with speculation on and off, at least 95% of unconstrained decode throughput, and GPU mask parity maintained.",
+  "constraints": "Startup-scoped schema; serial single-GPU stream only; no batch, layer split, pipeline windows, regex, or EBNF.",
+  "rollback": "Unset STRATA_GRAMMAR_SCHEMA and restart the reference profile; remove the overlay build from the test profile.",
+  "verdict": "BUILT_AND_TESTED_COMPONENTS; FUNCTIONAL_SMOKE_PASSED; RTX5090_CONSTRAINED_E2E_PENDING"
+}

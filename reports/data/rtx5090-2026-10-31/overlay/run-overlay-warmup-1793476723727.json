@@ -1,0 +1,49 @@
+{
+  "label": "overlay-warmup",
+  "base": "http://127.0.0.1:11440",
+  "at": "2026-10-31T19:58:43.727Z",
+  "results": [
+    {
+      "trial": 1,
+      "case": "code-8k",
+      "request_id": "da459348037e",
+      "output_tokens": 512,
+      "reused": 0,
+      "prompt_read": 72,
+      "prompt_ms": 741.9,
+      "decode_tok_s": 131.5,
+      "hit_rate": 0.954,
+      "drafts_offered": 328,
+      "drafts_accepted": 224,
+      "finish": "length"
+    },
+    {
+      "trial": 1,
+      "case": "prose-2k",
+      "request_id": "55db67ee799f",
+      "output_tokens": 900,
+      "reused": 0,
+      "prompt_read": 72,
+      "prompt_ms": 492.8,
+      "decode_tok_s": 116.1,
+      "hit_rate": 0.945,
+      "drafts_offered": 681,
+      "drafts_accepted": 401,
+      "finish": "length"
+    },
+    {
+      "trial": 1,
+      "case": "agent-32k",
+      "request_id": "b5686a0fbab9",
+      "output_tokens": 290,
+      "reused": 0,
+      "prompt_read": 12684,
+      "prompt_ms": 3062.7,
+      "decode_tok_s": 97,
+      "hit_rate": 0.91,
+      "drafts_offered": 214,
+      "drafts_accepted": 166,
+      "finish": "stop"
+    }
+  ]
+}
