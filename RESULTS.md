@@ -39,8 +39,9 @@ reported as RTX 5090 performance. The final `sm_120` clean build passes all four
 
 The opt-in C11 profile adds exact K/V parking on CUDA device 1 (RTX 4080 SUPER), a
 32 GiB per-project SSD session budget, an always-injected canonical context, and five
-isolated specialist roles. The active full-model engine was not restarted, so these are
-clean-build, exact-state and component results rather than a full-model throughput A/B.
+isolated specialist roles. The initial component campaign did not restart the active
+full-model engine, so its copy and snapshot figures remain component results rather
+than a full-model throughput A/B. A later live cutover is reported separately below.
 
 | Measurement | Result |
 |---|---:|
@@ -62,6 +63,17 @@ reduced scale, not by writing 32 GiB physically.
 
 See [`reports/long-session-memory-2026-11-01.md`](reports/long-session-memory-2026-11-01.md)
 for protocol, raw files, limits and the pending 24-hour cutover gate.
+
+### MOAI live cutover
+
+MOAI 1.0.15 now selects Strata or StratInfer transactionally. Strata remains online but
+unloaded on port 11440 while StratInfer serves on port 11441. The first clean cutover
+took 51.8 seconds; a reverse/forward cycle took 28.3 and 40.5 seconds. Qwen3-ASR and
+Qwen3-TTS retained their process identities throughout, and a live text canary returned
+`OK` in 1.03 seconds. The final selected engine is StratInfer with a 524,288-token
+context. This validates operation and rollback, not the pending 24-hour stability gate.
+
+See [`reports/moai-live-cutover-2026-11-01.md`](reports/moai-live-cutover-2026-11-01.md).
 
 ## Live configuration results
 

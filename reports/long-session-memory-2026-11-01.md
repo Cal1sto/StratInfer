@@ -89,3 +89,12 @@ absence de pression sur la RTX 4080.
 - [`peer-cache.json`](data/long-session-2026-11-01/peer-cache.json)
 - [`context-matrix.json`](data/long-session-2026-11-01/context-matrix.json)
 - [`validation.json`](data/long-session-2026-11-01/validation.json)
+
+## Mise à jour après bascule
+
+La bascule de production a ensuite été réalisée via MOAI 1.0.15. StratInfer est actif
+sur le port 11441, Strata reste disponible mais déchargé sur le port 11440, et les PID
+Qwen3-ASR/TTS sur la RTX 4080 sont restés inchangés pendant un aller-retour complet.
+Cette validation lève la porte de déploiement contrôlé, mais pas la trace continue de
+24 heures. Voir
+[`moai-live-cutover-2026-11-01.md`](moai-live-cutover-2026-11-01.md).

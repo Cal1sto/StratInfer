@@ -24,12 +24,14 @@ testable equivalent.
 | Strict JSON-Schema overlay | 4/4 `sm_120` tests and 6/6 constrained smoke outputs | Functional smoke passed |
 | Packed grammar-mask CUDA kernel | median 7.931 us kernel-only; 94.652 us pinned upload plus kernel | Component result only |
 | End-to-end constrained RTX 5090 throughput | final constrained cutover not run | Pending |
-| Long-session memory on RTX 4080 + SSD | 12,585 exact snapshot checks; 10.84/11.46 GiB/s peer copies; 9/9 orchestration tests | Offline validated; cutover pending |
+| Long-session memory on RTX 4080 + SSD | 12,585 exact snapshot checks; 10.84/11.46 GiB/s peer copies; live MOAI cutover and rollback | Opt-in live profile active; 24-hour gate pending |
 
 Full measurements and caveats are in [`RESULTS.md`](RESULTS.md). The latest raw battery
 and analysis are in [`reports/rtx5090-2026-10-31.md`](reports/rtx5090-2026-10-31.md).
 The long-session report is
 [`reports/long-session-memory-2026-11-01.md`](reports/long-session-memory-2026-11-01.md).
+The live MOAI selector and voice-preservation validation are in
+[`reports/moai-live-cutover-2026-11-01.md`](reports/moai-live-cutover-2026-11-01.md).
 
 ## DeepInfer capabilities
 
@@ -89,6 +91,10 @@ node scripts/bench_replay.mjs --tokens 16000
 node scripts/bench_grammar.mjs --label unconstrained --trials 5 --tokens 512
 node scripts/verify_determinism.mjs --seed 424242 --concurrency 4
 ```
+
+The validated MOAI deployment keeps the fallback Strata server on port `11440` and
+serves StratInfer on port `11441`; set `STRATINFER_BASE` explicitly when benchmarking
+that live profile. See [`docs/moai-engine-switch.md`](docs/moai-engine-switch.md).
 
 ## Apply the overlay
 
@@ -151,7 +157,9 @@ node scripts/long_session.mjs run --project stratinfer `
 The server must use the status command's `sessions_path` as `--slot-save-path`, with
 parallel slots disabled. Use a dedicated server or a controlled cutover because a
 session restore replaces the engine's current conversation. Full setup, recovery and
-limits are in [`docs/long-coding-sessions.md`](docs/long-coding-sessions.md).
+limits are in [`docs/long-coding-sessions.md`](docs/long-coding-sessions.md). The
+transactional MOAI deployment is documented in
+[`docs/moai-engine-switch.md`](docs/moai-engine-switch.md).
 
 `CUDA_ARCH` defaults to `120-real`; set `CUDA_ARCH=89-real` only for a separate Ada
 functional-smoke build. Use a clean build after changing overlay headers.
