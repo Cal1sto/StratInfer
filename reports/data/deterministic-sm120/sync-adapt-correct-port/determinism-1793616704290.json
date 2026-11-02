@@ -1,0 +1,81 @@
+{
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-02T10:51:44.290Z",
+  "seed": 424242,
+  "temperature": 0.8,
+  "max_tokens": 32,
+  "expected": "745e4e1a11c1bc9aa6f959622fbb2518f2ccba40ae3760be6203b161cee91a41",
+  "pass": false,
+  "observations": [
+    {
+      "mode": "serial",
+      "index": 0,
+      "hash": "745e4e1a11c1bc9aa6f959622fbb2518f2ccba40ae3760be6203b161cee91a41",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 32,
+        "total_tokens": 101,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 1,
+      "hash": "745e4e1a11c1bc9aa6f959622fbb2518f2ccba40ae3760be6203b161cee91a41",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 32,
+        "total_tokens": 101,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 2,
+      "hash": "745e4e1a11c1bc9aa6f959622fbb2518f2ccba40ae3760be6203b161cee91a41",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 32,
+        "total_tokens": 101,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 0,
+      "concurrency": 2,
+      "hash": "745e4e1a11c1bc9aa6f959622fbb2518f2ccba40ae3760be6203b161cee91a41",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 32,
+        "total_tokens": 101,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 1,
+      "concurrency": 2,
+      "hash": "b873d2e9451f14126a94d0f900c8c2188ba0deccb53924fdcfe276127bf8f253",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 32,
+        "total_tokens": 101,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    }
+  ],
+  "mismatches": [
+    "b873d2e9451f14126a94d0f900c8c2188ba0deccb53924fdcfe276127bf8f253"
+  ]
+}

@@ -81,6 +81,7 @@ See [`reports/moai-live-cutover-2026-11-01.md`](reports/moai-live-cutover-2026-1
 |---|---|---|
 | C2 conversation cache, 512 to 4096 MiB | 1,441 parking budget rejections/day to 0 | Kept |
 | C3 `k8v4` | decode 91.38 to 98.65 tok/s (+8.0%); fresh prefill about -4.2% | Kept |
+| C9 deterministic sampling | fixed placement 13/13; performance placement 1/13 at 128 tokens | Strict profile accepted; opt-in |
 | C1 chunked GDN | +0.6% fresh prefill, inside noise | Rejected |
 | C4 speculation depth | depth 5: -10.6%; depth 3: -3.5% against depth 4 | Rejected |
 
@@ -226,9 +227,18 @@ The Qwen3.8 verifier already keys Philox by seed and token position. The overlay
 live serial/interleaving hash harness. The separate Qwen3.6 host sampler was changed from
 a mutable `mt19937_64` stream to the same position-keyed contract, and its unit test passes.
 
-The live matrix ran with seed 424242. Both the reference and overlay produced six hashes
-different from the first result across seven observations. The unit-level Philox property
-passes, but the live deterministic-output gate fails and its remaining cause is unresolved.
+The original live matrix ran with seed 424242. Both the reference and overlay produced
+six hashes different from the first result across seven observations. A later 13-run
+campaign isolated adaptive expert residency as the cause: an expert computed on CPU and
+GPU rounds differently, and the asynchronous adaptive tier changes that placement.
+
+A fixed-placement profile passed 13/13 serial/interleaved hashes on port 11441, while
+synchronous adaptation passed only 4/5 and the restored performance profile passed 1/13
+at 128 tokens. Fixed placement decoded the short strict gate at 2.1-2.7 tok/s; the
+restored performance profile reached a 143.7 tok/s median in its retained 128-token
+metrics. Strict determinism is therefore accepted as a separate opt-in profile, not as
+the interactive default. See
+[`reports/determinism-fix-2026-11-02.md`](reports/determinism-fix-2026-11-02.md).
 
 ## Remaining gates
 
@@ -237,7 +247,7 @@ No result in this section is claimed complete yet:
 - at least 10,000 grammar-constrained live samples over representative schemas;
 - zero invalid committed output with speculation on and off at that scale;
 - at least 95% of unconstrained decode throughput on the RTX 5090;
-- serial/interleaved determinism across multiple seeds;
+- strict serial/interleaved determinism across multiple seeds and longer outputs;
 - longer concurrency runs to confirm the observed +3.72% to +6.72% signal.
 
 Concurrency and exact replay now have live baselines. The remaining constrained RTX 5090

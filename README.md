@@ -23,6 +23,7 @@ testable equivalent.
 | RTX 5090 overlay A/B | +1.62% fixed decode; +1.43% fresh prefill; +3.72% to +6.72% concurrent throughput | Promising, sequential gain inside noise |
 | Live Strata 0.1.45 vs StratInfer 0.1.54 | +9.19% fixed decode; +9.64% fresh prefill; +16.77% to +20.45% concurrent throughput | StratInfer selected; hot replay +6.42% remains to fix |
 | Strict JSON-Schema overlay | 4/4 `sm_120` tests and 6/6 constrained smoke outputs | Functional smoke passed |
+| Strict deterministic runtime | fixed placement 13/13; synchronous adaptation 4/5; strict decode 2.1-2.7 tok/s | Opt-in only; performance profile remains default |
 | Packed grammar-mask CUDA kernel | median 7.931 us kernel-only; 94.652 us pinned upload plus kernel | Component result only |
 | End-to-end constrained RTX 5090 throughput | final constrained cutover not run | Pending |
 | Long-session memory on RTX 4080 + SSD | 12,585 exact snapshot checks; 10.84/11.46 GiB/s peer copies; live MOAI cutover and rollback | Opt-in live profile active; 24-hour gate pending |
@@ -43,6 +44,7 @@ The overlay implements or validates the portable parts:
 
 - strict JSON-Schema constrained decoding inside the verifier;
 - position-keyed Philox sampling and an interleaving determinism test;
+- opt-in request-boundary GPU synchronization and generated strict deterministic profiles;
 - concurrency, exact replay, fixed-prompt, fresh-prompt, and schema-validity benchmarks;
 - packed `sm_120` grammar masks with a GPU parity test;
 - exact parked K/V on a helper RTX 4080, bounded SSD sessions, canonical context,
@@ -67,6 +69,7 @@ topologies. They are mapped to native Strata equivalents rather than copied. See
 - `scripts/summarize_comparison.mjs`: paired statistics and comparison summary.
 - `scripts/long_session.mjs`: durable context and specialist-agent orchestration.
 - `scripts/verify_determinism.mjs`: serial versus interleaved output hashes.
+- `scripts/make-deterministic-profile.mjs`: non-destructive strict-profile generation.
 - `configs/candidates/`: changes, acceptance criteria, rollback, and verdicts.
 - `proto/`: Python reference automaton and simulations.
 
@@ -82,8 +85,9 @@ node --check scripts/bench_grammar.mjs
 node --check scripts/bench_quality.mjs
 node --check scripts/bench_efficiency.mjs
 node --check scripts/verify_determinism.mjs
+node --check scripts/make-deterministic-profile.mjs
 node --check scripts/summarize_comparison.mjs
-node --test scripts/tests/context-memory.test.mjs scripts/tests/agent-orchestrator.test.mjs
+node --test scripts/tests/context-memory.test.mjs scripts/tests/agent-orchestrator.test.mjs scripts/tests/deterministic-profile.test.mjs
 node scripts/bench_long_memory.mjs 2000 100
 node scripts/audit.mjs --once
 ```
@@ -99,12 +103,15 @@ node scripts/bench_replay.mjs --tokens 16000
 node scripts/bench_quality.mjs --label baseline --trials 2 --tokens 512 --nonce baseline-v1
 node scripts/bench_efficiency.mjs --label baseline --trials 5 --tokens 512
 node scripts/bench_grammar.mjs --label unconstrained --trials 5 --tokens 512
-node scripts/verify_determinism.mjs --seed 424242 --concurrency 4
+node scripts/verify_determinism.mjs --expect-base http://127.0.0.1:11440 --seed 424242 --concurrency 4
 ```
 
 The validated MOAI deployment keeps the fallback Strata server on port `11440` and
 serves StratInfer on port `11441`; set `STRATINFER_BASE` explicitly when benchmarking
 that live profile. See [`docs/moai-engine-switch.md`](docs/moai-engine-switch.md).
+Use a separate strict profile when byte-identical sampled output is required; its flags,
+trade-offs, and validation procedure are in
+[`docs/deterministic-runtime.md`](docs/deterministic-runtime.md).
 
 ## Apply the overlay
 

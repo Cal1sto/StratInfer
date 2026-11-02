@@ -17,7 +17,11 @@ try {
   const rounds = positiveInt(option(args, "--rounds", "4"), "--rounds");
   const concurrency = positiveInt(option(args, "--concurrency", "4"), "--concurrency");
   const maxTokens = positiveInt(option(args, "--tokens", "128"), "--tokens");
+  const noiseTokens = positiveInt(option(args, "--noise-tokens", "64"), "--noise-tokens");
   const temperature = finiteNumber(option(args, "--temperature", "0.8"), "--temperature", 0.001, 5);
+  const expectedBase = option(args, "--expect-base", "").replace(/\/$/, "");
+  if (expectedBase && expectedBase !== BASE)
+    throw new Error(`STRATINFER_BASE resolved to ${BASE}, expected ${expectedBase}`);
   const outArg = option(args, "--out", "logs");
   const outDir = isAbsolute(outArg) ? outArg : resolve(ROOT, outArg);
   const target = {
@@ -38,7 +42,7 @@ try {
   const expected = observations[0].hash;
   for (let round = 0; round < rounds; ++round) {
     const noise = Array.from({ length: Math.max(0, concurrency - 1) }, (_, index) => chat({
-      model: "strata", temperature: 0, max_tokens: 64,
+      model: "strata", temperature: 0, max_tokens: noiseTokens,
       messages: [{ role: "user", content: `Noise request ${round}/${index}: list three cache invariants.` }],
     }));
     const targetPromise = run(target);
@@ -48,7 +52,7 @@ try {
   const mismatches = observations.filter(row => row.hash !== expected);
   mkdirSync(outDir, { recursive: true });
   const out = join(outDir, `determinism-${Date.now()}.json`);
-  writeFileSync(out, JSON.stringify({ base: BASE, at: new Date().toISOString(), seed, temperature,
+  writeFileSync(out, JSON.stringify({ base: BASE, at: new Date().toISOString(), seed, temperature, noise_tokens: noiseTokens,
     max_tokens: maxTokens, expected, pass: mismatches.length === 0,
     observations: observations.map(({ content, ...row }) => row), mismatches: mismatches.map(row => row.hash) }, null, 2));
   console.log(JSON.stringify({ pass: mismatches.length === 0, runs: observations.length,

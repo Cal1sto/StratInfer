@@ -3,11 +3,11 @@
   "title": "Position-keyed deterministic and batch-invariant sampling",
   "inspiration": "DeepInfer batch-invariant inference; Qwen3.8 already uses Philox keyed by seed and token position.",
   "delta": {
-    "qwen38": "No engine behavior change; add live serial/interleaving verification.",
+    "qwen38": "Add a non-destructive strict-profile generator that freezes expert placement and a live endpoint assertion for serial/interleaving verification.",
     "qwen36": "Replace mutable mt19937_64 host draws with the same position-keyed Philox contract."
   },
-  "evidence": "qwen35_philox_test passes in the CUDA 13.1 120-real build; scripts/verify_determinism.mjs records SHA-256 hashes for serial and interleaved runs.",
+  "evidence": "qwen35_philox_test passes in the CUDA 13.1 120-real build. On RTX 5090, fixed expert placement passed 13/13 serial/interleaved sampled hashes; synchronous adaptive placement failed 1/5. Raw evidence is under reports/data/deterministic-sm120/.",
   "acceptance": "For each tested seed and sampling configuration, all serial target hashes and all target hashes produced beside unrelated concurrent requests are identical.",
-  "rollback": "Use the unpatched reference engine profile.",
-  "verdict": "UNIT_TESTED; LIVE_INTERLEAVING_PENDING"
+  "rollback": "Keep the original performance profile and select it instead of the generated strict profile.",
+  "verdict": "STRICT_PROFILE_ACCEPTED; PERFORMANCE_DEFAULT_RETAINED"
 }

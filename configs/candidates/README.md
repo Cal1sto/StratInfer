@@ -15,6 +15,6 @@ reversible process in `scripts/cutover-template.ps1` and an explicit cutover win
 | C6 host core placement | Pending |
 | C7 cache budget 8 GiB | Pending |
 | C8 strict grammar mask | Built/tested; live correctness and throughput pending |
-| C9 deterministic sampling | Unit-tested; live interleaving gate pending |
+| C9 deterministic sampling | Strict profile passed 13/13; performance profile retained by default |
 | C10 concurrency and replay | Harness ready; live baseline pending |
 | C11 RTX 4080 + SSD long-session memory | Offline validated; 24-hour cutover pending |

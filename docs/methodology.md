@@ -19,7 +19,9 @@ Repeat fixed benches to establish the noise band before changing anything.
 - `bench_grammar.mjs`: adversarial JSON-Schema validity and request performance.
 - `verify_determinism.mjs`: same seeded output alone and under interleaving.
 
-All live scripts read `STRATINFER_BASE` and write machine-readable JSON reports. Use
+All live scripts read `STRATINFER_BASE` and write machine-readable JSON reports. Pass
+`--expect-base` to `verify_determinism.mjs` so a stale environment cannot test the wrong
+engine. Use
 `bench_ab.mjs --compare <files...>` to summarize saved runs instead of copying one lucky
 console number.
 
