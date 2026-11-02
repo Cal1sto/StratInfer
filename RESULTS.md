@@ -240,6 +240,34 @@ metrics. Strict determinism is therefore accepted as a separate opt-in profile, 
 the interactive default. See
 [`reports/determinism-fix-2026-11-02.md`](reports/determinism-fix-2026-11-02.md).
 
+## FastMCP deployment, 2026-11-02
+
+The active StratInfer profile now starts a pinned FastMCP 1.26 server over stdio. Six
+tools are available only to requests that set `strata_mcp: true`; ordinary LLM and
+vision requests do not receive their schemas. The server is root-confined and read-only
+for the repository, except for a dedicated FTS5 memory database capped at 32 GiB.
+
+| Measurement | Result |
+|---|---:|
+| direct protocol and tool checks | 6/6 passed |
+| path traversal rejection | passed |
+| end-to-end Qwen tool call | `MCP_OK` |
+| end-to-end MOAI proxy tool call | `MOAI_MCP_OK` |
+| memory after forced MCP restart | `STORED` then `FOUND` |
+| automatic MCP restart | passed, new PID |
+| `git_status` tool latency | 28.8 ms median, 30.4 ms p95 |
+| FastMCP idle working set | 64.5 MiB |
+| plain request | 172.8 ms median, 35 prompt tokens |
+| MCP advertised, no call | 1,204.3 ms median, 827 prompt tokens |
+| one real tool call | 2,016.8 ms median, 1,154 prompt tokens |
+| real tool execution within that call | 30 ms median |
+
+The main cost is therefore model-side schema prefill and the second inference round,
+not stdio execution. Keeping MCP opt-in avoids this cost for normal chat, vision, ASR and
+TTS. MCP results and external state are not covered by strict text determinism. Full
+configuration, raw evidence and caveats are in
+[`reports/fastmcp-2026-11-02.md`](reports/fastmcp-2026-11-02.md).
+
 ## Remaining gates
 
 No result in this section is claimed complete yet:

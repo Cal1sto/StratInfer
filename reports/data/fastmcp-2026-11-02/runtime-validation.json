@@ -1,0 +1,177 @@
+﻿{
+    "at":  "2026-11-02T12:23:12.6664870Z",
+    "selected_engine":  "stratinfer",
+    "health":  {
+                   "status":  "ok",
+                   "max_context":  524288,
+                   "model":  "qwen3.8-flash-next-iq3_s",
+                   "images":  true,
+                   "api_key":  false,
+                   "image_generation":  false,
+                   "loaded":  true,
+                   "service":  "strata"
+               },
+    "llm":  {
+                "reply":  "LLM_OK",
+                "wall_ms":  829,
+                "timings":  {
+                                "cache_n":  0,
+                                "prompt_n":  17,
+                                "prompt_ms":  371.6,
+                                "prompt_per_token_ms":  21.859,
+                                "prompt_per_second":  45.7,
+                                "predicted_n":  4,
+                                "predicted_ms":  75.6,
+                                "predicted_per_token_ms":  18.9,
+                                "predicted_per_second":  52.9,
+                                "draft_n":  3,
+                                "draft_n_accepted":  3
+                            },
+                "usage":  {
+                              "prompt_tokens":  17,
+                              "completion_tokens":  4,
+                              "total_tokens":  21,
+                              "prompt_tokens_details":  {
+                                                            "cached_tokens":  0
+                                                        }
+                          }
+            },
+    "vision":  {
+                   "reply":  "green",
+                   "wall_ms":  625,
+                   "timings":  {
+                                   "cache_n":  0,
+                                   "prompt_n":  37,
+                                   "prompt_ms":  460.7,
+                                   "prompt_per_token_ms":  12.451,
+                                   "prompt_per_second":  80.3,
+                                   "predicted_n":  2,
+                                   "predicted_ms":  121.6,
+                                   "predicted_per_token_ms":  60.8,
+                                   "predicted_per_second":  16.4,
+                                   "draft_n":  3,
+                                   "draft_n_accepted":  3
+                               },
+                   "usage":  {
+                                 "prompt_tokens":  37,
+                                 "completion_tokens":  2,
+                                 "total_tokens":  39,
+                                 "prompt_tokens_details":  {
+                                                               "cached_tokens":  0
+                                                           }
+                             }
+               },
+    "mcp":  {
+                "servers":  [
+                                {
+                                    "name":  "stratinfer",
+                                    "transport":  "stdio",
+                                    "status":  "ready",
+                                    "error":  null,
+                                    "info":  {
+                                                 "name":  "StratInfer FastMCP",
+                                                 "version":  "1.26.0",
+                                                 "protocol":  "2025-06-18"
+                                             },
+                                    "tools":  [
+                                                  {
+                                                      "name":  "stratinfer__runtime_snapshot",
+                                                      "tool":  "runtime_snapshot",
+                                                      "description":  "Return live StratInfer health and native MCP status."
+                                                  },
+                                                  {
+                                                      "name":  "stratinfer__code_search",
+                                                      "tool":  "code_search",
+                                                      "description":  "Search workspace text with ripgrep; paths cannot leave the configured root."
+                                                  },
+                                                  {
+                                                      "name":  "stratinfer__file_read",
+                                                      "tool":  "file_read",
+                                                      "description":  "Read a bounded UTF-8 text range from one workspace file."
+                                                  },
+                                                  {
+                                                      "name":  "stratinfer__git_status",
+                                                      "tool":  "git_status",
+                                                      "description":  "Return branch and concise Git status for the configured workspace."
+                                                  },
+                                                  {
+                                                      "name":  "stratinfer__memory_remember",
+                                                      "tool":  "memory_remember",
+                                                      "description":  "Store one durable coding-memory record in the configured SSD database."
+                                                  },
+                                                  {
+                                                      "name":  "stratinfer__memory_recall",
+                                                      "tool":  "memory_recall",
+                                                      "description":  "Recall relevant durable coding-memory records from the SSD database."
+                                                  }
+                                              ]
+                                }
+                            ],
+                "tools":  6,
+                "settings":  {
+                                 "timeout_s":  15.0,
+                                 "max_result_chars":  24000,
+                                 "max_rounds":  4
+                             }
+            },
+    "moai_mcp":  {
+                     "reply":  "MOAI_MCP_OK",
+                     "wall_ms":  2917.3,
+                     "events":  [
+                                    {
+                                        "event":  "start",
+                                        "id":  "call_e241119babd74dc5829f2e35",
+                                        "name":  "stratinfer__runtime_snapshot"
+                                    },
+                                    {
+                                        "event":  "call",
+                                        "id":  "call_e241119babd74dc5829f2e35",
+                                        "name":  "stratinfer__runtime_snapshot",
+                                        "server":  "stratinfer",
+                                        "tool":  "runtime_snapshot",
+                                        "arguments":  {
+
+                                                      },
+                                        "round":  1
+                                    },
+                                    {
+                                        "event":  "result",
+                                        "id":  "call_e241119babd74dc5829f2e35",
+                                        "ok":  true,
+                                        "text":  "{\n  \"health\": {\n    \"status\": \"ok\",\n    \"max_context\": 524288,\n    \"model\": \"qwen3.8-flash-next-iq3_s\",\n    \"images\": true,\n    \"api_key\": false,\n    \"image_generation\": false,\n    \"loaded\": true,\n    \"service\": \"strata\"\n  },\n  \"mcp\": {\n    \"ready\": true,\n    \"servers\": 1,\n    \"tools\": 6,\n    \"protocols\": [\n      \"2025-06-18\"\n    ],\n    \"settings\": {\n      \"timeout_s\": 15.0,\n      \"max_result_chars\": 24000,\n      \"max_rounds\": 4\n    }\n  },\n  \"workspace\": \"E:\\\\DEV\\\\StratInfer\\\\public-repo\",\n  \"memory\": {\n    \"path\": \"E:\\\\Data\\\\JarvisMarc\\\\StratInferSessions\\\\fastmcp-context.sqlite3\",\n    \"bytes\": 28672,\n    \"max_bytes\": 34359738368\n  },\n  \"probe_ms\": 172.08\n}",
+                                        "chars":  666,
+                                        "truncated":  false,
+                                        "ms":  172
+                                    }
+                                ],
+                     "usage":  {
+                                   "prompt_tokens":  1138,
+                                   "completion_tokens":  24,
+                                   "total_tokens":  1162,
+                                   "prompt_tokens_details":  {
+                                                                 "cached_tokens":  834
+                                                             }
+                               }
+                 },
+    "processes":  {
+                      "server_pid":  24288,
+                      "mcp_pid":  41208,
+                      "mcp_command":  "C:\\ProgramData\\Anaconda3\\python.exe E:\\Data\\JarvisMarc\\StratInferRuntime\\51f355f\\mcp\\stratinfer_fastmcp.py",
+                      "mcp_working_set_mib":  64.5,
+                      "mcp_private_mib":  51.4,
+                      "asr_pids":  [
+                                       45764,
+                                       50480
+                                   ],
+                      "tts_pids":  [
+                                       7428,
+                                       39424
+                                   ]
+                  },
+    "budgets":  {
+                    "helper_vram_mib":  "4096",
+                    "mcp_memory_max_bytes":  "34359738368",
+                    "memory_db":  "E:\\Data\\JarvisMarc\\StratInferSessions\\fastmcp-context.sqlite3",
+                    "memory_bytes":  28672
+                }
+}

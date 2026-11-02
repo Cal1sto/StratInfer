@@ -24,6 +24,7 @@ testable equivalent.
 | Live Strata 0.1.45 vs StratInfer 0.1.54 | +9.19% fixed decode; +9.64% fresh prefill; +16.77% to +20.45% concurrent throughput | StratInfer selected; hot replay +6.42% remains to fix |
 | Strict JSON-Schema overlay | 4/4 `sm_120` tests and 6/6 constrained smoke outputs | Functional smoke passed |
 | Strict deterministic runtime | fixed placement 13/13; synchronous adaptation 4/5; strict decode 2.1-2.7 tok/s | Opt-in only; performance profile remains default |
+| FastMCP coding tools | 6/6 tools; MOAI end-to-end; crash recovery; 28.8 ms median `git_status` | Active on StratInfer; request opt-in only |
 | Packed grammar-mask CUDA kernel | median 7.931 us kernel-only; 94.652 us pinned upload plus kernel | Component result only |
 | End-to-end constrained RTX 5090 throughput | final constrained cutover not run | Pending |
 | Long-session memory on RTX 4080 + SSD | 12,585 exact snapshot checks; 10.84/11.46 GiB/s peer copies; live MOAI cutover and rollback | Opt-in live profile active; 24-hour gate pending |
@@ -37,6 +38,8 @@ The live MOAI selector and voice-preservation validation are in
 The complete deployed-engine comparison, including quality, TTFT, energy, concurrency,
 long context and negative results, is
 [`reports/strata-vs-stratinfer-2026-11-01.md`](reports/strata-vs-stratinfer-2026-11-01.md).
+The active FastMCP deployment, security model and measured overhead are in
+[`reports/fastmcp-2026-11-02.md`](reports/fastmcp-2026-11-02.md).
 
 ## DeepInfer capabilities
 
@@ -49,6 +52,7 @@ The overlay implements or validates the portable parts:
 - packed `sm_120` grammar masks with a GPU parity test;
 - exact parked K/V on a helper RTX 4080, bounded SSD sessions, canonical context,
   matrix retrieval, and specialist-agent handoffs;
+- opt-in FastMCP coding tools with read-only workspace access and bounded SSD memory;
 - acceptance gates and reversible cutover tooling.
 
 DeepInfer's FlashMLA, DeepGEMM, DeepEP, DeepSelect, TileLang, attention DP/CP,
@@ -70,6 +74,9 @@ topologies. They are mapped to native Strata equivalents rather than copied. See
 - `scripts/long_session.mjs`: durable context and specialist-agent orchestration.
 - `scripts/verify_determinism.mjs`: serial versus interleaved output hashes.
 - `scripts/make-deterministic-profile.mjs`: non-destructive strict-profile generation.
+- `tools/stratinfer_fastmcp.py`: root-confined coding and durable-memory MCP tools.
+- `scripts/enable-fastmcp.ps1`: backed-up, pinned FastMCP profile deployment.
+- `scripts/bench_fastmcp.mjs`: plain, advertised-tools, and real-tool-call comparison.
 - `configs/candidates/`: changes, acceptance criteria, rollback, and verdicts.
 - `proto/`: Python reference automaton and simulations.
 
@@ -87,7 +94,9 @@ node --check scripts/bench_efficiency.mjs
 node --check scripts/verify_determinism.mjs
 node --check scripts/make-deterministic-profile.mjs
 node --check scripts/summarize_comparison.mjs
+node --check scripts/bench_fastmcp.mjs
 node --test scripts/tests/context-memory.test.mjs scripts/tests/agent-orchestrator.test.mjs scripts/tests/deterministic-profile.test.mjs
+python scripts/test-fastmcp.py --iterations 30
 node scripts/bench_long_memory.mjs 2000 100
 node scripts/audit.mjs --once
 ```
@@ -104,6 +113,7 @@ node scripts/bench_quality.mjs --label baseline --trials 2 --tokens 512 --nonce 
 node scripts/bench_efficiency.mjs --label baseline --trials 5 --tokens 512
 node scripts/bench_grammar.mjs --label unconstrained --trials 5 --tokens 512
 node scripts/verify_determinism.mjs --expect-base http://127.0.0.1:11440 --seed 424242 --concurrency 4
+node scripts/bench_fastmcp.mjs --trials 10
 ```
 
 The validated MOAI deployment keeps the fallback Strata server on port `11440` and
@@ -177,6 +187,18 @@ session restore replaces the engine's current conversation. Full setup, recovery
 limits are in [`docs/long-coding-sessions.md`](docs/long-coding-sessions.md). The
 transactional MOAI deployment is documented in
 [`docs/moai-engine-switch.md`](docs/moai-engine-switch.md).
+
+## FastMCP coding tools
+
+StratInfer starts one pinned FastMCP 1.26 stdio child with six tools: live runtime
+status, code search, bounded file reads, Git status, SSD memory insertion and SSD memory
+recall. The workspace tools are read-only and cannot escape the configured root. The
+memory database is separate and capped at 32 GiB.
+
+MCP is request-scoped. Normal OpenAI-compatible requests are unchanged; an agent opts in
+with `"strata_mcp": true`. This is important because advertising the six schemas adds a
+measured 792 prompt tokens even when no tool is called. Setup, request examples,
+security limits, measurements and rollback are in [`docs/fastmcp.md`](docs/fastmcp.md).
 
 `CUDA_ARCH` defaults to `120-real`; set `CUDA_ARCH=89-real` only for a separate Ada
 functional-smoke build. Use a clean build after changing overlay headers.
