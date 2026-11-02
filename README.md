@@ -40,6 +40,9 @@ long context and negative results, is
 [`reports/strata-vs-stratinfer-2026-11-01.md`](reports/strata-vs-stratinfer-2026-11-01.md).
 The active FastMCP deployment, security model and measured overhead are in
 [`reports/fastmcp-2026-11-02.md`](reports/fastmcp-2026-11-02.md).
+Concrete coding, long-context, multi-agent, memory and MCP use cases with reproducible
+projections are in
+[`reports/stratinfer-vs-strata-use-cases-2026-11-02.md`](reports/stratinfer-vs-strata-use-cases-2026-11-02.md).
 
 ## DeepInfer capabilities
 
@@ -95,6 +98,8 @@ node --check scripts/verify_determinism.mjs
 node --check scripts/make-deterministic-profile.mjs
 node --check scripts/summarize_comparison.mjs
 node --check scripts/bench_fastmcp.mjs
+node --check scripts/project_use_cases.mjs
+node scripts/project_use_cases.mjs
 node --test scripts/tests/context-memory.test.mjs scripts/tests/agent-orchestrator.test.mjs scripts/tests/deterministic-profile.test.mjs
 python scripts/test-fastmcp.py --iterations 30
 node scripts/bench_long_memory.mjs 2000 100

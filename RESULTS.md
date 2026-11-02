@@ -268,6 +268,12 @@ TTS. MCP results and external state are not covered by strict text determinism. 
 configuration, raw evidence and caveats are in
 [`reports/fastmcp-2026-11-02.md`](reports/fastmcp-2026-11-02.md).
 
+The quantified use-case synthesis converts these live measurements into explicit coding,
+long-context, multi-agent, replay, energy, memory and MCP scenarios. Projected values are
+kept separate from directly measured values and are regenerated from raw JSON with
+`scripts/project_use_cases.mjs`. See
+[`reports/stratinfer-vs-strata-use-cases-2026-11-02.md`](reports/stratinfer-vs-strata-use-cases-2026-11-02.md).
+
 ## Remaining gates
 
 No result in this section is claimed complete yet:
