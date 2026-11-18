@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-18",
+  "campaign": "campaign-89c5aca6-a497-4994-aed5-102eaeaa2901",
+  "voicePids": { "asr": 58792, "tts": 12992, "preserved": true },
+  "strata": {
+    "activationResponseMs": 30126,
+    "postResponseReadyMsApprox": 40564,
+    "fullReadyMsApprox": 70690,
+    "initialRequestBeforeReady": "fetch failed",
+    "excludedFromBenchmarks": true
+  },
+  "stratinfer": {
+    "fullReadyMs": 50273,
+    "selected": true,
+    "loaded": true,
+    "qwenReady": true,
+    "noemaReadinessGate": true
+  },
+  "correctedRoundTrip": {
+    "strata": { "fullReadyMs": 30753, "loaded": true, "qwenReady": true, "directHealth": "ok" },
+    "stratinfer": { "fullReadyMs": 49720, "loaded": true, "qwenReady": true },
+    "voicePidsPreserved": true
+  }
+}

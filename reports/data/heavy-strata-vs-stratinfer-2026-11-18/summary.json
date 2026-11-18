@@ -1,0 +1,503 @@
+{
+  "generated_at": "2026-11-18T15:50:01.981Z",
+  "sources": {
+    "strata": {
+      "fixed": "strata/run-strata-heavy-1795015269441.json",
+      "fresh": "strata/fresh-strata-heavy-1795015443922.json",
+      "concurrency": "strata/concurrency-1795015739380.json",
+      "replay": "strata/replay-1795015785811.json",
+      "quality": "strata/quality-strata-heavy-1795015955424.json",
+      "efficiency": "strata/efficiency-strata-heavy-1795015993828.json",
+      "determinism": "strata/determinism-1795016034636.json"
+    },
+    "stratinfer": {
+      "fixed": "stratinfer/run-stratinfer-heavy-1795016308164.json",
+      "fresh": "stratinfer/fresh-stratinfer-heavy-1795016460913.json",
+      "concurrency": "stratinfer/concurrency-1795016721612.json",
+      "replay": "stratinfer/replay-1795016762004.json",
+      "quality": "stratinfer/quality-stratinfer-heavy-1795016920290.json",
+      "efficiency": "stratinfer/efficiency-stratinfer-heavy-1795016955713.json",
+      "determinism": "stratinfer/determinism-1795016990459.json"
+    }
+  },
+  "fixed_decode": {
+    "cases": [
+      {
+        "case": "code-8k",
+        "strata": {
+          "n": 5,
+          "mean": 95.16,
+          "median": 95.8,
+          "min": 92.4,
+          "max": 97.2,
+          "standard_deviation": 1.858,
+          "cv_pct": 1.953
+        },
+        "stratinfer": {
+          "n": 5,
+          "mean": 106.54,
+          "median": 105.5,
+          "min": 101.8,
+          "max": 114.8,
+          "standard_deviation": 4.969,
+          "cv_pct": 4.664
+        },
+        "mean_gain_pct": 11.959,
+        "paired_gain": {
+          "n": 5,
+          "mean_pct": 11.957,
+          "median_pct": 9.781,
+          "ci95_low_pct": 6.141,
+          "ci95_high_pct": 17.774
+        }
+      },
+      {
+        "case": "prose-2k",
+        "strata": {
+          "n": 5,
+          "mean": 89.86,
+          "median": 90.6,
+          "min": 85.1,
+          "max": 95.3,
+          "standard_deviation": 4.255,
+          "cv_pct": 4.735
+        },
+        "stratinfer": {
+          "n": 5,
+          "mean": 98.42,
+          "median": 98,
+          "min": 92.3,
+          "max": 105.2,
+          "standard_deviation": 4.65,
+          "cv_pct": 4.725
+        },
+        "mean_gain_pct": 9.526,
+        "paired_gain": {
+          "n": 5,
+          "mean_pct": 9.729,
+          "median_pct": 8.461,
+          "ci95_low_pct": 0.315,
+          "ci95_high_pct": 19.144
+        }
+      },
+      {
+        "case": "agent-32k",
+        "strata": {
+          "n": 5,
+          "mean": 75.72,
+          "median": 73.9,
+          "min": 67.2,
+          "max": 83.2,
+          "standard_deviation": 6.95,
+          "cv_pct": 9.178
+        },
+        "stratinfer": {
+          "n": 5,
+          "mean": 76.76,
+          "median": 77.3,
+          "min": 72.3,
+          "max": 80.8,
+          "standard_deviation": 3.12,
+          "cv_pct": 4.064
+        },
+        "mean_gain_pct": 1.373,
+        "paired_gain": {
+          "n": 5,
+          "mean_pct": 2.115,
+          "median_pct": 2.3,
+          "ci95_low_pct": -11.29,
+          "ci95_high_pct": 15.519
+        }
+      }
+    ],
+    "overall": {
+      "strata": {
+        "n": 15,
+        "mean": 86.913,
+        "median": 90.6,
+        "min": 67.2,
+        "max": 97.2,
+        "standard_deviation": 9.597,
+        "cv_pct": 11.042
+      },
+      "stratinfer": {
+        "n": 15,
+        "mean": 93.907,
+        "median": 98,
+        "min": 72.3,
+        "max": 114.8,
+        "standard_deviation": 13.612,
+        "cv_pct": 14.496
+      },
+      "mean_gain_pct": 8.047,
+      "paired_gain": {
+        "n": 15,
+        "mean_pct": 7.934,
+        "median_pct": 8.461,
+        "ci95_low_pct": 3.136,
+        "ci95_high_pct": 12.731
+      }
+    }
+  },
+  "fresh_prefill": {
+    "strata": {
+      "n": 5,
+      "mean": 3617.2,
+      "median": 3603,
+      "min": 3573,
+      "max": 3673,
+      "standard_deviation": 44.958,
+      "cv_pct": 1.243
+    },
+    "stratinfer": {
+      "n": 5,
+      "mean": 4152.4,
+      "median": 4136,
+      "min": 4097,
+      "max": 4250,
+      "standard_deviation": 58.226,
+      "cv_pct": 1.402
+    },
+    "mean_gain_pct": 14.796,
+    "paired_gain": {
+      "n": 5,
+      "mean_pct": 14.798,
+      "median_pct": 15.265,
+      "ci95_low_pct": 13.489,
+      "ci95_high_pct": 16.107
+    }
+  },
+  "concurrency": [
+    {
+      "concurrency": 1,
+      "strata": {
+        "concurrency": 1,
+        "aggregate_tok_s_median": 106.67,
+        "latency_p95_ms": 5542.1
+      },
+      "stratinfer": {
+        "concurrency": 1,
+        "aggregate_tok_s_median": 105.06,
+        "latency_p95_ms": 5235.3
+      },
+      "throughput_gain_pct": -1.509,
+      "latency_p95_delta_pct": -5.536,
+      "paired_throughput_gain": {
+        "n": 5,
+        "mean_pct": 6.952,
+        "median_pct": 7.889,
+        "ci95_low_pct": -4.211,
+        "ci95_high_pct": 18.114
+      }
+    },
+    {
+      "concurrency": 2,
+      "strata": {
+        "concurrency": 2,
+        "aggregate_tok_s_median": 109.52,
+        "latency_p95_ms": 7818
+      },
+      "stratinfer": {
+        "concurrency": 2,
+        "aggregate_tok_s_median": 122.54,
+        "latency_p95_ms": 7059.2
+      },
+      "throughput_gain_pct": 11.888,
+      "latency_p95_delta_pct": -9.706,
+      "paired_throughput_gain": {
+        "n": 5,
+        "mean_pct": 11.798,
+        "median_pct": 9.109,
+        "ci95_low_pct": -3.246,
+        "ci95_high_pct": 26.841
+      }
+    },
+    {
+      "concurrency": 4,
+      "strata": {
+        "concurrency": 4,
+        "aggregate_tok_s_median": 108.21,
+        "latency_p95_ms": 15172.5
+      },
+      "stratinfer": {
+        "concurrency": 4,
+        "aggregate_tok_s_median": 120.72,
+        "latency_p95_ms": 12725.1
+      },
+      "throughput_gain_pct": 11.561,
+      "latency_p95_delta_pct": -16.13,
+      "paired_throughput_gain": {
+        "n": 5,
+        "mean_pct": 13.09,
+        "median_pct": 13.022,
+        "ci95_low_pct": 4.765,
+        "ci95_high_pct": 21.416
+      }
+    },
+    {
+      "concurrency": 8,
+      "strata": {
+        "concurrency": 8,
+        "aggregate_tok_s_median": 104.26,
+        "latency_p95_ms": 30697
+      },
+      "stratinfer": {
+        "concurrency": 8,
+        "aggregate_tok_s_median": 121.14,
+        "latency_p95_ms": 26035.2
+      },
+      "throughput_gain_pct": 16.19,
+      "latency_p95_delta_pct": -15.187,
+      "paired_throughput_gain": {
+        "n": 5,
+        "mean_pct": 17.128,
+        "median_pct": 17.746,
+        "ci95_low_pct": 12.893,
+        "ci95_high_pct": 21.363
+      }
+    }
+  ],
+  "replay": {
+    "strata": {
+      "prompt_total": 158452,
+      "cold_prompt_ms": 44400.1,
+      "resumed_prompt_ms": 1402.2,
+      "reused_tokens": 158424,
+      "reuse_pct": 99.9823,
+      "speedup_x": 31.665,
+      "exact_reuse": true
+    },
+    "stratinfer": {
+      "prompt_total": 158452,
+      "cold_prompt_ms": 38219.2,
+      "resumed_prompt_ms": 1546.1,
+      "reused_tokens": 158424,
+      "reuse_pct": 99.9823,
+      "speedup_x": 24.72,
+      "exact_reuse": true
+    },
+    "cold_prompt_delta_pct": -13.921,
+    "resumed_prompt_delta_pct": 10.262
+  },
+  "quality": {
+    "strata": {
+      "passed": 30,
+      "total": 30,
+      "score": 1,
+      "request_success_rate": 1,
+      "categories": [
+        {
+          "category": "reasoning",
+          "passed": 6,
+          "total": 6,
+          "score": 1
+        },
+        {
+          "category": "coding",
+          "passed": 6,
+          "total": 6,
+          "score": 1
+        },
+        {
+          "category": "instruction",
+          "passed": 6,
+          "total": 6,
+          "score": 1
+        },
+        {
+          "category": "long-context",
+          "passed": 12,
+          "total": 12,
+          "score": 1
+        }
+      ]
+    },
+    "stratinfer": {
+      "passed": 30,
+      "total": 30,
+      "score": 1,
+      "request_success_rate": 1,
+      "categories": [
+        {
+          "category": "reasoning",
+          "passed": 6,
+          "total": 6,
+          "score": 1
+        },
+        {
+          "category": "coding",
+          "passed": 6,
+          "total": 6,
+          "score": 1
+        },
+        {
+          "category": "instruction",
+          "passed": 6,
+          "total": 6,
+          "score": 1
+        },
+        {
+          "category": "long-context",
+          "passed": 12,
+          "total": 12,
+          "score": 1
+        }
+      ]
+    },
+    "long_context_latency": [
+      {
+        "case": "needle-2k",
+        "prompt_tokens": 2309,
+        "strata_latency_ms": {
+          "n": 3,
+          "mean": 2631.633,
+          "median": 2603.7,
+          "min": 2603.3,
+          "max": 2687.9,
+          "standard_deviation": 48.729,
+          "cv_pct": 1.852
+        },
+        "stratinfer_latency_ms": {
+          "n": 3,
+          "mean": 2480.033,
+          "median": 2480.7,
+          "min": 2431.2,
+          "max": 2528.2,
+          "standard_deviation": 48.503,
+          "cv_pct": 1.956
+        },
+        "mean_latency_delta_pct": -5.761
+      },
+      {
+        "case": "needle-8k",
+        "prompt_tokens": 8909,
+        "strata_latency_ms": {
+          "n": 3,
+          "mean": 3860.533,
+          "median": 3871.7,
+          "min": 3830.9,
+          "max": 3879,
+          "standard_deviation": 25.921,
+          "cv_pct": 0.671
+        },
+        "stratinfer_latency_ms": {
+          "n": 3,
+          "mean": 3715,
+          "median": 3729.8,
+          "min": 3672.4,
+          "max": 3742.8,
+          "standard_deviation": 37.461,
+          "cv_pct": 1.008
+        },
+        "mean_latency_delta_pct": -3.77
+      },
+      {
+        "case": "needle-32k",
+        "prompt_tokens": 35310,
+        "strata_latency_ms": {
+          "n": 3,
+          "mean": 11291.5,
+          "median": 11223.7,
+          "min": 11061.2,
+          "max": 11589.6,
+          "standard_deviation": 270.646,
+          "cv_pct": 2.397
+        },
+        "stratinfer_latency_ms": {
+          "n": 3,
+          "mean": 10197.633,
+          "median": 10199.9,
+          "min": 10042.2,
+          "max": 10350.8,
+          "standard_deviation": 154.312,
+          "cv_pct": 1.513
+        },
+        "mean_latency_delta_pct": -9.688
+      },
+      {
+        "case": "needle-64k",
+        "prompt_tokens": 70510,
+        "strata_latency_ms": {
+          "n": 3,
+          "mean": 20565.833,
+          "median": 20547.2,
+          "min": 20463.8,
+          "max": 20686.5,
+          "standard_deviation": 112.513,
+          "cv_pct": 0.547
+        },
+        "stratinfer_latency_ms": {
+          "n": 3,
+          "mean": 18199.933,
+          "median": 18054.8,
+          "min": 18018.4,
+          "max": 18526.6,
+          "standard_deviation": 283.486,
+          "cv_pct": 1.558
+        },
+        "mean_latency_delta_pct": -11.504
+      }
+    ]
+  },
+  "efficiency": {
+    "strata": {
+      "successful_requests": 5,
+      "total_requests": 5,
+      "request_success_rate": 1,
+      "ttft_ms_median": 642.8,
+      "ttft_ms_p95": 1258.7,
+      "ttfc_ms_median": null,
+      "decode_tok_s_median": 113.2,
+      "wall_ms_median": 5128.2,
+      "energy_j_median": 1177.46,
+      "incremental_energy_j_median": 712.39,
+      "average_power_w_median": 224.53,
+      "peak_power_w": 289.65,
+      "tokens_per_joule_median": 0.4348,
+      "incremental_tokens_per_joule_median": 0.7187,
+      "peak_memory_mib": 29799
+    },
+    "stratinfer": {
+      "successful_requests": 5,
+      "total_requests": 5,
+      "request_success_rate": 1,
+      "ttft_ms_median": 568,
+      "ttft_ms_p95": 1147.8,
+      "ttfc_ms_median": null,
+      "decode_tok_s_median": 129.2,
+      "wall_ms_median": 4526.4,
+      "energy_j_median": 1076.04,
+      "incremental_energy_j_median": 669.55,
+      "average_power_w_median": 231.65,
+      "peak_power_w": 323.71,
+      "tokens_per_joule_median": 0.4758,
+      "incremental_tokens_per_joule_median": 0.7647,
+      "peak_memory_mib": 30141
+    },
+    "stratinfer_delta_pct": {
+      "ttft_ms_median": -11.637,
+      "ttft_ms_p95": -8.811,
+      "decode_tok_s_median": 14.134,
+      "wall_ms_median": -11.735,
+      "energy_j_median": -8.613,
+      "incremental_energy_j_median": -6.014,
+      "average_power_w_median": 3.171,
+      "peak_power_w": 11.759,
+      "tokens_per_joule_median": 9.43,
+      "incremental_tokens_per_joule_median": 6.4,
+      "peak_memory_mib": 1.148
+    }
+  },
+  "determinism": {
+    "strata": {
+      "pass": false,
+      "runs": 13,
+      "mismatches": 12
+    },
+    "stratinfer": {
+      "pass": false,
+      "runs": 13,
+      "mismatches": 12
+    }
+  }
+}

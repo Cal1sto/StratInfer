@@ -3,8 +3,8 @@ import { createServer } from "node:http";
 import test from "node:test";
 import { MoaiResourceClient, planResourceProfile } from "../src/resources.mjs";
 
-async function fakeMoai(context, { failAsrRelease = false } = {}) {
-  const state = { asr: true, speech: true, selected: "strata", calls: [] };
+async function fakeMoai(context, { failAsrRelease = false, engineReadyAfterHealthPolls = 0 } = {}) {
+  const state = { asr: true, speech: true, selected: "strata", engineReady: true, engineHealthPolls: 0, calls: [] };
   const server = createServer(async (request, response) => {
     const url = new URL(request.url, "http://127.0.0.1");
     state.calls.push(`${request.method} ${url.pathname}`);
@@ -17,10 +17,25 @@ async function fakeMoai(context, { failAsrRelease = false } = {}) {
       response.writeHead(status, { "content-type": "application/json" });
       response.end(JSON.stringify(body));
     };
-    if (url.pathname === "/health") return send(200, { asr: { ready: state.asr, busy: false, pending: 0 }, speech: { ready: state.speech, busy: false, pending: 0 } });
+    if (url.pathname === "/health") {
+      if (!state.engineReady && ++state.engineHealthPolls >= engineReadyAfterHealthPolls) state.engineReady = true;
+      return send(200, {
+        loaded: state.engineReady,
+        textEngine: { selected: state.selected, switching: false, choices: ["strata", "stratinfer"].map((id) => ({ id, active: id === state.selected })) },
+        residentModels: { qwen: { ready: state.engineReady, loading: !state.engineReady } },
+        asr: { ready: state.asr, busy: false, pending: 0 },
+        speech: { ready: state.speech, busy: false, pending: 0 },
+      });
+    }
     if (url.pathname === "/api/status") return send(200, { telemetry: { gpus: [{ uuid: "helper", name: "NVIDIA GeForce RTX 4080 SUPER", totalBytes: 16_376 * 1024 ** 2, usedBytes: 1000 * 1024 ** 2, freeBytes: 15_376 * 1024 ** 2 }] } });
     if (url.pathname === "/api/text/engine" && request.method === "GET") return send(200, { selected: state.selected, choices: [{ id: "strata" }, { id: "stratinfer" }] });
-    if (url.pathname === "/api/text/engine" && request.method === "POST") { const body = JSON.parse(await new Response(request).text()); state.selected = body.id; return send(200, { selected: state.selected }); }
+    if (url.pathname === "/api/text/engine" && request.method === "POST") {
+      const body = JSON.parse(await new Response(request).text());
+      state.selected = body.id;
+      state.engineHealthPolls = 0;
+      state.engineReady = engineReadyAfterHealthPolls === 0;
+      return send(200, { selected: state.selected });
+    }
     if (url.pathname === "/api/speech/release") { state.speech = false; return send(200, { ready: false }); }
     if (url.pathname === "/api/asr/release") {
       if (failAsrRelease) return send(409, { error: "ASR release failed" });
@@ -66,6 +81,26 @@ test("MOAI mutations authenticate, release voice transactionally and restore pri
   assert.ok(fixture.state.calls.indexOf("POST /api/speech/release") < fixture.state.calls.indexOf("POST /api/asr/release"));
 });
 
+test("MOAI activation waits for the selected Qwen engine to become ready", async (context) => {
+  const fixture = await fakeMoai(context, { engineReadyAfterHealthPolls: 3 });
+  const client = new MoaiResourceClient({ baseUrl: fixture.baseUrl, token: "admin-secret" });
+  const activated = await client.activateTextEngine("stratinfer", { pollIntervalMs: 1, maxWaitMs: 1000 });
+  assert.equal(activated.selected, "stratinfer");
+  assert.deepEqual(activated.readiness, { loaded: true, qwenReady: true });
+  assert.equal(fixture.state.engineHealthPolls, 3);
+});
+
+test("MOAI activation fails closed when Qwen never becomes ready", async (context) => {
+  const fixture = await fakeMoai(context, { engineReadyAfterHealthPolls: 10_000 });
+  const client = new MoaiResourceClient({ baseUrl: fixture.baseUrl, token: "admin-secret" });
+  await assert.rejects(
+    client.activateTextEngine("stratinfer", { pollIntervalMs: 1, maxWaitMs: 20 }),
+    /did not become ready/,
+  );
+  assert.equal(fixture.state.selected, "stratinfer");
+  assert.equal(fixture.state.engineReady, false);
+});
+
 test("a partial MOAI release restores speech before failing", async (context) => {
   const fixture = await fakeMoai(context, { failAsrRelease: true });
   const client = new MoaiResourceClient({ baseUrl: fixture.baseUrl, token: "admin-secret" });
@@ -78,5 +113,5 @@ test("a partial MOAI release restores speech before failing", async (context) =>
 test("MOAI mutations fail before I/O without an administrator token", async () => {
   const client = new MoaiResourceClient({ baseUrl: "http://127.0.0.1:12150" });
   await assert.rejects(client.releaseVoice(), /administrator token/);
-  assert.throws(() => client.activateTextEngine("stratinfer"), /administrator token/);
+  await assert.rejects(client.activateTextEngine("stratinfer"), /administrator token/);
 });

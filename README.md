@@ -27,8 +27,9 @@ testable equivalent.
 | FastMCP coding tools | 6/6 tools; MOAI end-to-end; crash recovery; 28.8 ms median `git_status` | Active on StratInfer; request opt-in only |
 | Packed grammar-mask CUDA kernel | median 7.931 us kernel-only; 94.652 us pinned upload plus kernel | Component result only |
 | End-to-end constrained RTX 5090 throughput | final constrained cutover not run | Pending |
-| Eight-agent long-session memory | 6 GiB RTX 4080 cap, 12 GiB host, 64 GiB SSD; live prefixed save/restore | Active; 24-hour and quota-pressure gates pending |
-| NOEMA supervised control plane | 23/23 focused and 48/48 combined tests; final Codex `PASS` (0.90); exercised rollback; 10/10 strict tool calls | Active in `voice-balanced`; agent-max capacity qualified, endurance pending |
+| Eight-agent long-session memory | 4 GiB RTX 4080 cap, 12 GiB host, 64 GiB SSD; live prefixed save/restore | Active; 24-hour and quota-pressure gates pending |
+| NOEMA supervised control plane | 25/25 focused and 50/50 combined tests; latest heavy-load review `PASS` (0.89); exercised rollback; 10/10 strict tool calls | Active in `voice-balanced`; agent-max capacity qualified, endurance pending |
+| Heavy Strata vs StratInfer load | 338 paired requests; +8.05% decode, +14.80% fresh prefill, +16.19% at concurrency 8, 60/60 quality | StratInfer retained; hot replay +10.26% remains to fix |
 
 Full measurements and caveats are in [`RESULTS.md`](RESULTS.md). The latest raw battery
 and analysis are in [`reports/rtx5090-2026-10-31.md`](reports/rtx5090-2026-10-31.md).
@@ -254,6 +255,9 @@ gates are in
 [`reports/noema-implementation-2026-11-17.md`](reports/noema-implementation-2026-11-17.md).
 Live activation, corrections, benchmarks, trade-offs and rollback are in
 [`reports/noema-live-benchmarks-2026-11-18.md`](reports/noema-live-benchmarks-2026-11-18.md).
+The latest matched heavy-load comparison, including MCP/NOEMA load and the readiness
+correction, is in
+[`reports/heavy-strata-vs-stratinfer-2026-11-18.md`](reports/heavy-strata-vs-stratinfer-2026-11-18.md).
 
 `CUDA_ARCH` defaults to `120-real`; set `CUDA_ARCH=89-real` only for a separate Ada
 functional-smoke build. Use a clean build after changing overlay headers.

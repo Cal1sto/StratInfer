@@ -190,8 +190,10 @@ powershell -File scripts/enable-noema-control.ps1 `
 The MCP process receives the token file path, not the token value. It exposes campaign
 checkpoint and candidate inspection, Codex review requests, human approval requests
 and non-mutating resource plans through four compact tools. The existing repository
-FastMCP remains read-only. Normal requests do not enable MCP; the schema cost appears
-only when `strata_mcp` is true.
+FastMCP keeps workspace access read-only, but `memory_remember` writes bounded records
+to the SSD SQLite path fixed when the stdio child starts. The model cannot select
+another database path. Normal requests do not enable MCP; the schema cost appears only
+when `strata_mcp` is true.
 
 ## Validation
 

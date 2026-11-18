@@ -29,6 +29,10 @@ telemetry therefore follow the active endpoint instead of remaining bound to por
 7. Any failure selects and verifies the previous runtime before the API returns an
    error.
 
+NOEMA additionally waits for the selected choice to be active, `switching=false`,
+`loaded=true` and the Qwen resident model to be ready and no longer loading. This avoids
+returning success while the selected port still refuses inference connections.
+
 The Strata fallback server stays bound to port 11440 because an already elevated legacy
 process cannot safely be terminated by a non-elevated manager. Using a second port
 avoids process takeover, port reuse and privilege escalation.
@@ -39,11 +43,11 @@ The StratInfer profile sets:
 
 ```text
 STRATA_PARK_ASYNC=1
-STRATA_PARK_VRAM_MIB=6144
+STRATA_PARK_VRAM_MIB=4096
 STRATA_PARK_VRAM_DEVICE=1
 ```
 
-The 6,144 MiB value is an exact upper bound, not a permanent allocation. The local
+The 4,096 MiB value is an exact upper bound, not a permanent allocation. The local
 capacity gate requires at least 4,096 MiB to remain free in addition to this cap before
 the eight-agent profile is accepted. Device memory
 is consumed by eligible parked K/V snapshots and released under pressure. Strata keeps

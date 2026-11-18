@@ -319,6 +319,20 @@ engine switches, and the legacy six-tool profile was restored and exercised befo
 qualified ten-tool profile was re-enabled. Full results and raw evidence are in
 [`reports/noema-live-benchmarks-2026-11-18.md`](reports/noema-live-benchmarks-2026-11-18.md).
 
+## Heavy Strata versus StratInfer load, 2026-11-18
+
+An identical 169-request battery per engine produced 338 paired inference requests.
+StratInfer improved aggregate fixed decode by 8.05%, fresh 122K-token prefill by 14.80%,
+concurrency-eight throughput by 16.19%, median TTFT by 11.64% and tokens per joule by
+9.43%. Both engines passed 30/30 targeted quality checks and both failed live
+determinism with 12 divergences in 13 observations. Exact 158K-token replay succeeded in
+both, but StratInfer's hot resume was 10.26% slower. Forty measured MCP/NOEMA calls were
+strictly successful. The campaign also found and corrected an activation race that
+returned before Qwen readiness. The corrected suite passes 25/25 focused and 50/50
+combined tests; an independent Codex review returned `PASS` with 0.89 confidence and
+completed the campaign. Full results are in
+[`reports/heavy-strata-vs-stratinfer-2026-11-18.md`](reports/heavy-strata-vs-stratinfer-2026-11-18.md).
+
 ## Remaining gates
 
 No result in this section is claimed complete yet:

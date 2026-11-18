@@ -80,9 +80,23 @@ export class MoaiResourceClient {
     return this.request("/api/text/engine", { admin: true });
   }
 
-  activateTextEngine(id) {
+  async activateTextEngine(id, { pollIntervalMs = 1000, maxWaitMs = 12 * 60_000 } = {}) {
     this.requireAdminToken();
-    return this.request("/api/text/engine", { method: "POST", body: { id: String(id) }, admin: true, timeoutMs: 12 * 60_000 });
+    const target = String(id);
+    const activation = await this.request("/api/text/engine", { method: "POST", body: { id: target }, admin: true, timeoutMs: maxWaitMs });
+    const deadline = Date.now() + maxWaitMs;
+    let lastHealth = null;
+    while (Date.now() < deadline) {
+      lastHealth = await this.health();
+      const selected = lastHealth.textEngine?.selected;
+      const active = lastHealth.textEngine?.choices?.find((choice) => choice.id === target)?.active;
+      const qwen = lastHealth.residentModels?.qwen;
+      if (selected === target && active === true && lastHealth.textEngine?.switching === false && lastHealth.loaded === true && qwen?.ready === true && qwen?.loading !== true) {
+        return { ...activation, selected: target, readiness: { loaded: true, qwenReady: true } };
+      }
+      await new Promise((resolve) => setTimeout(resolve, Math.max(1, Math.min(5000, pollIntervalMs))));
+    }
+    throw new Error(`MOAI text engine ${target} did not become ready within ${maxWaitMs} ms: ${JSON.stringify(lastHealth?.residentModels?.qwen ?? null)}`);
   }
 
   async helperGpuMemory({ settleMs = 0 } = {}) {
