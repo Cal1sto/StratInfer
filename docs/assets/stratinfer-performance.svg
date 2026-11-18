@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+  <title id="title">StratInfer measured advantage over Strata stable</title>
+  <desc id="desc">RTX 5090 benchmark dashboard showing decode, prefill, concurrency, latency and energy-efficiency improvements.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#08111f"/>
+      <stop offset="1" stop-color="#122943"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".25"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="640" rx="28" fill="url(#bg)"/>
+  <text x="60" y="64" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Measured advantage over Strata stable</text>
+  <text x="60" y="96" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="17">Qwen3.8-Flash-Next · RTX 5090 · latest 338-request paired heavy battery</text>
+
+  <g filter="url(#shadow)" font-family="Segoe UI, Arial, sans-serif">
+    <rect x="60" y="126" width="200" height="92" rx="16" fill="#102b40" stroke="#1e4f68"/>
+    <text x="80" y="164" fill="#5eead4" font-size="28" font-weight="700">+16.19%</text>
+    <text x="80" y="194" fill="#cbd5e1" font-size="15">throughput at C8</text>
+    <rect x="280" y="126" width="200" height="92" rx="16" fill="#102b40" stroke="#1e4f68"/>
+    <text x="300" y="164" fill="#5eead4" font-size="28" font-weight="700">-11.64%</text>
+    <text x="300" y="194" fill="#cbd5e1" font-size="15">median TTFT</text>
+    <rect x="500" y="126" width="200" height="92" rx="16" fill="#102b40" stroke="#1e4f68"/>
+    <text x="520" y="164" fill="#5eead4" font-size="28" font-weight="700">+9.43%</text>
+    <text x="520" y="194" fill="#cbd5e1" font-size="15">tokens per joule</text>
+    <rect x="720" y="126" width="200" height="92" rx="16" fill="#102b40" stroke="#1e4f68"/>
+    <text x="740" y="164" fill="#f8fafc" font-size="28" font-weight="700">30 / 30</text>
+    <text x="740" y="194" fill="#cbd5e1" font-size="15">quality checks each</text>
+    <rect x="940" y="126" width="200" height="92" rx="16" fill="#102b40" stroke="#1e4f68"/>
+    <text x="960" y="164" fill="#f8fafc" font-size="28" font-weight="700">99.982%</text>
+    <text x="960" y="194" fill="#cbd5e1" font-size="15">exact replay reuse</text>
+  </g>
+
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="16">
+    <text x="60" y="268" fill="#f8fafc" font-size="20" font-weight="600">Operational improvement</text>
+    <text x="1135" y="268" text-anchor="end" fill="#64748b">0–20% scale</text>
+
+    <text x="60" y="310" fill="#cbd5e1">Fixed decode</text>
+    <rect x="320" y="290" width="540" height="24" rx="12" fill="#1e293b"/>
+    <rect x="320" y="290" width="217" height="24" rx="12" fill="url(#bar)"/>
+    <text x="550" y="309" fill="#5eead4" font-weight="700">+8.05%</text>
+
+    <text x="60" y="354" fill="#cbd5e1">Fresh 122K prefill</text>
+    <rect x="320" y="334" width="540" height="24" rx="12" fill="#1e293b"/>
+    <rect x="320" y="334" width="400" height="24" rx="12" fill="url(#bar)"/>
+    <text x="733" y="353" fill="#5eead4" font-weight="700">+14.80%</text>
+
+    <text x="60" y="398" fill="#cbd5e1">Concurrency 4 throughput</text>
+    <rect x="320" y="378" width="540" height="24" rx="12" fill="#1e293b"/>
+    <rect x="320" y="378" width="312" height="24" rx="12" fill="url(#bar)"/>
+    <text x="645" y="397" fill="#5eead4" font-weight="700">+11.56%</text>
+
+    <text x="60" y="442" fill="#cbd5e1">Concurrency 8 throughput</text>
+    <rect x="320" y="422" width="540" height="24" rx="12" fill="#1e293b"/>
+    <rect x="320" y="422" width="437" height="24" rx="12" fill="url(#bar)"/>
+    <text x="770" y="441" fill="#5eead4" font-weight="700">+16.19%</text>
+
+    <text x="60" y="486" fill="#cbd5e1">TTFT reduction</text>
+    <rect x="320" y="466" width="540" height="24" rx="12" fill="#1e293b"/>
+    <rect x="320" y="466" width="314" height="24" rx="12" fill="url(#bar)"/>
+    <text x="647" y="485" fill="#5eead4" font-weight="700">11.64%</text>
+
+    <text x="60" y="530" fill="#cbd5e1">Energy-efficiency gain</text>
+    <rect x="320" y="510" width="540" height="24" rx="12" fill="#1e293b"/>
+    <rect x="320" y="510" width="255" height="24" rx="12" fill="url(#bar)"/>
+    <text x="588" y="529" fill="#5eead4" font-weight="700">+9.43%</text>
+  </g>
+
+  <rect x="900" y="290" width="240" height="244" rx="18" fill="#0d2034" stroke="#1e4f68"/>
+  <text x="925" y="328" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">What this means</text>
+  <text x="925" y="362" fill="#cbd5e1" font-family="Segoe UI, Arial, sans-serif" font-size="15">
+    <tspan x="925" dy="0">Faster coding loops</tspan>
+    <tspan x="925" dy="28">Higher agent density</tspan>
+    <tspan x="925" dy="28">Lower queue tail latency</tspan>
+    <tspan x="925" dy="28">Less energy per answer</tspan>
+    <tspan x="925" dy="28">No measured quality loss</tspan>
+    <tspan x="925" dy="28">Exact session restoration</tspan>
+  </text>
+
+  <line x1="60" y1="574" x2="1140" y2="574" stroke="#244158"/>
+  <text x="60" y="608" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="14">Measured values, not vendor estimates · Performance mode · November 18, 2026</text>
+  <text x="1140" y="608" text-anchor="end" fill="#5eead4" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">StratInfer</text>
+</svg>

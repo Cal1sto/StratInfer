@@ -1,15 +1,50 @@
+<div align="center">
+
 # StratInfer
 
-StratInfer is a measurement-first port of useful
-[DeepInfer](https://github.com/deepseek-ai/DeepInfer) ideas to
-[Strata](https://github.com/Niko1221/Strata), Qwen3.8-Flash-Next, and one RTX 5090
-(`sm_120`). It combines an opt-in engine overlay, reproducible benchmark harnesses,
-and documented accept/reject decisions.
+### Measured acceleration. Durable context. Supervised multi-agent inference.
 
-The project does not relabel SM100 datacenter kernels as RTX 5090 kernels. DeepInfer
-features are imported only when their model, numerical, and hardware invariants match.
-Otherwise StratInfer keeps Strata's native implementation or re-derives a small,
-testable equivalent.
+**An RTX 5090-native inference and agent runtime for Qwen3.8-Flash-Next, built on
+Strata and engineered for long-running local development.**
+
+[Final comparison report](reports/stratinfer-final-operational-comparison-2026-11-18.md)
+· [Reproducible results](RESULTS.md)
+· [Long-session architecture](docs/long-coding-sessions.md)
+· [Fast deterministic mode](docs/deterministic-runtime.md)
+
+</div>
+
+| Fixed decode | Fresh 122K prefill | C8 throughput | Median TTFT | Energy efficiency | Quality |
+|---:|---:|---:|---:|---:|---:|
+| **+8.05%** | **+14.80%** | **+16.19%** | **-11.64%** | **+9.43%** | **30/30 each** |
+
+![StratInfer measured advantage over Strata stable](docs/assets/stratinfer-performance.svg)
+
+## Why StratInfer
+
+- **Faster where agent systems spend time:** decode, large fresh prompts and C2–C8
+  concurrency all improve on the latest paired RTX 5090 battery.
+- **Built to continue, not restart:** exact K/V parking, bounded host cache, durable SSD
+  sessions, matrix retrieval and eight isolated specialist roles preserve project state.
+- **Tools without permanent tax:** FastMCP and NOEMA are request-scoped, supervised and
+  kept off ordinary turns.
+- **Reproducible when required:** a separate fast deterministic profile passed 19/19
+  sampled-output hashes while the normal high-throughput profile remains the default.
+- **Evidence before claims:** 338 heavy inference requests, 60/60 combined quality checks,
+  explicit rejected candidates and reversible Strata rollback.
+
+> **Production position:** choose StratInfer for interactive coding, fresh long contexts,
+> concurrent specialists and multi-day projects. Keep Strata stable as the low-complexity
+> rollback path. See the
+> [complete operational report](reports/stratinfer-final-operational-comparison-2026-11-18.md)
+> for absolute values, scaling projections, limitations and long-term implications.
+
+StratInfer is a measurement-first port of compatible
+[DeepInfer](https://github.com/deepseek-ai/DeepInfer) ideas to
+[Strata](https://github.com/Niko1221/Strata), Qwen3.8-Flash-Next and RTX 5090
+(`sm_120`). It does not relabel SM100 datacenter kernels as consumer-GPU kernels:
+features are accepted only when model, numerical and hardware invariants match, then
+validated with reproducible benchmarks and rollback criteria.
 
 ## Current status
 
