@@ -1,0 +1,447 @@
+{
+  "at": "2026-11-18T09:51:20.586Z",
+  "base": "http://127.0.0.1:11441",
+  "trials": 5,
+  "mcp_status": {
+    "servers": [
+      {
+        "name": "stratinfer",
+        "transport": "stdio",
+        "status": "ready",
+        "error": null,
+        "info": {
+          "name": "StratInfer FastMCP",
+          "version": "1.26.0",
+          "protocol": "2025-06-18"
+        },
+        "tools": [
+          {
+            "name": "stratinfer__runtime_snapshot",
+            "tool": "runtime_snapshot",
+            "description": "Return live StratInfer health and native MCP status."
+          },
+          {
+            "name": "stratinfer__code_search",
+            "tool": "code_search",
+            "description": "Search workspace text with ripgrep; paths cannot leave the configured root."
+          },
+          {
+            "name": "stratinfer__file_read",
+            "tool": "file_read",
+            "description": "Read a bounded UTF-8 text range from one workspace file."
+          },
+          {
+            "name": "stratinfer__git_status",
+            "tool": "git_status",
+            "description": "Return branch and concise Git status for the configured workspace."
+          },
+          {
+            "name": "stratinfer__memory_remember",
+            "tool": "memory_remember",
+            "description": "Store one durable coding-memory record in the configured SSD database."
+          },
+          {
+            "name": "stratinfer__memory_recall",
+            "tool": "memory_recall",
+            "description": "Recall relevant durable coding-memory records from the SSD database."
+          }
+        ]
+      },
+      {
+        "name": "noema_control",
+        "transport": "stdio",
+        "status": "ready",
+        "error": null,
+        "info": {
+          "name": "NOEMA Control",
+          "version": "1.26.0",
+          "protocol": "2025-06-18"
+        },
+        "tools": [
+          {
+            "name": "noema_control__inspect",
+            "tool": "inspect",
+            "description": "Read a campaign, checkpoint, or candidate."
+          },
+          {
+            "name": "noema_control__review",
+            "tool": "review",
+            "description": "Run the independent Codex checkpoint review."
+          },
+          {
+            "name": "noema_control__approval",
+            "tool": "approval",
+            "description": "Request human approval for an R3/R4 action."
+          },
+          {
+            "name": "noema_control__resource_plan",
+            "tool": "resource_plan",
+            "description": "Plan memory without changing live resources."
+          }
+        ]
+      }
+    ],
+    "tools": 10,
+    "settings": {
+      "timeout_s": 15,
+      "max_result_chars": 24000,
+      "max_rounds": 4
+    }
+  },
+  "summary": {
+    "plain": {
+      "successful": 5,
+      "total": 5,
+      "wall_ms_median": 348.8,
+      "wall_ms_p95": 481.2,
+      "prompt_tokens_median": 35,
+      "cached_tokens_median": 0,
+      "completion_tokens_median": 2,
+      "decode_tok_s_final_round_median": 20.8,
+      "tool_ms_median": null,
+      "tool_chars_median": null
+    },
+    "mcp-advertised": {
+      "successful": 5,
+      "total": 5,
+      "wall_ms_median": 1942.8,
+      "wall_ms_p95": 2049,
+      "prompt_tokens_median": 1231,
+      "cached_tokens_median": 0,
+      "completion_tokens_median": 2,
+      "decode_tok_s_final_round_median": 63.9,
+      "tool_ms_median": null,
+      "tool_chars_median": null
+    },
+    "mcp-tool": {
+      "successful": 5,
+      "total": 5,
+      "wall_ms_median": 3218.1,
+      "wall_ms_p95": 3283.5,
+      "prompt_tokens_median": 1566,
+      "cached_tokens_median": 1259,
+      "completion_tokens_median": 22,
+      "decode_tok_s_final_round_median": 56.9,
+      "tool_ms_median": 30,
+      "tool_chars_median": 669
+    }
+  },
+  "deltas": {
+    "advertised_wall_ms": 1594,
+    "advertised_wall_pct": 457,
+    "advertised_prompt_tokens": 1196,
+    "tool_call_wall_ms": 2869.3,
+    "tool_call_wall_pct": 822.6,
+    "tool_call_prompt_tokens": 1531
+  },
+  "warmups": [
+    {
+      "mode": "plain",
+      "trial": 0,
+      "marker": "plain-0-1794995440894",
+      "wall_ms": 830.3,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 35,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 16.3,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-advertised",
+      "trial": 0,
+      "marker": "mcp-advertised-0-1794995442031",
+      "wall_ms": 2128.4,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 1231,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 20.6,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-tool",
+      "trial": 0,
+      "marker": "mcp-tool-0-1794995444462",
+      "wall_ms": 3963.8,
+      "reply": "MCP_OK",
+      "finish_reason": "stop",
+      "prompt_tokens": 1566,
+      "cached_tokens": 1259,
+      "completion_tokens": 22,
+      "predicted_tokens_final_round": 4,
+      "decode_tok_s_final_round": 24.6,
+      "mcp_events": 3,
+      "tool_ms": 30,
+      "tool_chars": 669,
+      "tool_ok": true
+    }
+  ],
+  "rows": [
+    {
+      "mode": "plain",
+      "trial": 1,
+      "marker": "plain-1-1794995448739",
+      "wall_ms": 481.2,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 35,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 20.8,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-advertised",
+      "trial": 1,
+      "marker": "mcp-advertised-1-1794995449533",
+      "wall_ms": 2049,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 1231,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 26.2,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-tool",
+      "trial": 1,
+      "marker": "mcp-tool-1-1794995451891",
+      "wall_ms": 3237.3,
+      "reply": "MCP_OK",
+      "finish_reason": "stop",
+      "prompt_tokens": 1566,
+      "cached_tokens": 1259,
+      "completion_tokens": 22,
+      "predicted_tokens_final_round": 4,
+      "decode_tok_s_final_round": 62.9,
+      "mcp_events": 3,
+      "tool_ms": 30,
+      "tool_chars": 669,
+      "tool_ok": true
+    },
+    {
+      "mode": "plain",
+      "trial": 2,
+      "marker": "plain-2-1794995455440",
+      "wall_ms": 383.7,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 35,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 20.7,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-advertised",
+      "trial": 2,
+      "marker": "mcp-advertised-2-1794995456125",
+      "wall_ms": 1942.8,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 1231,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 32.8,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-tool",
+      "trial": 2,
+      "marker": "mcp-tool-2-1794995458382",
+      "wall_ms": 3283.5,
+      "reply": "MCP_OK",
+      "finish_reason": "stop",
+      "prompt_tokens": 1566,
+      "cached_tokens": 1259,
+      "completion_tokens": 22,
+      "predicted_tokens_final_round": 4,
+      "decode_tok_s_final_round": 42,
+      "mcp_events": 3,
+      "tool_ms": 30,
+      "tool_chars": 669,
+      "tool_ok": true
+    },
+    {
+      "mode": "plain",
+      "trial": 3,
+      "marker": "plain-3-1794995461969",
+      "wall_ms": 348.8,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 35,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 22.4,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-advertised",
+      "trial": 3,
+      "marker": "mcp-advertised-3-1794995462624",
+      "wall_ms": 1972.5,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 1231,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 63.9,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-tool",
+      "trial": 3,
+      "marker": "mcp-tool-3-1794995464899",
+      "wall_ms": 3218.1,
+      "reply": "MCP_OK",
+      "finish_reason": "stop",
+      "prompt_tokens": 1565,
+      "cached_tokens": 1256,
+      "completion_tokens": 22,
+      "predicted_tokens_final_round": 4,
+      "decode_tok_s_final_round": 51.1,
+      "mcp_events": 3,
+      "tool_ms": 0,
+      "tool_chars": 668,
+      "tool_ok": true
+    },
+    {
+      "mode": "plain",
+      "trial": 4,
+      "marker": "plain-4-1794995468423",
+      "wall_ms": 318.5,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 35,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 20.5,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-advertised",
+      "trial": 4,
+      "marker": "mcp-advertised-4-1794995469049",
+      "wall_ms": 1824.1,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 1231,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 70.9,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-tool",
+      "trial": 4,
+      "marker": "mcp-tool-4-1794995471180",
+      "wall_ms": 3097.6,
+      "reply": "MCP_OK",
+      "finish_reason": "stop",
+      "prompt_tokens": 1564,
+      "cached_tokens": 1259,
+      "completion_tokens": 22,
+      "predicted_tokens_final_round": 4,
+      "decode_tok_s_final_round": 56.9,
+      "mcp_events": 3,
+      "tool_ms": 0,
+      "tool_chars": 667,
+      "tool_ok": true
+    },
+    {
+      "mode": "plain",
+      "trial": 5,
+      "marker": "plain-5-1794995474587",
+      "wall_ms": 251,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 35,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 38.8,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-advertised",
+      "trial": 5,
+      "marker": "mcp-advertised-5-1794995475148",
+      "wall_ms": 1824.7,
+      "reply": "READY",
+      "finish_reason": "stop",
+      "prompt_tokens": 1231,
+      "cached_tokens": 0,
+      "completion_tokens": 2,
+      "predicted_tokens_final_round": 2,
+      "decode_tok_s_final_round": 85.1,
+      "mcp_events": 0,
+      "tool_ms": null,
+      "tool_chars": null,
+      "tool_ok": null
+    },
+    {
+      "mode": "mcp-tool",
+      "trial": 5,
+      "marker": "mcp-tool-5-1794995477282",
+      "wall_ms": 2994.2,
+      "reply": "MCP_OK",
+      "finish_reason": "stop",
+      "prompt_tokens": 1566,
+      "cached_tokens": 1256,
+      "completion_tokens": 22,
+      "predicted_tokens_final_round": 4,
+      "decode_tok_s_final_round": 66.6,
+      "mcp_events": 3,
+      "tool_ms": 30,
+      "tool_chars": 669,
+      "tool_ok": true
+    }
+  ]
+}

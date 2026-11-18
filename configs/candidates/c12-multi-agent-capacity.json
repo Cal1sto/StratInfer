@@ -1,0 +1,33 @@
+{
+  "id": "c12",
+  "title": "Eight-agent resumable workflow with guarded RTX 4080, host and SSD capacity",
+  "status": "LIVE_SMOKE_VALIDATED_ENDURANCE_PENDING",
+  "target": {
+    "agents": 8,
+    "context_tokens_per_agent": 131072,
+    "helper_vram_mib": 6144,
+    "host_cache_mib": 12288,
+    "ssd_budget_gib": 64,
+    "ssd_free_floor_gib": 32,
+    "matrix_dimensions": 512,
+    "matrix_max_records": 250000
+  },
+  "basis": "Measured 210552-token snapshots reached 3438997384 bytes, about 16333 bytes/token. Applying a 20% safety factor estimates 2.393 GiB for a 131072-token role. The 2026-11-10 live probe found 11.0 GiB free on RTX 4080, 30.4 GiB host RAM free and 1795.5 GiB free on E:. The capacity planner reports two helper-VRAM, five host-hot and 23 SSD target-sized snapshots. Live cutover retained ASR PID 8808 and TTS PID 16296, exposed 12288 MiB host cache, kept FastMCP 6/6, returned the OK canary, then saved a 248816800-byte project-prefixed architect snapshot and restored it on the next run.",
+  "changes": [
+    "increase helper K/V cap from 4096 to 6144 MiB while retaining a 4096 MiB planner reserve",
+    "increase host conversation cache from 8192 to 12288 MiB",
+    "increase per-project SSD budget from 32 to 64 GiB and free-space floor from 4 to 32 GiB",
+    "add eight isolated roles, quality gates, two bounded revision cycles and per-stage run checkpoints",
+    "bound the active matrix at 250000 rows and preselect 4096 candidates before dense scoring"
+  ],
+  "acceptance": [
+    "capacity plan remains viable with ASR and TTS resident",
+    "all unit and restart-resume tests pass",
+    "24-hour eight-role coding trace loses zero canonical invariant",
+    "quality gates never mark UNKNOWN, REVISE or BLOCKED as successful",
+    "RTX 4080 retains at least 4096 MiB free after helper allocation",
+    "SSD use stays below 64 GiB and filesystem free space stays above 32 GiB"
+  ],
+  "rollback": "Restore STRATA_PARK_VRAM_MIB=4096, --conversation-cache-mib 8192 and configs/long-session-4080.json from the previous revision. Existing 64 GiB stores remain readable because the on-disk ledger, matrix, transcripts and snapshots are backward compatible.",
+  "limitations": "The engine still exposes one active 524288-token slot. Eight specialists are sequential durable contexts, not eight simultaneous model replicas. MCP repository tools remain read-only, so model-generated edits require an external approved writer. Full 24-hour endurance and physical 64 GiB quota pressure are pending."
+}

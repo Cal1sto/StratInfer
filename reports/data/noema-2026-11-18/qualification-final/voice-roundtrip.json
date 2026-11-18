@@ -1,0 +1,42 @@
+{
+  "at": "2026-11-18T10:24:45.5508765Z",
+  "campaign": "campaign-852fe941-eddb-4160-b262-1d608b0d5817",
+  "selected": "stratinfer",
+  "pid_preserved": {
+    "asr": true,
+    "speech": true,
+    "asr_before": 58792,
+    "asr_after": 58792,
+    "speech_before": 12992,
+    "speech_after": 12992
+  },
+  "before": {
+    "label": "before-switch",
+    "expected": "NOEMA valide la voix locale numero sept.",
+    "transcript": "Noema valide la voie locale numéro sept.",
+    "tts_engine": "Qwen3-TTS 0.6B · voix",
+    "asr_engine": "Qwen3-ASR 0.6B",
+    "seconds": 3.68,
+    "audio_bytes": 176684,
+    "audio_sha256": "aba8c3d2bb578a8b7bf209cae628285899304b836ade562269c382b5d4d38dcf",
+    "tts_ms": 3323.0,
+    "asr_ms": 513.9,
+    "nonempty": true,
+    "keyword_match": true
+  },
+  "after": {
+    "label": "after-switch",
+    "expected": "NOEMA valide la voix locale numero sept.",
+    "transcript": "Noema valide la voie locale numéro sept.",
+    "tts_engine": "Qwen3-TTS 0.6B · voix",
+    "asr_engine": "Qwen3-ASR 0.6B",
+    "seconds": 3.68,
+    "audio_bytes": 176684,
+    "audio_sha256": "aba8c3d2bb578a8b7bf209cae628285899304b836ade562269c382b5d4d38dcf",
+    "tts_ms": 3239.8,
+    "asr_ms": 650.9,
+    "nonempty": true,
+    "keyword_match": true
+  },
+  "passed": true
+}

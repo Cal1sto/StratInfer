@@ -11,7 +11,7 @@ function median(values) {
   return percentile(values.filter(Number.isFinite), 0.5);
 }
 
-async function completion(mode, trial) {
+async function completion(mode, trial, noemaCampaign = "") {
   const marker = `${mode}-${trial}-${Date.now()}`;
   const common = {
     model: "strata",
@@ -24,9 +24,12 @@ async function completion(mode, trial) {
   } else if (mode === "mcp-advertised") {
     payload = { ...common, strata_mcp: true, max_tokens: 64,
       messages: [{ role: "user", content: `Do not call a tool. Reply only READY. Marker ${marker}.` }] };
-  } else {
+  } else if (mode === "mcp-tool") {
     payload = { ...common, strata_mcp: true, max_tokens: 512, messages: [{ role: "user",
       content: `Call runtime_snapshot exactly once. Reply only MCP_OK if health.loaded and mcp.ready are true. Marker ${marker}.` }] };
+  } else {
+    payload = { ...common, strata_mcp: true, max_tokens: 512, messages: [{ role: "user",
+      content: `Do not write any text before the tool call. Immediately call noema_control__inspect exactly once with arguments {"kind":"campaign","object_id":"${noemaCampaign}"}. After the result, output exactly NOEMA_OK and nothing else if the returned id is exactly ${noemaCampaign}. Marker ${marker}.` }] };
   }
   const started = performance.now();
   const response = await fetch(BASE + "/v1/chat/completions", {
@@ -41,7 +44,14 @@ async function completion(mode, trial) {
   const parsed = JSON.parse(body);
   const message = parsed.choices?.[0]?.message ?? {};
   const events = message.strata_mcp ?? [];
-  const result = events.find(event => event.event === "result");
+  const results = events.filter(event => event.event === "result");
+  const result = results.find(event => event.ok) ?? results[0];
+  const expectedReply = mode === "mcp-tool" ? "MCP_OK" : mode === "noema-tool" ? "NOEMA_OK" : "READY";
+  const expectedCalls = mode === "mcp-tool" || mode === "noema-tool" ? 1 : 0;
+  const calls = events.filter(event => event.event === "call");
+  const replyOk = message.content?.trim() === expectedReply;
+  const toolExecutionOk = calls.length === expectedCalls && results.length === expectedCalls && results.every(event => event.ok);
+  const strictOk = replyOk && toolExecutionOk;
   return {
     mode,
     trial,
@@ -55,6 +65,12 @@ async function completion(mode, trial) {
     predicted_tokens_final_round: parsed.timings?.predicted_n ?? null,
     decode_tok_s_final_round: parsed.timings?.predicted_per_second ?? null,
     mcp_events: events.length,
+    mcp_calls: calls.length,
+    mcp_failures: results.filter(event => !event.ok).length,
+    mcp_result_errors: results.filter(event => !event.ok).map(event => String(event.text ?? event.error ?? "").slice(0, 500)),
+    reply_ok: replyOk,
+    tool_execution_ok: toolExecutionOk,
+    strict_ok: strictOk,
     tool_ms: result?.ms ?? null,
     tool_chars: result?.chars ?? null,
     tool_ok: result?.ok ?? null,
@@ -62,33 +78,45 @@ async function completion(mode, trial) {
 }
 
 function summarize(rows) {
-  const successful = rows.filter(row => !row.error);
+  const completed = rows.filter(row => !row.error);
+  const successful = completed.filter(row => row.strict_ok);
+  const toolSuccessful = completed.filter(row => row.tool_execution_ok);
+  const replySuccessful = completed.filter(row => row.reply_ok);
   return {
+    completed: completed.length,
     successful: successful.length,
     total: rows.length,
-    wall_ms_median: median(successful.map(row => row.wall_ms)),
-    wall_ms_p95: percentile(successful.map(row => row.wall_ms).filter(Number.isFinite), 0.95),
-    prompt_tokens_median: median(successful.map(row => row.prompt_tokens)),
-    cached_tokens_median: median(successful.map(row => row.cached_tokens)),
-    completion_tokens_median: median(successful.map(row => row.completion_tokens)),
-    decode_tok_s_final_round_median: median(successful.map(row => row.decode_tok_s_final_round)),
-    tool_ms_median: median(successful.map(row => row.tool_ms)),
-    tool_chars_median: median(successful.map(row => row.tool_chars)),
+    strict_success_rate: rows.length ? +(successful.length / rows.length).toFixed(3) : null,
+    tool_execution_success_rate: rows.length ? +(toolSuccessful.length / rows.length).toFixed(3) : null,
+    exact_reply_success_rate: rows.length ? +(replySuccessful.length / rows.length).toFixed(3) : null,
+    tool_failures: completed.reduce((sum, row) => sum + (row.mcp_failures ?? 0), 0),
+    wall_ms_median: median(completed.map(row => row.wall_ms)),
+    wall_ms_p95: percentile(completed.map(row => row.wall_ms).filter(Number.isFinite), 0.95),
+    prompt_tokens_median: median(completed.map(row => row.prompt_tokens)),
+    cached_tokens_median: median(completed.map(row => row.cached_tokens)),
+    completion_tokens_median: median(completed.map(row => row.completion_tokens)),
+    decode_tok_s_final_round_median: median(completed.map(row => row.decode_tok_s_final_round)),
+    tool_ms_median: median(completed.map(row => row.tool_ms)),
+    tool_chars_median: median(completed.map(row => row.tool_chars)),
   };
 }
 
 try {
   const trials = positiveInt(option(arguments_, "--trials", "7"), "--trials");
   const outArgument = option(arguments_, "--out", "reports/data/fastmcp-2026-11-02");
+  const noemaCampaign = option(arguments_, "--noema-campaign", "");
+  const requestedModes = option(arguments_, "--modes", "");
   const outDirectory = isAbsolute(outArgument) ? outArgument : resolve(ROOT, outArgument);
   const mcpStatus = await fetchJson("/mcp");
   if (mcpStatus.tools < 1 || mcpStatus.servers?.some(server => server.status !== "ready"))
     throw new Error(`MCP is not ready: ${JSON.stringify(mcpStatus)}`);
 
-  const modes = ["plain", "mcp-advertised", "mcp-tool"];
+  const availableModes = ["plain", "mcp-advertised", "mcp-tool", ...(noemaCampaign ? ["noema-tool"] : [])];
+  const modes = requestedModes ? [...new Set(requestedModes.split(",").map(value => value.trim()).filter(Boolean))] : availableModes;
+  if (!modes.length || modes.some(mode => !availableModes.includes(mode))) throw new Error(`invalid --modes value; choose from ${availableModes.join(",")}`);
   const warmups = [];
   for (const mode of modes) {
-    warmups.push(await completion(mode, 0));
+    warmups.push(await completion(mode, 0, noemaCampaign));
     await sleep(300);
   }
 
@@ -96,7 +124,7 @@ try {
   for (let trial = 1; trial <= trials; trial += 1) {
     for (const mode of modes) {
       try {
-        const row = await completion(mode, trial);
+        const row = await completion(mode, trial, noemaCampaign);
         rows.push(row);
         console.error(`${mode} ${trial}/${trials}: ${row.wall_ms} ms, ${row.prompt_tokens} prompt tokens`);
       } catch (error) {
@@ -118,14 +146,14 @@ try {
     trials,
     mcp_status: mcpStatus,
     summary: byMode,
-    deltas: {
+    deltas: plain && advertised && called ? {
       advertised_wall_ms: +(advertised.wall_ms_median - plain.wall_ms_median).toFixed(1),
       advertised_wall_pct: percent(advertised.wall_ms_median, plain.wall_ms_median),
       advertised_prompt_tokens: advertised.prompt_tokens_median - plain.prompt_tokens_median,
       tool_call_wall_ms: +(called.wall_ms_median - plain.wall_ms_median).toFixed(1),
       tool_call_wall_pct: percent(called.wall_ms_median, plain.wall_ms_median),
       tool_call_prompt_tokens: called.prompt_tokens_median - plain.prompt_tokens_median,
-    },
+    } : null,
     warmups,
     rows,
   };

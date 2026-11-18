@@ -39,11 +39,13 @@ The StratInfer profile sets:
 
 ```text
 STRATA_PARK_ASYNC=1
-STRATA_PARK_VRAM_MIB=4096
+STRATA_PARK_VRAM_MIB=6144
 STRATA_PARK_VRAM_DEVICE=1
 ```
 
-The 4,096 MiB value is an exact upper bound, not a permanent allocation. Device memory
+The 6,144 MiB value is an exact upper bound, not a permanent allocation. The local
+capacity gate requires at least 4,096 MiB to remain free in addition to this cap before
+the eight-agent profile is accepted. Device memory
 is consumed by eligible parked K/V snapshots and released under pressure. Strata keeps
 the host snapshot as a fallback and requires 1.5 GiB to remain free on the helper GPU.
 Qwen3-ASR and Qwen3-TTS therefore remain the first-class resident workloads on the RTX

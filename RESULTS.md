@@ -75,6 +75,23 @@ context. This validates operation and rollback, not the pending 24-hour stabilit
 
 See [`reports/moai-live-cutover-2026-11-01.md`](reports/moai-live-cutover-2026-11-01.md).
 
+### Eight-agent capacity cutover, 2026-11-10
+
+C12 adds a capacity-checked eight-role workflow, per-stage crash recovery and bounded
+quality-gate revision. The live profile now exposes 12,288 MiB host conversation cache
+and a 6,144 MiB RTX 4080 helper cap, while the orchestrator enforces 64 GiB per-project
+SSD storage with a 32 GiB filesystem floor. The local plan supports eight 131,072-token
+target contexts, five target snapshots hot in host cache, two in helper VRAM and 23 in
+the SSD snapshot partition.
+
+The transactional restart preserved ASR PID 8808 and TTS PID 16296, returned `OK`, and
+kept FastMCP 6/6. A first real architect turn wrote the 248,816,800-byte
+`stratinfer--architect.bin`; the next turn restored it successfully. The revised
+10,000×500 matrix run kept 100% synthetic top-5 recall and reduced mean query time from
+72.40 to 48.05 ms, while write throughput decreased from 3,100.10 to 2,218.94 records/s.
+The 24-hour and full quota-pressure gates remain open. See
+[`reports/multi-agent-capacity-2026-11-10.md`](reports/multi-agent-capacity-2026-11-10.md).
+
 ## Live configuration results
 
 | Candidate | Primary result | Verdict |
@@ -82,6 +99,7 @@ See [`reports/moai-live-cutover-2026-11-01.md`](reports/moai-live-cutover-2026-1
 | C2 conversation cache, 512 to 4096 MiB | 1,441 parking budget rejections/day to 0 | Kept |
 | C3 `k8v4` | decode 91.38 to 98.65 tok/s (+8.0%); fresh prefill about -4.2% | Kept |
 | C9 deterministic sampling | fixed placement 13/13; performance placement 1/13 at 128 tokens | Strict profile accepted; opt-in |
+| C12 eight-agent capacity | 8 × 128K target; live save/restore; ASR/TTS PIDs preserved | Live smoke passed; endurance pending |
 | C1 chunked GDN | +0.6% fresh prefill, inside noise | Rejected |
 | C4 speculation depth | depth 5: -10.6%; depth 3: -3.5% against depth 4 | Rejected |
 
@@ -273,6 +291,33 @@ long-context, multi-agent, replay, energy, memory and MCP scenarios. Projected v
 kept separate from directly measured values and are regenerated from raw JSON with
 `scripts/project_use_cases.mjs`. See
 [`reports/stratinfer-vs-strata-use-cases-2026-11-02.md`](reports/stratinfer-vs-strata-use-cases-2026-11-02.md).
+
+## NOEMA supervised control plane, 2026-11-17
+
+NOEMA adds a loopback campaign service, persistent Codex app-server review, immutable
+checkpoints, R0-R4 approval policy, isolated worktrees, content-addressed candidates,
+FTS5 plus 512-dimensional matrix memory, signed skill quarantine and measured RTX 4080
+resource profiles.
+
+The pre-existing Node suite passed 25/25 and the focused NOEMA suite passed 23/23,
+for 48/48 combined tests. The first real Codex checkpoint review returned `BLOCKED`
+because the canary omitted revision-linked proof. After adding the hashed qualification
+receipt, completion-gate negative tests, a functional voice round trip and an exercised
+rollback, the final independent review returned `PASS` with 0.90 confidence and the
+campaign completed. This validates fail-closed review transport; it is not an inference
+quality-gain claim. With voice resident, the live 4080 measurement accepted the 4,096 MiB
+`voice-balanced` cache and refused `agent-max`, because only 5,632 MiB remained after
+the 4,096 MiB reserve. Full evidence and limits are in
+[`reports/noema-implementation-2026-11-17.md`](reports/noema-implementation-2026-11-17.md).
+
+The 18 November live activation aligns the helper cap to 4,096 MiB, enables four
+compact NOEMA MCP tools, preserves ASR/TTS PIDs across text-engine switches and
+qualifies a drained 10,240 MiB `agent-max` budget while preserving 4,096 MiB. The
+ordinary inference path showed no measurable idle NOEMA cost; MCP opt-in adds 404
+schema tokens beyond the original six tools. Voice ASR/TTS processes survived the
+engine switches, and the legacy six-tool profile was restored and exercised before the
+qualified ten-tool profile was re-enabled. Full results and raw evidence are in
+[`reports/noema-live-benchmarks-2026-11-18.md`](reports/noema-live-benchmarks-2026-11-18.md).
 
 ## Remaining gates
 

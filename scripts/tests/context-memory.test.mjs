@@ -46,6 +46,75 @@ test("transcripts are isolated by specialist role", async (context) => {
   assert.equal((await memory.loadTranscript("tester"))[0].content, "tests");
 });
 
+test("external engine session roots use project-prefixed snapshots", async (context) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "stratinfer-memory-root-"));
+  const sessionsPath = await fs.mkdtemp(path.join(os.tmpdir(), "stratinfer-engine-sessions-"));
+  context.after(() => Promise.all([
+    fs.rm(root, { recursive: true, force: true }),
+    fs.rm(sessionsPath, { recursive: true, force: true }),
+  ]));
+  const memory = new ContextMemory({ root, project: "Project A", dimensions: 128, sessionsPath });
+  await memory.init();
+  assert.equal(memory.snapshotFilename("Reviewer"), "project-a--reviewer.bin");
+  await fs.writeFile(memory.snapshotPath("Reviewer"), Buffer.alloc(512));
+  await memory.recordSnapshot("Reviewer");
+  assert.ok((await memory.status()).used_bytes >= 512);
+});
+
+test("bulk memories are source-deduplicated and keep provenance", async (context) => {
+  const { root, memory } = await fixture();
+  context.after(() => fs.rm(root, { recursive: true, force: true }));
+  const entry = {
+    sourceKey: "chatgpt:conversation:message:0",
+    source: { type: "chatgpt-export", conversation_id: "conversation" },
+    kind: "chatgpt-archive",
+    role: "historical-user",
+    text: "Historical preference with explicit provenance",
+    importance: 0.65,
+  };
+  const first = await memory.rememberMany([entry]);
+  const second = await memory.rememberMany([entry]);
+  assert.equal(first.inserted, 1);
+  assert.equal(second.inserted, 0);
+  assert.equal(second.skipped, 1);
+  const records = await memory.records();
+  assert.equal(records.length, 1);
+  assert.equal(records[0].source_key, entry.sourceKey);
+  assert.equal(records[0].source.conversation_id, "conversation");
+  const matrix = await fs.stat(memory.matrixFile);
+  assert.equal(matrix.size, 128 * 4);
+});
+
+test("candidate retrieval keeps an old exact match outside the recent window", async (context) => {
+  const { root, memory } = await fixture({ candidateRecords: 4, recentRecords: 2 });
+  context.after(() => fs.rm(root, { recursive: true, force: true }));
+  await memory.remember({ kind: "decision", role: "architect", text: "Use frobnicator-needle for the migration boundary" });
+  for (let index = 0; index < 12; index += 1) {
+    await memory.remember({ kind: "fact", role: "main", text: `Recent unrelated record ${index}` });
+  }
+  const records = await memory.retrieve("Where is frobnicator-needle used?", { limit: 2 });
+  assert.ok(records.some((record) => record.text.includes("frobnicator-needle")));
+});
+
+test("matrix corruption is repaired from the durable ledger", async (context) => {
+  const { root, memory } = await fixture();
+  context.after(() => fs.rm(root, { recursive: true, force: true }));
+  await memory.remember({ kind: "fact", text: "repairable durable record" });
+  await fs.truncate(memory.matrixFile, 7);
+  const reopened = new ContextMemory({ root, project: "Long Coding", dimensions: 128 });
+  const status = await reopened.init();
+  assert.equal(status.matrix_valid, true);
+  assert.match((await reopened.retrieve("repairable"))[0].text, /repairable/);
+});
+
+test("matrix record count is bounded", async (context) => {
+  const { root, memory } = await fixture({ maxRecords: 2 });
+  context.after(() => fs.rm(root, { recursive: true, force: true }));
+  await memory.remember({ text: "first" });
+  await memory.remember({ text: "second" });
+  await assert.rejects(memory.remember({ text: "third" }), /record limit exceeded/);
+});
+
 test("SSD quota evicts LRU snapshots but preserves pinned state", async (context) => {
   const { root, memory } = await fixture();
   context.after(() => fs.rm(root, { recursive: true, force: true }));

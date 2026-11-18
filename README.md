@@ -27,7 +27,8 @@ testable equivalent.
 | FastMCP coding tools | 6/6 tools; MOAI end-to-end; crash recovery; 28.8 ms median `git_status` | Active on StratInfer; request opt-in only |
 | Packed grammar-mask CUDA kernel | median 7.931 us kernel-only; 94.652 us pinned upload plus kernel | Component result only |
 | End-to-end constrained RTX 5090 throughput | final constrained cutover not run | Pending |
-| Long-session memory on RTX 4080 + SSD | 12,585 exact snapshot checks; 10.84/11.46 GiB/s peer copies; live MOAI cutover and rollback | Opt-in live profile active; 24-hour gate pending |
+| Eight-agent long-session memory | 6 GiB RTX 4080 cap, 12 GiB host, 64 GiB SSD; live prefixed save/restore | Active; 24-hour and quota-pressure gates pending |
+| NOEMA supervised control plane | 23/23 focused and 48/48 combined tests; final Codex `PASS` (0.90); exercised rollback; 10/10 strict tool calls | Active in `voice-balanced`; agent-max capacity qualified, endurance pending |
 
 Full measurements and caveats are in [`RESULTS.md`](RESULTS.md). The latest raw battery
 and analysis are in [`reports/rtx5090-2026-10-31.md`](reports/rtx5090-2026-10-31.md).
@@ -56,6 +57,8 @@ The overlay implements or validates the portable parts:
 - exact parked K/V on a helper RTX 4080, bounded SSD sessions, canonical context,
   matrix retrieval, and specialist-agent handoffs;
 - opt-in FastMCP coding tools with read-only workspace access and bounded SSD memory;
+- NOEMA campaigns with independent Codex checkpoint review, quarantined promotion,
+  matrix memory and reversible worktrees;
 - acceptance gates and reversible cutover tooling.
 
 DeepInfer's FlashMLA, DeepGEMM, DeepEP, DeepSelect, TileLang, attention DP/CP,
@@ -75,11 +78,15 @@ topologies. They are mapped to native Strata equivalents rather than copied. See
 - `scripts/bench_*.mjs`: fixed, fresh, concurrency, replay, quality, energy, and grammar measurements.
 - `scripts/summarize_comparison.mjs`: paired statistics and comparison summary.
 - `scripts/long_session.mjs`: durable context and specialist-agent orchestration.
+- `scripts/import-chatgpt-export.ps1`: provenance-preserving ChatGPT/Codex archive import.
 - `scripts/verify_determinism.mjs`: serial versus interleaved output hashes.
 - `scripts/make-deterministic-profile.mjs`: non-destructive strict-profile generation.
 - `tools/stratinfer_fastmcp.py`: root-confined coding and durable-memory MCP tools.
 - `scripts/enable-fastmcp.ps1`: backed-up, pinned FastMCP profile deployment.
 - `scripts/bench_fastmcp.mjs`: plain, advertised-tools, and real-tool-call comparison.
+- `services/noema/`: local campaign control plane, Codex app-server adapter, policy,
+  memory, worktrees and tests.
+- `tools/noema_control_fastmcp.py`: separate supervised campaign-control MCP tools.
 - `configs/candidates/`: changes, acceptance criteria, rollback, and verdicts.
 - `proto/`: Python reference automaton and simulations.
 
@@ -100,10 +107,14 @@ node --check scripts/summarize_comparison.mjs
 node --check scripts/bench_fastmcp.mjs
 node --check scripts/project_use_cases.mjs
 node scripts/project_use_cases.mjs
-node --test scripts/tests/context-memory.test.mjs scripts/tests/agent-orchestrator.test.mjs scripts/tests/deterministic-profile.test.mjs
+node --test scripts/tests/capacity-planner.test.mjs scripts/tests/context-memory.test.mjs scripts/tests/agent-orchestrator.test.mjs scripts/tests/deterministic-profile.test.mjs
 python scripts/test-fastmcp.py --iterations 30
 node scripts/bench_long_memory.mjs 2000 100
 node scripts/audit.mjs --once
+node --test services/noema/tests/*.test.mjs
+python -m py_compile tools/noema_control_fastmcp.py
+node scripts/bench_noema.mjs
+node scripts/qualify_noema_live.mjs --campaign <campaign-id>
 ```
 
 Live scripts use `STRATINFER_BASE`, defaulting to `http://127.0.0.1:11440`:
@@ -174,24 +185,38 @@ copy measurements.
 
 ## Long coding sessions
 
-The opt-in long-session profile keeps the model on RTX 5090, reserves up to 4,096 MiB
-on RTX 4080 for exact parked K/V, and bounds per-project SSD sessions at 32 GiB. Five
-isolated roles share a canonical context and explicit handoffs:
+The opt-in long-session profile keeps the model on RTX 5090, reserves up to 6,144 MiB
+on RTX 4080 for exact parked K/V, 12 GiB of bounded host cache, and 64 GiB of SSD per
+project. Eight isolated specialists share canonical context, resumable workflow state,
+quality gates and explicit handoffs. The measured snapshot density sizes each role for a
+128K-token working context without pretending that eight 524K contexts fit at once:
 
 ```powershell
 node scripts/long_session.mjs init --project stratinfer `
   --objective "Improve StratInfer without losing accepted invariants"
+node scripts/long_session.mjs plan --project stratinfer
 node scripts/long_session.mjs status --project stratinfer
 node scripts/long_session.mjs run --project stratinfer `
-  --task "Implement and validate the next accepted change"
+  --run-id change-001 --task "Implement and validate the next accepted change"
+node scripts/long_session.mjs resume --project stratinfer --run-id change-001
 ```
 
 The server must use the status command's `sessions_path` as `--slot-save-path`, with
 parallel slots disabled. Use a dedicated server or a controlled cutover because a
-session restore replaces the engine's current conversation. Full setup, recovery and
-limits are in [`docs/long-coding-sessions.md`](docs/long-coding-sessions.md). The
+session restore replaces the engine's current conversation. The `plan` command probes
+RAM, helper VRAM and SSD before work starts and fails closed on an unsafe capacity plan.
+Full setup, recovery and limits are in
+[`docs/long-coding-sessions.md`](docs/long-coding-sessions.md). The
 transactional MOAI deployment is documented in
 [`docs/moai-engine-switch.md`](docs/moai-engine-switch.md).
+The eight-agent sizing, matrix benchmark, live save/restore proof and remaining endurance
+gates are in
+[`reports/multi-agent-capacity-2026-11-10.md`](reports/multi-agent-capacity-2026-11-10.md).
+
+Existing ChatGPT history can be indexed into the long-session and FastMCP memories
+without retraining or stopping the engine. The importer keeps selected visible branches,
+excludes account PII and marks every record as untrusted historical context. See
+[`docs/chatgpt-memory-import.md`](docs/chatgpt-memory-import.md).
 
 ## FastMCP coding tools
 
@@ -204,6 +229,31 @@ MCP is request-scoped. Normal OpenAI-compatible requests are unchanged; an agent
 with `"strata_mcp": true`. This is important because advertising the six schemas adds a
 measured 792 prompt tokens even when no tool is called. Setup, request examples,
 security limits, measurements and rollback are in [`docs/fastmcp.md`](docs/fastmcp.md).
+
+## NOEMA supervised collaboration
+
+NOEMA adds durable campaigns, immutable checkpoints, independent Codex app-server
+reviews, human approval records, confined Git worktrees, R0-R4 promotion policy,
+hybrid FTS5/matrix memory and signed skill quarantine. It binds to loopback and stores
+its token and runtime state outside Git.
+
+Campaign completion is fail-closed: the current checkpoint needs a current Codex
+`PASS` and a valid event chain. The final live qualification passed 48/48 tests, a
+functional TTS-to-ASR round trip before and after a double text-engine switch, and an
+exercised rollback to the original six-tool MCP profile and back.
+
+The RTX 4080 has two measured profiles: `voice-balanced` keeps ASR/TTS resident and
+caps helper K/V at 4 GiB; `agent-max` requires voice to be stopped and sizes an up-to
+10 GiB cache only from measured free VRAM while preserving 4 GiB. The current live
+profile is `voice-balanced`. `agent-max` reaches 10 GiB only after MOAI first switches
+to Strata, drains the existing helper allocation, releases voice and refreshes telemetry.
+
+Setup, APIs, security boundaries, resource cutover and recovery are documented in
+[`docs/noema-collaboration.md`](docs/noema-collaboration.md). Executed results and open
+gates are in
+[`reports/noema-implementation-2026-11-17.md`](reports/noema-implementation-2026-11-17.md).
+Live activation, corrections, benchmarks, trade-offs and rollback are in
+[`reports/noema-live-benchmarks-2026-11-18.md`](reports/noema-live-benchmarks-2026-11-18.md).
 
 `CUDA_ARCH` defaults to `120-real`; set `CUDA_ARCH=89-real` only for a separate Ada
 functional-smoke build. Use a clean build after changing overlay headers.

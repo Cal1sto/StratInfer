@@ -1,0 +1,32 @@
+{
+  "at": "2026-11-18T10:29:50.1249397Z",
+  "campaign": "campaign-852fe941-eddb-4160-b262-1d608b0d5817",
+  "active_backup": "E:\\Data\\JarvisMarc\\StratInferRuntime\\51f355f\\profile.json.rollback-drill-20261118T112710.bak",
+  "known_good": "E:\\Data\\JarvisMarc\\StratInferRuntime\\51f355f\\profile.json.noema-mcp-20261118T104319.bak",
+  "rollback": {
+    "profile_sha256": "d21a97e061570a96e3a06482df2eaad08a18a7d862dea238324da02ef25af295",
+    "helper_mib": 4096,
+    "mcp_servers": [
+      "stratinfer:ready"
+    ],
+    "mcp_tools": 6,
+    "plain_reply": "ROLLBACK_OK",
+    "selected": "stratinfer",
+    "asr_pid": 58792,
+    "speech_pid": 12992,
+    "passed": true
+  },
+  "restored": {
+    "active_profile_sha256": "a6779a97eabe8588eeab079a6d97019c3ca03833aea2bbfa81118f43586b1201",
+    "selected": "stratinfer",
+    "asr_pid_preserved": true,
+    "speech_pid_preserved": true,
+    "mcp_servers": [
+      "stratinfer:ready",
+      "noema_control:ready"
+    ],
+    "mcp_tools": 10,
+    "passed": true
+  },
+  "passed": true
+}

@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { AgentOrchestrator, StrataClient } from "./lib/agent-orchestrator.mjs";
+import { inspectCapacityHardware, planAgentCapacity } from "./lib/capacity-planner.mjs";
 import { ContextMemory, GIB } from "./lib/context-memory.mjs";
 
 function parseArguments(argv) {
@@ -47,6 +48,23 @@ async function loadConfiguration(file) {
   const config = JSON.parse(await fs.readFile(file, "utf8"));
   const required = ["api_url", "model", "roles", "default_roles", "ssd_budget_gib", "memory_root"];
   for (const key of required) if (config[key] === undefined) throw new Error(`missing config key: ${key}`);
+  const configuredRoles = new Set(Object.keys(config.roles));
+  for (const role of config.default_roles) if (!configuredRoles.has(role)) throw new Error(`default role is not configured: ${role}`);
+  if (config.workflow) {
+    const workflowRoles = [
+      ...config.workflow.initial_roles,
+      ...config.workflow.gate_roles,
+      config.workflow.remediation_role,
+      ...config.workflow.final_gate_roles,
+      ...config.workflow.final_roles,
+    ];
+    for (const role of workflowRoles) if (!configuredRoles.has(role)) throw new Error(`workflow role is not configured: ${role}`);
+    if (!Number.isInteger(config.workflow.max_revision_cycles) || config.workflow.max_revision_cycles < 0) {
+      throw new Error("workflow.max_revision_cycles must be a non-negative integer");
+    }
+  }
+  const staticPlan = planAgentCapacity(config);
+  if (!staticPlan.viable) throw new Error(`invalid capacity configuration: ${staticPlan.errors.join("; ")}`);
   return config;
 }
 
@@ -67,7 +85,20 @@ async function main() {
     dimensions: config.matrix_dimensions,
     budgetBytes: Number(config.ssd_budget_gib) * GIB,
     minFreeBytes: Number(config.ssd_min_free_gib ?? 0) * GIB,
+    maxRecords: Number(config.capacity?.matrix_max_records ?? 250_000),
+    candidateRecords: Number(config.capacity?.matrix_candidate_records ?? 4096),
+    recentRecords: Number(config.capacity?.matrix_recent_records ?? 2048),
+    sessionsPath: config.engine_sessions_path ? expandPath(config.engine_sessions_path) : null,
   });
+
+  if (args.command === "plan") {
+    const hardware = await inspectCapacityHardware({
+      storageRoot: root,
+      helperDevice: Number(config.required_engine_env?.STRATA_PARK_VRAM_DEVICE ?? 1),
+    });
+    print(planAgentCapacity(config, hardware));
+    return;
+  }
 
   if (args.command === "init") {
     const constraints = args.options("constraint").map(String);
@@ -111,9 +142,18 @@ async function main() {
     print(await memory.pruneSnapshots());
     return;
   }
+  if (args.command === "verify-matrix") {
+    print(await memory.verifyMatrix({ repair: args.option("repair", false) === true || args.option("repair") === "true" }));
+    return;
+  }
   if (args.command === "status") {
+    const hardware = await inspectCapacityHardware({
+      storageRoot: root,
+      helperDevice: Number(config.required_engine_env?.STRATA_PARK_VRAM_DEVICE ?? 1),
+    });
     print({
       ...(await memory.status()),
+      capacity_plan: planAgentCapacity(config, hardware),
       required_engine_env: config.required_engine_env,
       required_engine_args: config.required_engine_args,
       slot_save_path: memory.sessionsPath,
@@ -121,7 +161,7 @@ async function main() {
     });
     return;
   }
-  if (args.command === "run") {
+  if (args.command === "run" || args.command === "resume") {
     const apiKey = config.api_key_env ? process.env[config.api_key_env] ?? "" : "";
     const client = new StrataClient({
       baseUrl: process.env.STRATINFER_API_URL ?? config.api_url,
@@ -130,8 +170,16 @@ async function main() {
       timeoutMs: config.timeout_ms,
     });
     const orchestrator = new AgentOrchestrator({ memory, client, config });
-    const roles = String(args.option("roles", config.default_roles.join(","))).split(",").map((role) => role.trim()).filter(Boolean);
-    print(await orchestrator.run({ task: args.option("task", ""), roles }));
+    const selectedRoles = args.option("roles", null);
+    const roles = selectedRoles === null
+      ? null
+      : String(selectedRoles).split(",").map((role) => role.trim()).filter(Boolean);
+    const resume = args.command === "resume" || args.option("resume", false) === true || args.option("resume") === "true";
+    const runId = args.option("run-id", "");
+    if (resume && !runId) throw new Error("resume requires --run-id");
+    const stored = resume ? await memory.loadRun(runId) : null;
+    const task = String(args.option("task", stored?.objective ?? ""));
+    print(await orchestrator.run({ task, roles, ...(runId ? { runId } : {}), resume }));
     return;
   }
   throw new Error(`unknown command: ${args.command}`);

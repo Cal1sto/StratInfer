@@ -1,0 +1,19 @@
+{
+  "dataRoot": "E:/Data/NOEMA",
+  "host": "127.0.0.1",
+  "port": 12160,
+  "allowedWorkspaceRoots": [
+    "E:/DEV"
+  ],
+  "codex": {
+    "enabled": true,
+    "command": "codex",
+    "model": null,
+    "reasoningEffort": "high"
+  },
+  "moai": {
+    "enabled": true,
+    "baseUrl": "http://127.0.0.1:12150",
+    "note": "On Windows, scripts/start-noema.ps1 injects the current-user DPAPI admin token into the child process without persisting it in this file."
+  }
+}
