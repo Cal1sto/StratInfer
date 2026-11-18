@@ -1,0 +1,453 @@
+{
+  "label": "deterministic-pcie0",
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T16:58:54.927Z",
+  "gpu": 0,
+  "max_tokens": 128,
+  "pcie_frac": 0,
+  "idle_power_w": 6.13,
+  "idle_samples": {
+    "before": [
+      {
+        "t_ms": 56.74895,
+        "power_w": 5.84,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 279.44275,
+        "power_w": 5.84,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 496.28585,
+        "power_w": 5.84,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 712.68215,
+        "power_w": 5.85,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 930.4911,
+        "power_w": 5.85,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 1145.4159,
+        "power_w": 5.85,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 1358.7809000000002,
+        "power_w": 5.85,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 1575.9832999999999,
+        "power_w": 6.13,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 1795.199,
+        "power_w": 6.13,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 2012.8135,
+        "power_w": 6.13,
+        "utilization_pct": 0,
+        "memory_mib": 29821,
+        "temperature_c": 46
+      }
+    ],
+    "after": [
+      {
+        "t_ms": 10095.56105,
+        "power_w": 108.37,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 50
+      },
+      {
+        "t_ms": 10321.3182,
+        "power_w": 108.37,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 50
+      },
+      {
+        "t_ms": 10539.02895,
+        "power_w": 108.37,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 50
+      },
+      {
+        "t_ms": 10757.6693,
+        "power_w": 85.79,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 49
+      },
+      {
+        "t_ms": 10976.021949999998,
+        "power_w": 85.79,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 49
+      },
+      {
+        "t_ms": 11195.3745,
+        "power_w": 85.8,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 49
+      },
+      {
+        "t_ms": 11411.02015,
+        "power_w": 85.8,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 49
+      },
+      {
+        "t_ms": 11628.3646,
+        "power_w": 59.62,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 48
+      },
+      {
+        "t_ms": 11845.52805,
+        "power_w": 59.62,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 48
+      },
+      {
+        "t_ms": 12064.43375,
+        "power_w": 59.62,
+        "utilization_pct": 0,
+        "memory_mib": 29831,
+        "temperature_c": 48
+      }
+    ]
+  },
+  "summary": {
+    "successful_requests": 3,
+    "total_requests": 3,
+    "request_success_rate": 1,
+    "ttft_ms_median": 528,
+    "ttft_ms_p95": 663.3,
+    "ttfc_ms_median": null,
+    "decode_tok_s_median": 109,
+    "wall_ms_median": 1713.9,
+    "energy_j_median": 258.03,
+    "incremental_energy_j_median": 247.21,
+    "average_power_w_median": 148.17,
+    "peak_power_w": 216.02,
+    "tokens_per_joule_median": 0.4961,
+    "incremental_tokens_per_joule_median": 0.5178,
+    "peak_memory_mib": 29831
+  },
+  "rows": [
+    {
+      "trial": 1,
+      "marker": "deterministic-pcie0-1-1795021124907",
+      "ttft_ms": 663.3,
+      "ttfc_ms": null,
+      "first_token_kind": "reasoning",
+      "wall_ms": 1720.4,
+      "request_wall_ms": 1830.6,
+      "output_tokens": 128,
+      "decode_tok_s": 119.2,
+      "finish": "length",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "samples": [
+        {
+          "t_ms": 2259.2255,
+          "power_w": 6.13,
+          "utilization_pct": 0,
+          "memory_mib": 29821,
+          "temperature_c": 46
+        },
+        {
+          "t_ms": 2434.3776,
+          "power_w": 6.13,
+          "utilization_pct": 0,
+          "memory_mib": 29821,
+          "temperature_c": 46
+        },
+        {
+          "t_ms": 2603.6821,
+          "power_w": 25.85,
+          "utilization_pct": 93,
+          "memory_mib": 29821,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 2775.1524,
+          "power_w": 25.85,
+          "utilization_pct": 93,
+          "memory_mib": 29821,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 2967.1699,
+          "power_w": 25.85,
+          "utilization_pct": 93,
+          "memory_mib": 29831,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 3175.55505,
+          "power_w": 64.39,
+          "utilization_pct": 98,
+          "memory_mib": 29831,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 3403.83015,
+          "power_w": 64.39,
+          "utilization_pct": 98,
+          "memory_mib": 29831,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 3619.66165,
+          "power_w": 180.18,
+          "utilization_pct": 99,
+          "memory_mib": 29831,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 3815.21835,
+          "power_w": 180.18,
+          "utilization_pct": 99,
+          "memory_mib": 29831,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 4004.0259,
+          "power_w": 180.18,
+          "utilization_pct": 99,
+          "memory_mib": 29831,
+          "temperature_c": 51
+        }
+      ],
+      "energy_j": 132.93,
+      "incremental_energy_j": 122.23,
+      "average_power_w": 75.91,
+      "peak_power_w": 180.18,
+      "average_utilization_pct": 77.2,
+      "peak_memory_mib": 29831,
+      "tokens_per_joule": 0.9629,
+      "incremental_tokens_per_joule": 1.0472
+    },
+    {
+      "trial": 2,
+      "marker": "deterministic-pcie0-2-1795021127494",
+      "ttft_ms": 528,
+      "ttfc_ms": null,
+      "first_token_kind": "reasoning",
+      "wall_ms": 1713.9,
+      "request_wall_ms": 1837.8,
+      "output_tokens": 128,
+      "decode_tok_s": 106.6,
+      "finish": "length",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "samples": [
+        {
+          "t_ms": 4853.42,
+          "power_w": 155.64,
+          "utilization_pct": 0,
+          "memory_mib": 29831,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 5036.7528999999995,
+          "power_w": 155.64,
+          "utilization_pct": 0,
+          "memory_mib": 29831,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 5215.37245,
+          "power_w": 105.99,
+          "utilization_pct": 93,
+          "memory_mib": 29831,
+          "temperature_c": 50
+        },
+        {
+          "t_ms": 5395.6407500000005,
+          "power_w": 105.99,
+          "utilization_pct": 93,
+          "memory_mib": 29831,
+          "temperature_c": 50
+        },
+        {
+          "t_ms": 5606.22395,
+          "power_w": 137.07,
+          "utilization_pct": 88,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 5834.15795,
+          "power_w": 137.07,
+          "utilization_pct": 88,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 6045.9652,
+          "power_w": 137.07,
+          "utilization_pct": 88,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 6242.75795,
+          "power_w": 181.54,
+          "utilization_pct": 98,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 6438.563550000001,
+          "power_w": 181.54,
+          "utilization_pct": 98,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 6617.55195,
+          "power_w": 201.24,
+          "utilization_pct": 99,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        }
+      ],
+      "energy_j": 258.03,
+      "incremental_energy_j": 247.21,
+      "average_power_w": 149.88,
+      "peak_power_w": 201.24,
+      "average_utilization_pct": 74.5,
+      "peak_memory_mib": 29831,
+      "tokens_per_joule": 0.4961,
+      "incremental_tokens_per_joule": 0.5178
+    },
+    {
+      "trial": 3,
+      "marker": "deterministic-pcie0-3-1795021130097",
+      "ttft_ms": 517.1,
+      "ttfc_ms": null,
+      "first_token_kind": "reasoning",
+      "wall_ms": 1679.4,
+      "request_wall_ms": 1878.1,
+      "output_tokens": 128,
+      "decode_tok_s": 109,
+      "finish": "length",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "samples": [
+        {
+          "t_ms": 7454.5748,
+          "power_w": 150.32,
+          "utilization_pct": 0,
+          "memory_mib": 29831,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 7632.7467,
+          "power_w": 97.15,
+          "utilization_pct": 76,
+          "memory_mib": 29831,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 7802.8041,
+          "power_w": 97.15,
+          "utilization_pct": 76,
+          "memory_mib": 29831,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 7989.0560000000005,
+          "power_w": 97.15,
+          "utilization_pct": 76,
+          "memory_mib": 29831,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 8208.7302,
+          "power_w": 126.04,
+          "utilization_pct": 96,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 8425.01405,
+          "power_w": 126.04,
+          "utilization_pct": 96,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 8642.738,
+          "power_w": 177.91,
+          "utilization_pct": 99,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 8851.7682,
+          "power_w": 177.91,
+          "utilization_pct": 99,
+          "memory_mib": 29831,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 9064.417150000001,
+          "power_w": 216.02,
+          "utilization_pct": 98,
+          "memory_mib": 29831,
+          "temperature_c": 53
+        },
+        {
+          "t_ms": 9259.9992,
+          "power_w": 216.02,
+          "utilization_pct": 98,
+          "memory_mib": 29831,
+          "temperature_c": 53
+        }
+      ],
+      "energy_j": 262.85,
+      "incremental_energy_j": 251.78,
+      "average_power_w": 148.17,
+      "peak_power_w": 216.02,
+      "average_utilization_pct": 81.4,
+      "peak_memory_mib": 29831,
+      "tokens_per_joule": 0.487,
+      "incremental_tokens_per_joule": 0.5084
+    }
+  ]
+}

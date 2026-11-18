@@ -1,0 +1,84 @@
+{
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T16:50:23.848Z",
+  "seed": 424242,
+  "temperature": 0.8,
+  "pcie_frac": 0,
+  "noise_tokens": 8,
+  "max_tokens": 64,
+  "expected": "da91fa40858f9529140e5d91ed92a7e9e94ece5c64565d600926a20f38235d90",
+  "pass": false,
+  "observations": [
+    {
+      "mode": "serial",
+      "index": 0,
+      "hash": "da91fa40858f9529140e5d91ed92a7e9e94ece5c64565d600926a20f38235d90",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 1,
+      "hash": "da91fa40858f9529140e5d91ed92a7e9e94ece5c64565d600926a20f38235d90",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 2,
+      "hash": "da91fa40858f9529140e5d91ed92a7e9e94ece5c64565d600926a20f38235d90",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 0,
+      "concurrency": 3,
+      "hash": "2c01d98c880909f6ed54ed4975411583c7498351e4e3673f1357701de142de86",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 1,
+      "concurrency": 3,
+      "hash": "2c01d98c880909f6ed54ed4975411583c7498351e4e3673f1357701de142de86",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    }
+  ],
+  "mismatches": [
+    "2c01d98c880909f6ed54ed4975411583c7498351e4e3673f1357701de142de86",
+    "2c01d98c880909f6ed54ed4975411583c7498351e4e3673f1357701de142de86"
+  ]
+}

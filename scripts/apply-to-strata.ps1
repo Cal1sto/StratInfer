@@ -6,7 +6,10 @@ param(
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path -LiteralPath $StrataPath).Path
 $overlay = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-$patch = Join-Path $overlay 'patches\strata-integration.patch'
+$patches = @(
+  (Join-Path $overlay 'patches\strata-integration.patch')
+  (Join-Path $overlay 'patches\hot-reload-cache.patch')
+)
 
 if (!(Test-Path -LiteralPath (Join-Path $repo 'CMakeLists.txt'))) { throw "not a Strata checkout: $repo" }
 if (!(Test-Path -LiteralPath (Join-Path $repo 'src\core\verify.cpp'))) { throw "Strata verify.cpp not found: $repo" }
@@ -15,8 +18,10 @@ if (!$AllowDirty) {
   if ($LASTEXITCODE -ne 0) { throw 'unable to inspect Strata checkout status' }
   if ($dirty.Count -ne 0) { throw 'Strata checkout has changes or untracked files; commit/stash them or pass -AllowDirty' }
 }
-& git -C $repo apply --check --recount $patch
-if ($LASTEXITCODE -ne 0) { throw 'integration patch does not apply to this Strata revision' }
+foreach ($patch in $patches) {
+  & git -C $repo apply --check --recount $patch
+  if ($LASTEXITCODE -ne 0) { throw "integration patch does not apply to this Strata revision: $patch" }
+}
 if ($CheckOnly) { Write-Host "overlay applies cleanly to $repo"; exit 0 }
 
 $copies = @{
@@ -43,7 +48,9 @@ foreach ($sourceRelative in $copies.Keys) {
   New-Item -ItemType Directory -Force -Path (Split-Path -Parent $destination) | Out-Null
   Copy-Item -LiteralPath $source -Destination $destination -Force
 }
-& git -C $repo apply --recount $patch
-if ($LASTEXITCODE -ne 0) { throw 'integration patch failed after its clean preflight' }
+foreach ($patch in $patches) {
+  & git -C $repo apply --recount $patch
+  if ($LASTEXITCODE -ne 0) { throw "integration patch failed after its clean preflight: $patch" }
+}
 Write-Host "StratInfer overlay applied to $repo"
 Write-Host 'Next: configure with STRATA_ENABLE_CUDA=ON, STRATA_BUILD_TESTS=ON and CMAKE_CUDA_ARCHITECTURES=120-real.'

@@ -93,10 +93,15 @@ Add these engine arguments:
 --conversation-cache-mib 12288
 --conversation-cache-slots 8
 --conversation-cache-min-tokens 2048
+--conversation-cache-park-gain 2048
 --prompt-cache-spread
 --session-min-free-mib 4096
 --session-save-reclaim
 ```
+
+`--conversation-cache-park-gain 2048` preserves the last exact snapshot until the
+conversation grows by at least 2,048 tokens. Short agent turns therefore restore the
+same checkpoint without copying a multi-gigabyte K/V snapshot again after every reply.
 
 Apply the two profile limits with an automatic backup, then use the transactional MOAI
 Strata/StratInfer switch so the new process reads them:

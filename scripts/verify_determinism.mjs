@@ -19,6 +19,8 @@ try {
   const maxTokens = positiveInt(option(args, "--tokens", "128"), "--tokens");
   const noiseTokens = positiveInt(option(args, "--noise-tokens", "64"), "--noise-tokens");
   const temperature = finiteNumber(option(args, "--temperature", "0.8"), "--temperature", 0.001, 5);
+  const pcieOption = option(args, "--pcie-frac", "");
+  const pcieFrac = pcieOption === "" ? null : finiteNumber(pcieOption, "--pcie-frac", 0, 1);
   const expectedBase = option(args, "--expect-base", "").replace(/\/$/, "");
   if (expectedBase && expectedBase !== BASE)
     throw new Error(`STRATINFER_BASE resolved to ${BASE}, expected ${expectedBase}`);
@@ -26,6 +28,7 @@ try {
   const outDir = isAbsolute(outArg) ? outArg : resolve(ROOT, outArg);
   const target = {
     model: "strata", seed, temperature, top_p: 0.95, max_tokens: maxTokens,
+    ...(pcieFrac == null ? {} : { strata_tune: { pcie_frac: pcieFrac } }),
     messages: [{ role: "user", content: "Write a compact fictional incident report about a GPU scheduler. Include exactly five numbered findings." }],
   };
   const run = async payload => {
@@ -52,7 +55,8 @@ try {
   const mismatches = observations.filter(row => row.hash !== expected);
   mkdirSync(outDir, { recursive: true });
   const out = join(outDir, `determinism-${Date.now()}.json`);
-  writeFileSync(out, JSON.stringify({ base: BASE, at: new Date().toISOString(), seed, temperature, noise_tokens: noiseTokens,
+  writeFileSync(out, JSON.stringify({ base: BASE, at: new Date().toISOString(), seed, temperature, pcie_frac: pcieFrac,
+    noise_tokens: noiseTokens,
     max_tokens: maxTokens, expected, pass: mismatches.length === 0,
     observations: observations.map(({ content, ...row }) => row), mismatches: mismatches.map(row => row.hash) }, null, 2));
   console.log(JSON.stringify({ pass: mismatches.length === 0, runs: observations.length,

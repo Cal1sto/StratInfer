@@ -1,0 +1,481 @@
+{
+  "label": "patched-performance",
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T17:03:33.412Z",
+  "gpu": 0,
+  "max_tokens": 128,
+  "pcie_frac": null,
+  "idle_power_w": 20.38,
+  "idle_samples": {
+    "before": [
+      {
+        "t_ms": 57.0028,
+        "power_w": 20.38,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      },
+      {
+        "t_ms": 272.5223,
+        "power_w": 20.38,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      },
+      {
+        "t_ms": 491.11209999999994,
+        "power_w": 20.38,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      },
+      {
+        "t_ms": 709.3772,
+        "power_w": 7.1,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      },
+      {
+        "t_ms": 926.95575,
+        "power_w": 7.1,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      },
+      {
+        "t_ms": 1144.24595,
+        "power_w": 7.1,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      },
+      {
+        "t_ms": 1364.6788,
+        "power_w": 7.1,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      },
+      {
+        "t_ms": 1581.2618499999999,
+        "power_w": 5.91,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      },
+      {
+        "t_ms": 1796.4986,
+        "power_w": 5.91,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      },
+      {
+        "t_ms": 2017.55555,
+        "power_w": 5.91,
+        "utilization_pct": 0,
+        "memory_mib": 29861,
+        "temperature_c": 45
+      }
+    ],
+    "after": [
+      {
+        "t_ms": 10435.43775,
+        "power_w": 199.21,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 48
+      },
+      {
+        "t_ms": 10649.716199999999,
+        "power_w": 116.35,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 48
+      },
+      {
+        "t_ms": 10868.51855,
+        "power_w": 116.35,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 48
+      },
+      {
+        "t_ms": 11088.739399999999,
+        "power_w": 84.92,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 48
+      },
+      {
+        "t_ms": 11307.807499999999,
+        "power_w": 84.92,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 48
+      },
+      {
+        "t_ms": 11525.3302,
+        "power_w": 75.13,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 47
+      },
+      {
+        "t_ms": 11744.501,
+        "power_w": 75.13,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 47
+      },
+      {
+        "t_ms": 11963.42115,
+        "power_w": 75.13,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 47
+      },
+      {
+        "t_ms": 12185.99955,
+        "power_w": 52.43,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 46
+      },
+      {
+        "t_ms": 12399.52575,
+        "power_w": 52.43,
+        "utilization_pct": 0,
+        "memory_mib": 29947,
+        "temperature_c": 46
+      }
+    ]
+  },
+  "summary": {
+    "successful_requests": 3,
+    "total_requests": 3,
+    "request_success_rate": 1,
+    "ttft_ms_median": 532.2,
+    "ttft_ms_p95": 923.6,
+    "ttfc_ms_median": null,
+    "decode_tok_s_median": 126.8,
+    "wall_ms_median": 1530.5,
+    "energy_j_median": 240.43,
+    "incremental_energy_j_median": 206.77,
+    "average_power_w_median": 147.53,
+    "peak_power_w": 233.46,
+    "tokens_per_joule_median": 0.5324,
+    "incremental_tokens_per_joule_median": 0.6191,
+    "peak_memory_mib": 29947
+  },
+  "rows": [
+    {
+      "trial": 1,
+      "marker": "patched-performance-1-1795021403054",
+      "ttft_ms": 923.6,
+      "ttfc_ms": null,
+      "first_token_kind": "reasoning",
+      "wall_ms": 2592.6,
+      "request_wall_ms": 2822.9,
+      "output_tokens": 128,
+      "decode_tok_s": 76,
+      "finish": "length",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "samples": [
+        {
+          "t_ms": 2257.42625,
+          "power_w": 5.91,
+          "utilization_pct": 0,
+          "memory_mib": 29861,
+          "temperature_c": 45
+        },
+        {
+          "t_ms": 2421.57165,
+          "power_w": 5.91,
+          "utilization_pct": 0,
+          "memory_mib": 29897,
+          "temperature_c": 45
+        },
+        {
+          "t_ms": 2592.94815,
+          "power_w": 14.6,
+          "utilization_pct": 46,
+          "memory_mib": 29903,
+          "temperature_c": 45
+        },
+        {
+          "t_ms": 2764.9284,
+          "power_w": 14.6,
+          "utilization_pct": 46,
+          "memory_mib": 29915,
+          "temperature_c": 45
+        },
+        {
+          "t_ms": 2935.83305,
+          "power_w": 14.6,
+          "utilization_pct": 46,
+          "memory_mib": 29915,
+          "temperature_c": 45
+        },
+        {
+          "t_ms": 3122.34185,
+          "power_w": 47.76,
+          "utilization_pct": 96,
+          "memory_mib": 29935,
+          "temperature_c": 48
+        },
+        {
+          "t_ms": 3317.0525,
+          "power_w": 47.76,
+          "utilization_pct": 96,
+          "memory_mib": 29939,
+          "temperature_c": 48
+        },
+        {
+          "t_ms": 3492.524,
+          "power_w": 47.76,
+          "utilization_pct": 96,
+          "memory_mib": 29939,
+          "temperature_c": 48
+        },
+        {
+          "t_ms": 3680.0545,
+          "power_w": 138.17,
+          "utilization_pct": 99,
+          "memory_mib": 29939,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 3870.389,
+          "power_w": 138.17,
+          "utilization_pct": 99,
+          "memory_mib": 29939,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 4067.33565,
+          "power_w": 161.28,
+          "utilization_pct": 99,
+          "memory_mib": 29939,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 4268.943950000001,
+          "power_w": 161.28,
+          "utilization_pct": 99,
+          "memory_mib": 29947,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 4464.33065,
+          "power_w": 161.28,
+          "utilization_pct": 99,
+          "memory_mib": 29947,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 4645.786550000001,
+          "power_w": 165.96,
+          "utilization_pct": 99,
+          "memory_mib": 29947,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 4833.319149999999,
+          "power_w": 165.96,
+          "utilization_pct": 99,
+          "memory_mib": 29947,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 5014.83535,
+          "power_w": 165.96,
+          "utilization_pct": 99,
+          "memory_mib": 29947,
+          "temperature_c": 49
+        }
+      ],
+      "energy_j": 259.41,
+      "incremental_energy_j": 209.31,
+      "average_power_w": 91.06,
+      "peak_power_w": 165.96,
+      "average_utilization_pct": 76.1,
+      "peak_memory_mib": 29947,
+      "tokens_per_joule": 0.4934,
+      "incremental_tokens_per_joule": 0.6115
+    },
+    {
+      "trial": 2,
+      "marker": "patched-performance-2-1795021406636",
+      "ttft_ms": 532.2,
+      "ttfc_ms": null,
+      "first_token_kind": "reasoning",
+      "wall_ms": 1530.5,
+      "request_wall_ms": 1712.6,
+      "output_tokens": 128,
+      "decode_tok_s": 126.8,
+      "finish": "length",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "samples": [
+        {
+          "t_ms": 5837.235,
+          "power_w": 140.33,
+          "utilization_pct": 0,
+          "memory_mib": 29947,
+          "temperature_c": 47
+        },
+        {
+          "t_ms": 6008.7716,
+          "power_w": 140.33,
+          "utilization_pct": 0,
+          "memory_mib": 29947,
+          "temperature_c": 47
+        },
+        {
+          "t_ms": 6185.902599999999,
+          "power_w": 97.06,
+          "utilization_pct": 94,
+          "memory_mib": 29947,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 6368.25475,
+          "power_w": 97.06,
+          "utilization_pct": 94,
+          "memory_mib": 29947,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 6564.66795,
+          "power_w": 143.45,
+          "utilization_pct": 98,
+          "memory_mib": 29947,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 6748.4921,
+          "power_w": 143.45,
+          "utilization_pct": 98,
+          "memory_mib": 29947,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 6936.19485,
+          "power_w": 143.45,
+          "utilization_pct": 98,
+          "memory_mib": 29947,
+          "temperature_c": 51
+        },
+        {
+          "t_ms": 7122.2192,
+          "power_w": 190.05,
+          "utilization_pct": 96,
+          "memory_mib": 29947,
+          "temperature_c": 50
+        },
+        {
+          "t_ms": 7306.4101,
+          "power_w": 190.05,
+          "utilization_pct": 96,
+          "memory_mib": 29947,
+          "temperature_c": 50
+        },
+        {
+          "t_ms": 7488.94855,
+          "power_w": 190.05,
+          "utilization_pct": 96,
+          "memory_mib": 29947,
+          "temperature_c": 50
+        }
+      ],
+      "energy_j": 240.43,
+      "incremental_energy_j": 206.77,
+      "average_power_w": 147.53,
+      "peak_power_w": 190.05,
+      "average_utilization_pct": 77,
+      "peak_memory_mib": 29947,
+      "tokens_per_joule": 0.5324,
+      "incremental_tokens_per_joule": 0.6191
+    },
+    {
+      "trial": 3,
+      "marker": "patched-performance-3-1795021409118",
+      "ttft_ms": 470.8,
+      "ttfc_ms": null,
+      "first_token_kind": "reasoning",
+      "wall_ms": 1227.9,
+      "request_wall_ms": 1351.5,
+      "output_tokens": 128,
+      "decode_tok_s": 168.4,
+      "finish": "length",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "samples": [
+        {
+          "t_ms": 8318.7216,
+          "power_w": 158.82,
+          "utilization_pct": 0,
+          "memory_mib": 29947,
+          "temperature_c": 47
+        },
+        {
+          "t_ms": 8487.36465,
+          "power_w": 158.82,
+          "utilization_pct": 0,
+          "memory_mib": 29947,
+          "temperature_c": 47
+        },
+        {
+          "t_ms": 8659.3119,
+          "power_w": 98.12,
+          "utilization_pct": 95,
+          "memory_mib": 29947,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 8840.3202,
+          "power_w": 98.12,
+          "utilization_pct": 95,
+          "memory_mib": 29947,
+          "temperature_c": 49
+        },
+        {
+          "t_ms": 9025.5991,
+          "power_w": 158.31,
+          "utilization_pct": 99,
+          "memory_mib": 29947,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 9221.1773,
+          "power_w": 158.31,
+          "utilization_pct": 99,
+          "memory_mib": 29947,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 9422.567149999999,
+          "power_w": 158.31,
+          "utilization_pct": 99,
+          "memory_mib": 29947,
+          "temperature_c": 52
+        },
+        {
+          "t_ms": 9609.6879,
+          "power_w": 233.46,
+          "utilization_pct": 98,
+          "memory_mib": 29947,
+          "temperature_c": 53
+        }
+      ],
+      "energy_j": 189.89,
+      "incremental_energy_j": 163.58,
+      "average_power_w": 152.78,
+      "peak_power_w": 233.46,
+      "average_utilization_pct": 73.1,
+      "peak_memory_mib": 29947,
+      "tokens_per_joule": 0.6741,
+      "incremental_tokens_per_joule": 0.7825
+    }
+  ]
+}

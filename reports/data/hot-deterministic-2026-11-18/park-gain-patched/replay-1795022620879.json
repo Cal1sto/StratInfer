@@ -1,0 +1,49 @@
+{
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T17:23:40.878Z",
+  "marker": "1795022611028-hixd3mxnjc5",
+  "requested_tokens": 25000,
+  "cold": {
+    "request_id": "7c677a295878",
+    "prompt_total": 39679,
+    "prompt_read": 39679,
+    "reused": 0,
+    "prompt_ms": 7693.7
+  },
+  "resumed": {
+    "index": 1,
+    "request_id": "69296d8a2628",
+    "prompt_total": 39708,
+    "prompt_read": 34,
+    "reused": 39674,
+    "prompt_ms": 612.3
+  },
+  "resumes": [
+    {
+      "index": 1,
+      "request_id": "69296d8a2628",
+      "prompt_total": 39708,
+      "prompt_read": 34,
+      "reused": 39674,
+      "prompt_ms": 612.3
+    },
+    {
+      "index": 2,
+      "request_id": "72d39d6e8999",
+      "prompt_total": 39740,
+      "prompt_read": 37,
+      "reused": 39703,
+      "prompt_ms": 370.5
+    },
+    {
+      "index": 3,
+      "request_id": "e03999f1879c",
+      "prompt_total": 39772,
+      "prompt_read": 37,
+      "reused": 39735,
+      "prompt_ms": 412.7
+    }
+  ],
+  "replay_fraction": 0.0008562506295960512,
+  "exact_reuse": true
+}

@@ -1,0 +1,44 @@
+{
+  "base": "http://127.0.0.1:11440",
+  "at": "2026-11-18T17:17:38.624Z",
+  "marker": "1795022158638-s6l6mrb69yc",
+  "requested_tokens": 25000,
+  "cold": {
+    "prompt_total": 39680,
+    "prompt_read": 39680,
+    "reused": 0,
+    "prompt_ms": 16064.9
+  },
+  "resumed": {
+    "index": 1,
+    "prompt_total": 39709,
+    "prompt_read": 34,
+    "reused": 39675,
+    "prompt_ms": 10857.5
+  },
+  "resumes": [
+    {
+      "index": 1,
+      "prompt_total": 39709,
+      "prompt_read": 34,
+      "reused": 39675,
+      "prompt_ms": 10857.5
+    },
+    {
+      "index": 2,
+      "prompt_total": 39741,
+      "prompt_read": 37,
+      "reused": 39704,
+      "prompt_ms": 11514.6
+    },
+    {
+      "index": 3,
+      "prompt_total": 39773,
+      "prompt_read": 37,
+      "reused": 39736,
+      "prompt_ms": 11715.7
+    }
+  ],
+  "replay_fraction": 0.0008562290664584854,
+  "exact_reuse": true
+}

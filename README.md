@@ -15,21 +15,21 @@ testable equivalent.
 
 | Work item | Evidence | Verdict |
 |---|---|---|
-| Conversation cache, 512 to 4096 MiB | 1,441 daily parking rejections to 0; 131k-token resume in 1.3 s | Kept |
+| Conversation cache and hot reload | 1,441 daily parking rejections to 0; lookup median -14.0%; 39.7K short-turn resumes 371-413 ms | Kept |
 | KV cache `k8v4` | decode 91.4 to 98.7 tok/s; fresh prefill about -4.2% | Kept |
 | Chunked GDN prefill | +0.6%, inside the measured +/-3% noise band | Rejected |
 | Speculation depth sweep | spec5 -10.6%, spec3 -3.5% against spec4 | Rejected |
 | Confidence-scheduled speculation | +0.1% in a calibrated 2,759-request simulation | Rejected as stated |
 | RTX 5090 overlay A/B | +1.62% fixed decode; +1.43% fresh prefill; +3.72% to +6.72% concurrent throughput | Promising, sequential gain inside noise |
-| Live Strata 0.1.45 vs StratInfer 0.1.54 | +9.19% fixed decode; +9.64% fresh prefill; +16.77% to +20.45% concurrent throughput | StratInfer selected; hot replay +6.42% remains to fix |
+| Live Strata 0.1.45 vs StratInfer 0.1.54 | +9.19% fixed decode; +9.64% fresh prefill; +16.77% to +20.45% concurrent throughput | StratInfer selected; hot reload optimized in the follow-up |
 | Strict JSON-Schema overlay | 4/4 `sm_120` tests and 6/6 constrained smoke outputs | Functional smoke passed |
-| Strict deterministic runtime | fixed placement 13/13; synchronous adaptation 4/5; strict decode 2.1-2.7 tok/s | Opt-in only; performance profile remains default |
+| Fast deterministic runtime | 19/19 hashes across two seeds; 109.0 vs 126.8 tok/s (-14.0%); TTFT unchanged | Opt-in qualification mode; performance remains default |
 | FastMCP coding tools | 6/6 tools; MOAI end-to-end; crash recovery; 28.8 ms median `git_status` | Active on StratInfer; request opt-in only |
 | Packed grammar-mask CUDA kernel | median 7.931 us kernel-only; 94.652 us pinned upload plus kernel | Component result only |
 | End-to-end constrained RTX 5090 throughput | final constrained cutover not run | Pending |
 | Eight-agent long-session memory | 4 GiB RTX 4080 cap, 12 GiB host, 64 GiB SSD; live prefixed save/restore | Active; 24-hour and quota-pressure gates pending |
 | NOEMA supervised control plane | 25/25 focused and 50/50 combined tests; latest heavy-load review `PASS` (0.89); exercised rollback; 10/10 strict tool calls | Active in `voice-balanced`; agent-max capacity qualified, endurance pending |
-| Heavy Strata vs StratInfer load | 338 paired requests; +8.05% decode, +14.80% fresh prefill, +16.19% at concurrency 8, 60/60 quality | StratInfer retained; hot replay +10.26% remains to fix |
+| Heavy Strata vs StratInfer load | 338 paired requests; +8.05% decode, +14.80% fresh prefill, +16.19% at concurrency 8, 60/60 quality | StratInfer retained; replay follow-up completed, cross-engine A/B to rerun |
 
 Full measurements and caveats are in [`RESULTS.md`](RESULTS.md). The latest raw battery
 and analysis are in [`reports/rtx5090-2026-10-31.md`](reports/rtx5090-2026-10-31.md).
@@ -42,6 +42,8 @@ long context and negative results, is
 [`reports/strata-vs-stratinfer-2026-11-01.md`](reports/strata-vs-stratinfer-2026-11-01.md).
 The active FastMCP deployment, security model and measured overhead are in
 [`reports/fastmcp-2026-11-02.md`](reports/fastmcp-2026-11-02.md).
+The hot-reload optimization, live deterministic profile and current trade-offs are in
+[`reports/hot-reload-determinism-2026-11-18.md`](reports/hot-reload-determinism-2026-11-18.md).
 Concrete coding, long-context, multi-agent, memory and MCP use cases with reproducible
 projections are in
 [`reports/stratinfer-vs-strata-use-cases-2026-11-02.md`](reports/stratinfer-vs-strata-use-cases-2026-11-02.md).

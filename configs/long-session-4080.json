@@ -57,6 +57,7 @@
     "--conversation-cache-mib", "12288",
     "--conversation-cache-slots", "8",
     "--conversation-cache-min-tokens", "2048",
+    "--conversation-cache-park-gain", "2048",
     "--prompt-cache-spread",
     "--session-min-free-mib", "4096",
     "--session-save-reclaim"

@@ -1,5 +1,6 @@
 const STRICT_ARGUMENTS = new Map([
   ["--prompt-cache", "0"],
+  ["--adapt-every", "0"],
   ["--adapt-swaps", "0"],
   ["--adapt-async", "0"],
   ["--pcie-frac", "0"],
@@ -7,6 +8,7 @@ const STRICT_ARGUMENTS = new Map([
 
 const STRICT_ENVIRONMENT = {
   STRATA_ADAPT_ASYNC: "0",
+  STRATA_COMMIT_SYNC: "1",
   STRATA_IQ_MT_MIN: "1",
 };
 

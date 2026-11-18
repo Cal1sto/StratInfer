@@ -1,0 +1,167 @@
+{
+  "service": "MOAI",
+  "version": "1.0.15",
+  "mode": "exclusive_render",
+  "loaded": true,
+  "textEngine": {
+    "selected": "stratinfer",
+    "switching": false,
+    "choices": [
+      {
+        "id": "strata",
+        "label": "Strata stable",
+        "description": "Moteur officiel actuel, sans cache auxiliaire sur la RTX 4080.",
+        "helperVramBytes": 0,
+        "port": 11440,
+        "active": false
+      },
+      {
+        "id": "stratinfer",
+        "label": "StratInfer longue session",
+        "description": "sm120 sur RTX 5090, cache K/V exact plafonne a 4 Gio sur RTX 4080, sessions disque activees.",
+        "helperVramBytes": 4294967296,
+        "port": 11441,
+        "active": true
+      }
+    ]
+  },
+  "residentModels": {
+    "qwen": {
+      "required": true,
+      "ready": true,
+      "loading": false,
+      "error": null,
+      "waitingReason": null,
+      "retryAt": null
+    },
+    "asr": {
+      "required": true,
+      "ready": true,
+      "loading": false,
+      "error": null,
+      "waitingReason": null,
+      "retryAt": null
+    },
+    "speech": {
+      "required": true,
+      "ready": true,
+      "loading": false,
+      "error": null,
+      "waitingReason": null,
+      "retryAt": null
+    }
+  },
+  "voiceStack": {
+    "selected": "qwen3-asr-tts",
+    "switching": false,
+    "target": null,
+    "error": null,
+    "sharedApplications": [
+      "JARVIS",
+      "JAV",
+      "DAVCAW",
+      "Artist Studio"
+    ],
+    "fish": {
+      "engine": "Fish S2 Pro 4B",
+      "fastAR": true,
+      "note": "Fast AR est le décodeur de Fish S2 Pro ; il utilise les mêmes poids et les mêmes voix."
+    },
+    "choices": [
+      {
+        "id": "whisper-fish",
+        "label": "Whisper + Fish S2 Pro",
+        "asr": "Whisper large-v3-turbo",
+        "recipe": "whisper",
+        "tts": "fish",
+        "description": "Reconnaissance Whisper et voix Fish S2 Pro, avec son décodeur Fast AR optimisé.",
+        "active": false,
+        "available": true,
+        "reason": null
+      },
+      {
+        "id": "qwen3-fish-fast-ar",
+        "label": "Qwen3-ASR 0.6B + Fish · Fast AR",
+        "asr": "Qwen3-ASR 0.6B",
+        "recipe": "qwen3",
+        "tts": "fish",
+        "description": "Reconnaissance Qwen3-ASR 0.6B et les mêmes voix Fish S2 Pro, avec Fast AR optimisé.",
+        "active": false,
+        "available": true,
+        "reason": null
+      },
+      {
+        "id": "qwen3-asr-tts",
+        "label": "Qwen3-ASR 0.6B + Qwen3-TTS 0.6B",
+        "asr": "Qwen3-ASR 0.6B",
+        "recipe": "qwen3",
+        "tts": "qwen3tts",
+        "description": "Reconnaissance Qwen3-ASR et voix prédéfinies Qwen3-TTS CustomVoice, sur la RTX 4080.",
+        "active": true,
+        "available": true,
+        "reason": null
+      }
+    ]
+  },
+  "speech": {
+    "enabled": true,
+    "engine": "Qwen3-TTS 0.6B · voix",
+    "ready": true,
+    "busy": false,
+    "loading": false,
+    "pending": 0,
+    "pid": 12992,
+    "gpuUuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+    "contextTokens": null,
+    "cacheAllocation": null,
+    "idleTimeoutMs": null,
+    "keepResident": true,
+    "error": null,
+    "lastTiming": {
+      "firstAudioMs": 690,
+      "generationMs": 3215,
+      "audioSeconds": 3.68,
+      "frames": 46,
+      "sampleRate": 24000,
+      "acceleration": true,
+      "graph": {
+        "enabled": true,
+        "captures": 1,
+        "replays": 119,
+        "fallback": null
+      },
+      "peakVramBytes": 2254570496,
+      "client": "admin",
+      "workerPid": 12992,
+      "loadMs": 10694,
+      "firstByteMs": 694,
+      "totalMs": 3218
+    }
+  },
+  "asr": {
+    "enabled": true,
+    "engine": "Qwen3-ASR 0.6B",
+    "ready": true,
+    "busy": false,
+    "loading": false,
+    "pending": 0,
+    "pid": 58792,
+    "gpuUuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+    "contextTokens": null,
+    "cacheAllocation": null,
+    "idleTimeoutMs": null,
+    "keepResident": true,
+    "error": null,
+    "lastTiming": {
+      "client": "admin",
+      "elapsedMs": 640,
+      "loadMs": 2250,
+      "workerPid": 58792,
+      "device": "GPU"
+    },
+    "device": "GPU",
+    "computeType": "bfloat16",
+    "partial": false,
+    "cpuFallback": false
+  }
+}

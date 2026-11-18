@@ -1,0 +1,85 @@
+{
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T16:49:19.499Z",
+  "seed": 424242,
+  "temperature": 0.8,
+  "noise_tokens": 8,
+  "max_tokens": 64,
+  "expected": "9989b0ee8895cbdb5fbd54c7a99906a1daa35e3eee9e963d1bfacc8a7580d463",
+  "pass": false,
+  "observations": [
+    {
+      "mode": "serial",
+      "index": 0,
+      "hash": "9989b0ee8895cbdb5fbd54c7a99906a1daa35e3eee9e963d1bfacc8a7580d463",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 1,
+      "hash": "cc80048b2ca5dc650383193cbfddb8e5034ef4187d1546e068a348784035b6be",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 2,
+      "hash": "da91fa40858f9529140e5d91ed92a7e9e94ece5c64565d600926a20f38235d90",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 0,
+      "concurrency": 3,
+      "hash": "328fd38867b59ad86e06fd44d8b1cd2dd2acf93b59c7a92deb8d47781832ac73",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 1,
+      "concurrency": 3,
+      "hash": "819e0446f27c9f951289d5df97a4946254f0a8e786921d3f1304393834671902",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    }
+  ],
+  "mismatches": [
+    "cc80048b2ca5dc650383193cbfddb8e5034ef4187d1546e068a348784035b6be",
+    "da91fa40858f9529140e5d91ed92a7e9e94ece5c64565d600926a20f38235d90",
+    "328fd38867b59ad86e06fd44d8b1cd2dd2acf93b59c7a92deb8d47781832ac73",
+    "819e0446f27c9f951289d5df97a4946254f0a8e786921d3f1304393834671902"
+  ]
+}

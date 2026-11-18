@@ -112,6 +112,9 @@ try {
   const maxTokens = positiveInt(option(args, "--tokens", "384"), "--tokens");
   const gpu = finiteOption(option(args, "--gpu", "0"), "--gpu", 0);
   const idleSeconds = finiteOption(option(args, "--idle-seconds", "3"), "--idle-seconds", 1);
+  const pcieOption = option(args, "--pcie-frac", "");
+  const pcieFrac = pcieOption === "" ? null : finiteOption(pcieOption, "--pcie-frac", 0);
+  if (pcieFrac != null && pcieFrac > 1) throw new Error("--pcie-frac must be at most 1");
   const outArg = option(args, "--out", "logs");
   const outDir = isAbsolute(outArg) ? outArg : resolve(ROOT, outArg);
   const fileLabel = label.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "") || "run";
@@ -140,6 +143,7 @@ try {
         model: "strata",
         temperature: 0,
         max_tokens: maxTokens,
+        ...(pcieFrac == null ? {} : { strata_tune: { pcie_frac: pcieFrac } }),
         messages: [{ role: "user", content: `Marker ${marker}. Write a production-grade TypeScript bounded LRU cache with TTL, tests, and usage examples. Return code only and continue until the output limit.` }],
       });
       collecting = false;
@@ -193,6 +197,7 @@ try {
     at: new Date().toISOString(),
     gpu,
     max_tokens: maxTokens,
+    pcie_frac: pcieFrac,
     idle_power_w: idlePowerW,
     idle_samples: { before: idleBefore, after: idleAfter },
     summary: {

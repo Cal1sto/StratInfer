@@ -98,7 +98,7 @@ The 24-hour and full quota-pressure gates remain open. See
 |---|---|---|
 | C2 conversation cache, 512 to 4096 MiB | 1,441 parking budget rejections/day to 0 | Kept |
 | C3 `k8v4` | decode 91.38 to 98.65 tok/s (+8.0%); fresh prefill about -4.2% | Kept |
-| C9 deterministic sampling | fixed placement 13/13; performance placement 1/13 at 128 tokens | Strict profile accepted; opt-in |
+| C9 deterministic sampling | 19/19 across two seeds; 109.0 vs 126.8 tok/s | Fast deterministic profile accepted; opt-in |
 | C12 eight-agent capacity | 8 × 128K target; live save/restore; ASR/TTS PIDs preserved | Live smoke passed; endurance pending |
 | C1 chunked GDN | +0.6% fresh prefill, inside noise | Rejected |
 | C4 speculation depth | depth 5: -10.6%; depth 3: -3.5% against depth 4 | Rejected |
@@ -250,13 +250,13 @@ six hashes different from the first result across seven observations. A later 13
 campaign isolated adaptive expert residency as the cause: an expert computed on CPU and
 GPU rounds differently, and the asynchronous adaptive tier changes that placement.
 
-A fixed-placement profile passed 13/13 serial/interleaved hashes on port 11441, while
-synchronous adaptation passed only 4/5 and the restored performance profile passed 1/13
-at 128 tokens. Fixed placement decoded the short strict gate at 2.1-2.7 tok/s; the
-restored performance profile reached a 143.7 tok/s median in its retained 128-token
-metrics. Strict determinism is therefore accepted as a separate opt-in profile, not as
+A fixed-placement profile with prompt reuse disabled, synchronous commits and
+`--pcie-frac 0` passed 13/13 serial/interleaved hashes at 128 tokens and 6/6 at 96 tokens
+on port 11441. Its paired three-request gate measured 109.0 tok/s versus 126.8 tok/s in
+the performance profile (-14.0%), with effectively unchanged median TTFT (528.0 versus
+532.2 ms). Fast determinism is therefore accepted as a separate opt-in profile, not as
 the interactive default. See
-[`reports/determinism-fix-2026-11-02.md`](reports/determinism-fix-2026-11-02.md).
+[`reports/hot-reload-determinism-2026-11-18.md`](reports/hot-reload-determinism-2026-11-18.md).
 
 ## FastMCP deployment, 2026-11-02
 
@@ -333,6 +333,23 @@ combined tests; an independent Codex review returned `PASS` with 0.89 confidence
 completed the campaign. Full results are in
 [`reports/heavy-strata-vs-stratinfer-2026-11-18.md`](reports/heavy-strata-vs-stratinfer-2026-11-18.md).
 
+## Hot reload and deterministic follow-up, 2026-11-18
+
+The conversation-cache lookup now ignores parked candidates that cannot exceed the
+already-proven live prefix. Across the matched 25.4K-token live runs, median hot prompt
+time fell from 499.3 to 429.3 ms (-14.0%) while cold prefill remained stable. A
+2,048-token park-growth threshold now avoids copying the same large snapshot after every
+short coding turn. In a 39.7K-token three-continuation run, the first resume took 612.3 ms
+and included one 964 MB park; the next two exact resumes took 370.5 and 412.7 ms without
+another park. The latter median is 391.6 ms, 36.0% below the first resume and 94.9% below
+the 7,693.7 ms cold prompt.
+
+The strict deterministic profile passed 19/19 sampled-output hashes over two seeds. Its
+measured cost was -14.0% median decode and -16.4% incremental tokens per joule, with no
+meaningful TTFT regression. The live performance profile remains selected; the strict
+profile is a separate rollback-safe artifact. Full protocol, limitations and raw paths
+are in [`reports/hot-reload-determinism-2026-11-18.md`](reports/hot-reload-determinism-2026-11-18.md).
+
 ## Remaining gates
 
 No result in this section is claimed complete yet:
@@ -340,7 +357,7 @@ No result in this section is claimed complete yet:
 - at least 10,000 grammar-constrained live samples over representative schemas;
 - zero invalid committed output with speculation on and off at that scale;
 - at least 95% of unconstrained decode throughput on the RTX 5090;
-- strict serial/interleaved determinism across multiple seeds and longer outputs;
+- strict determinism across vision/MCP boundaries and future driver updates;
 - longer concurrency runs to confirm the observed +3.72% to +6.72% signal.
 
 Concurrency and exact replay now have live baselines. The remaining constrained RTX 5090

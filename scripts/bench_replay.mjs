@@ -11,6 +11,10 @@ const FILLER = "A bounded replay policy retains a checkpoint and replays only th
 
 try {
   const tokens = positiveInt(option(args, "--tokens", "16000"), "--tokens");
+  const continuations = positiveInt(option(args, "--continuations", "1"), "--continuations");
+  const expectedBase = option(args, "--expect-base", null)?.replace(/\/$/, "");
+  if (expectedBase && expectedBase !== BASE)
+    throw new Error(`endpoint mismatch: STRATINFER_BASE=${BASE}, --expect-base=${expectedBase}`);
   const outArg = option(args, "--out", "logs");
   const outDir = isAbsolute(outArg) ? outArg : resolve(ROOT, outArg);
   const marker = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -20,18 +24,26 @@ try {
   const beforeCold = metricIds(await metrics());
   const coldResponse = await chat({ model: "strata", temperature: 0, max_tokens: 16, messages: firstMessages });
   const cold = await waitForMetric(beforeCold, coldResponse.usage);
-  const assistant = coldResponse.choices?.[0]?.message?.content ?? "checkpoint-ready";
-  const continuationMessages = [...firstMessages, { role: "assistant", content: assistant },
-    { role: "user", content: "Now reply with exactly: replay-ready" }];
-  const beforeResume = metricIds(await metrics());
-  const resumeResponse = await chat({ model: "strata", temperature: 0, max_tokens: 16, messages: continuationMessages });
-  const resumed = await waitForMetric(beforeResume, resumeResponse.usage);
+  const continuationMessages = [...firstMessages];
+  let assistant = coldResponse.choices?.[0]?.message?.content ?? "checkpoint-ready";
+  const resumes = [];
+  for (let index = 1; index <= continuations; ++index) {
+    continuationMessages.push({ role: "assistant", content: assistant },
+      { role: "user", content: `Continuation ${index}. Reply with exactly: replay-ready-${index}` });
+    const beforeResume = metricIds(await metrics());
+    const response = await chat({ model: "strata", temperature: 0, max_tokens: 16, messages: continuationMessages });
+    const metric = await waitForMetric(beforeResume, response.usage);
+    resumes.push({ index, request_id: metric.id, prompt_total: metric.prompt_total, prompt_read: metric.prompt_read,
+      reused: metric.reused, prompt_ms: metric.prompt_ms });
+    assistant = response.choices?.[0]?.message?.content ?? `replay-ready-${index}`;
+  }
+  const resumed = resumes[0];
   const report = {
-    base: BASE, at: new Date().toISOString(), marker, requested_tokens: tokens,
+    base: BASE, expected_base: expectedBase, at: new Date().toISOString(), marker, requested_tokens: tokens,
     cold: { request_id: cold.id, prompt_total: cold.prompt_total, prompt_read: cold.prompt_read,
       reused: cold.reused, prompt_ms: cold.prompt_ms },
-    resumed: { request_id: resumed.id, prompt_total: resumed.prompt_total, prompt_read: resumed.prompt_read,
-      reused: resumed.reused, prompt_ms: resumed.prompt_ms },
+    resumed,
+    resumes,
     replay_fraction: resumed.prompt_total > 0 ? resumed.prompt_read / resumed.prompt_total : null,
     exact_reuse: resumed.reused > 0 && resumed.prompt_read < resumed.prompt_total,
   };

@@ -1,0 +1,131 @@
+{
+  "exe": "E:\\DEV\\StratInfer\\build\\public-long-session-sm120\\strata.exe",
+  "args": [
+    "--pack",
+    "E:\\Data\\JarvisMarc\\strata-data\\packs\\iq3_s",
+    "--native",
+    "E:\\Data\\JarvisMarc\\strata-data\\models\\IQ3_S\\Qwen3.8-Flash-Next-GSQ-RCO-IQ3_S-00001-of-00002.gguf",
+    "--ple-gguf",
+    "E:\\Data\\JarvisMarc\\strata-data\\models\\IQ3_S\\Qwen3.8-Flash-Next-GSQ-RCO-IQ3_S-00002-of-00002.gguf",
+    "--expert-profile",
+    "G:\\Mon Drive\\DEV\\JarvisMarc\\runtime\\strata-source\\data\\expert-profile.bin",
+    "--expert-cache",
+    "8000",
+    "--prefill",
+    "auto",
+    "--spec",
+    "4",
+    "--spec-min-p",
+    "0.5",
+    "--mtp",
+    "E:\\Data\\JarvisMarc\\strata-data\\mtp\\rt",
+    "--max-context",
+    "524288",
+    "--kv",
+    "k8v4",
+    "--kv-resident",
+    "65536",
+    "--vram-reserve-mib",
+    "1280",
+    "--ple-io",
+    "direct",
+    "--conversation-cache-mib",
+    "12288",
+    "--conversation-cache-slots",
+    "8",
+    "--rope-scaling",
+    "yarn",
+    "--rope-scale",
+    "2",
+    "--conversation-cache-min-tokens",
+    "2048",
+    "--prompt-cache-spread",
+    "--session-min-free-mib",
+    "4096",
+    "--session-save-reclaim",
+    "--prompt-cache",
+    "0",
+    "--adapt-every",
+    "0",
+    "--adapt-swaps",
+    "0",
+    "--adapt-async",
+    "0",
+    "--pcie-frac",
+    "1"
+  ],
+  "cwd": "E:\\DEV\\StratInfer\\build\\public-long-session-sm120",
+  "tokenizer": "E:\\Data\\JarvisMarc\\strata-data\\packs\\iq3_s\\tokenizer",
+  "model_name": "qwen3.8-flash-next-iq3_s",
+  "log": "E:\\Data\\JarvisMarc\\StrataLogs\\stratinfer-engine-51f355f.log",
+  "lib_dirs": [
+    "E:/DEV/StratInfer/build/public-long-session-sm120",
+    "E:/Data/MOAI/Runtime/Strata/CUDA13/x86_64"
+  ],
+  "port": 11440,
+  "gpu": 0,
+  "gpus_asked": true,
+  "host": "127.0.0.1",
+  "idle_unload_s": 0,
+  "lazy_load": false,
+  "env": {
+    "STRATA_PLE_AUTO_MMAP": "0",
+    "STRATA_ROUTE_TAIL_SKIP": "0",
+    "STRATA_PREFILL_CPU_SHARE": "0",
+    "STRATA_PCIE_FRAC_DEFAULT": "old",
+    "STRATA_HC_Q8": "0",
+    "STRATA_ADAPT_OVERLAP": "0",
+    "STRATA_HOST_CORE": "last",
+    "STRATA_PARK_ASYNC": "1",
+    "STRATA_PARK_VRAM_MIB": "4096",
+    "STRATA_PARK_VRAM_DEVICE": "1",
+    "STRATA_CKPT_ASYNC": "1",
+    "STRATA_CKPT_GATHER": "1",
+    "STRATA_CKPT_POOL": "1",
+    "STRATA_ADAPT_ASYNC": "0",
+    "STRATA_IQ_MT_MIN": "1",
+    "STRATA_COMMIT_SYNC": "1"
+  },
+  "vision": {
+    "exe": "C:\\Users\\Cal1s\\AppData\\Local\\Packages\\OpenAI.Codex_2p2nqsd0c76g0\\LocalCache\\Local\\MOAI\\Components\\Strata\\v0.1.45\\engine\\strata-vision.exe",
+    "mmproj": "E:\\Data\\JarvisMarc\\strata-data\\models\\IQ3_S\\mmproj-Qwen3.8-Flash-Next-BF16.gguf",
+    "model": "E:\\Data\\JarvisMarc\\strata-data\\models\\IQ3_S\\Qwen3.8-Flash-Next-GSQ-RCO-IQ3_S-00001-of-00002.gguf",
+    "gpu": true,
+    "max_tokens": 1024
+  },
+  "mcp_servers": {
+    "stratinfer": {
+      "command": "C:\\ProgramData\\Anaconda3\\python.exe",
+      "args": [
+        "E:\\Data\\JarvisMarc\\StratInferRuntime\\51f355f\\mcp\\stratinfer_fastmcp.py"
+      ],
+      "cwd": "E:\\DEV\\StratInfer\\public-repo",
+      "env": {
+        "STRATINFER_MCP_WORKSPACE": "E:\\DEV\\StratInfer\\public-repo",
+        "STRATINFER_MCP_MEMORY_DB": "E:\\Data\\JarvisMarc\\StratInferSessions\\fastmcp-context.sqlite3",
+        "STRATINFER_MCP_MEMORY_MAX_BYTES": "34359738368",
+        "STRATINFER_BASE": "http://127.0.0.1:11441",
+        "PYTHONUNBUFFERED": "1"
+      }
+    },
+    "noema_control": {
+      "command": "C:\\ProgramData\\Anaconda3\\python.exe",
+      "args": [
+        "E:\\DEV\\StratInfer\\public-repo\\tools\\noema_control_fastmcp.py"
+      ],
+      "cwd": "E:\\DEV\\StratInfer\\public-repo\\tools",
+      "env": {
+        "NOEMA_BASE": "http://127.0.0.1:12160",
+        "NOEMA_TOKEN_FILE": "E:\\Data\\NOEMA\\control-token.txt",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  },
+  "mcp": {
+    "timeout_s": 15,
+    "start_timeout_s": 15,
+    "max_result_chars": 24000,
+    "max_rounds": 4,
+    "image_results": false
+  }
+}

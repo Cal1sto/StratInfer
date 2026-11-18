@@ -1,0 +1,22 @@
+{
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T16:43:00.997Z",
+  "marker": "1795020172980-lb5e2xuxw0r",
+  "requested_tokens": 16000,
+  "cold": {
+    "request_id": "0510df1b5322",
+    "prompt_total": 25431,
+    "prompt_read": 25431,
+    "reused": 0,
+    "prompt_ms": 7135
+  },
+  "resumed": {
+    "request_id": "109d4aa42d78",
+    "prompt_total": 25454,
+    "prompt_read": 28,
+    "reused": 25426,
+    "prompt_ms": 471.5
+  },
+  "replay_fraction": 0.0011000235719336843,
+  "exact_reuse": true
+}

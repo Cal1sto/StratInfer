@@ -17,7 +17,7 @@ try {
   const deterministic = makeStrictDeterministicProfile(profile);
   await mkdir(dirname(output), { recursive: true });
   await writeFile(output, `${JSON.stringify(deterministic, null, 2)}\n`, { flag: "wx" });
-  console.log(JSON.stringify({ input, output, mode: "strict-deterministic" }, null, 2));
+  console.log(JSON.stringify({ input, output, mode: "fast-deterministic" }, null, 2));
 } catch (error) {
   console.error(`make-deterministic-profile: ${error.message}`);
   process.exitCode = 1;

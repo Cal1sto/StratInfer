@@ -13,9 +13,10 @@ to the sampler differ. Runtime placement can change those logits:
 2. an expert computed on the GPU rounds differently from the same expert computed on the
    CPU, so changing residency changes later logits and sampled tokens.
 
-The strict profile freezes expert placement and disables other path-changing caches. A
-device-wide fence was also tested and rejected: it did not remove the placement trade-off
-and reduced decode to the same low-throughput range.
+The strict profile freezes expert placement, disables path-changing prompt reuse and
+forces synchronous expert commits. The live matrix also found that a non-zero PCIe miss
+fraction can select a numerically different CPU/GPU route, so strict mode keeps that
+fraction at zero.
 
 ## Generate a strict profile
 
@@ -30,10 +31,12 @@ node scripts/make-deterministic-profile.mjs `
 The generated profile is idempotent and applies:
 
 - `--prompt-cache 0`;
+- `--adapt-every 0`;
 - `--adapt-swaps 0`;
 - `--adapt-async 0`;
 - `--pcie-frac 0`;
 - `STRATA_ADAPT_ASYNC=0`;
+- `STRATA_COMMIT_SYNC=1`;
 - `STRATA_IQ_MT_MIN=1`;
 
 Unrelated settings remain unchanged, including MTP/speculation, RTX 4080 parked-K/V
@@ -41,11 +44,13 @@ limits, model paths, and SSD session paths. Disabling prompt reuse and adaptive 
 movement makes this profile slower; measure the cost on the deployed model instead of
 assuming it is negligible.
 
-On the validated RTX 5090 profile, fixed placement produced 13/13 identical sampled
-hashes while synchronous adaptive placement produced 4/5. Fixed-placement decode was
-2.1-2.7 tok/s in this short gate, versus a 153.7 tok/s median for the previously measured
-performance profile. These prompts and output lengths are not a paired throughput A/B,
-but the regression is too large to make strict mode the interactive default.
+On the validated RTX 5090 profile, two seeds produced 19/19 identical sampled hashes:
+13/13 at 128 generated tokens and 6/6 at 96. The paired three-request efficiency gate
+measured 109.0 tok/s in strict mode versus 126.8 tok/s in the performance profile
+(-14.0%). Median TTFT remained effectively unchanged (528.0 versus 532.2 ms), while
+incremental tokens per joule fell from 0.6191 to 0.5178 (-16.4%). This is fast enough for
+qualification and exact replay, but the performance profile remains the interactive
+default.
 
 ## Validate the intended engine
 
@@ -72,9 +77,9 @@ the synchronization setting is startup-scoped.
 - failures that reflect code changes rather than GPU scheduling noise.
 
 It does not improve model intelligence or output quality by itself. Its direct cost is
-disabled adaptive movement and disabled prompt caching in the strict
-profile. Keep the performance profile for normal interactive use unless exact replay is
-required.
+disabled adaptive movement, disabled prompt caching and a CPU-only expert-cache miss
+route. Keep the performance profile for normal interactive use unless exact replay is
+required. MCP tools and other external side effects are outside text-output determinism.
 
-The live investigation and raw-evidence map are in
-[`../reports/determinism-fix-2026-11-02.md`](../reports/determinism-fix-2026-11-02.md).
+The current live investigation and raw-evidence map are in
+[`../reports/hot-reload-determinism-2026-11-18.md`](../reports/hot-reload-determinism-2026-11-18.md).
