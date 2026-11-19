@@ -1,0 +1,95 @@
+{
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T17:01:01.989Z",
+  "seed": 8675309,
+  "temperature": 0.8,
+  "pcie_frac": 0,
+  "noise_tokens": 12,
+  "max_tokens": 96,
+  "expected": "4e8c6c04757b48aa317d27205237a0dc7cdaff5ca5b874e1f1dfd7a7afc293b6",
+  "pass": true,
+  "observations": [
+    {
+      "mode": "serial",
+      "index": 0,
+      "hash": "4e8c6c04757b48aa317d27205237a0dc7cdaff5ca5b874e1f1dfd7a7afc293b6",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 96,
+        "total_tokens": 165,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 1,
+      "hash": "4e8c6c04757b48aa317d27205237a0dc7cdaff5ca5b874e1f1dfd7a7afc293b6",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 96,
+        "total_tokens": 165,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 2,
+      "hash": "4e8c6c04757b48aa317d27205237a0dc7cdaff5ca5b874e1f1dfd7a7afc293b6",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 96,
+        "total_tokens": 165,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 0,
+      "concurrency": 4,
+      "hash": "4e8c6c04757b48aa317d27205237a0dc7cdaff5ca5b874e1f1dfd7a7afc293b6",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 96,
+        "total_tokens": 165,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 1,
+      "concurrency": 4,
+      "hash": "4e8c6c04757b48aa317d27205237a0dc7cdaff5ca5b874e1f1dfd7a7afc293b6",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 96,
+        "total_tokens": 165,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 2,
+      "concurrency": 4,
+      "hash": "4e8c6c04757b48aa317d27205237a0dc7cdaff5ca5b874e1f1dfd7a7afc293b6",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 96,
+        "total_tokens": 165,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    }
+  ],
+  "mismatches": []
+}

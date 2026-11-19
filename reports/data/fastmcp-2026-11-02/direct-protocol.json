@@ -1,0 +1,95 @@
+﻿{
+  "status": "passed",
+  "tools": [
+    "code_search",
+    "file_read",
+    "git_status",
+    "memory_recall",
+    "memory_remember",
+    "runtime_snapshot"
+  ],
+  "checks": {
+    "runtime_snapshot": {
+      "health": {
+        "status": "ok",
+        "max_context": 524288,
+        "model": "qwen3.8-flash-next-iq3_s",
+        "images": true,
+        "api_key": false,
+        "image_generation": false,
+        "loaded": true,
+        "service": "strata"
+      },
+      "mcp": {
+        "ready": true,
+        "servers": 1,
+        "tools": 6,
+        "protocols": [
+          "2025-06-18"
+        ],
+        "settings": {
+          "timeout_s": 15.0,
+          "max_result_chars": 24000,
+          "max_rounds": 4
+        }
+      },
+      "workspace": "E:\\DEV\\StratInfer\\public-repo",
+      "memory": {
+        "path": "C:\\Users\\Cal1s\\AppData\\Local\\Temp\\stratinfer-fastmcp-test-67624.sqlite3",
+        "bytes": 0,
+        "max_bytes": 34359738368
+      },
+      "probe_ms": 154.36
+    },
+    "code_search": {
+      "matches": [
+        "1:3:# StratInfer",
+        "3:1:StratInfer is a measurement-first port of useful",
+        "11:11:Otherwise StratInfer keeps Strata's native implementation or re-derives a small,"
+      ],
+      "count": 3,
+      "truncated": true,
+      "elapsed_ms": 14.25
+    },
+    "file_read": {
+      "path": "README.md",
+      "start_line": 1,
+      "end_line": 3,
+      "total_lines": 250,
+      "text": "# StratInfer\n\nStratInfer is a measurement-first port of useful"
+    },
+    "git_status": {
+      "workspace": "E:\\DEV\\StratInfer\\public-repo",
+      "status": "## codex/deepinfer-sm120...origin/codex/deepinfer-sm120\n M README.md\n M RESULTS.md\n?? docs/fastmcp.md\n?? reports/data/fastmcp-2026-11-02/\n?? reports/fastmcp-2026-11-02.md\n?? requirements-mcp.txt\n?? scripts/bench_fastmcp.mjs\n?? scripts/enable-fastmcp.ps1\n?? scripts/test-fastmcp.py\n?? tools/"
+    },
+    "memory_remember": {
+      "id": 1,
+      "created_at": 1793622330.1552894,
+      "inserted": true,
+      "sha256": "19a6b0ece5ac346b55a6460a40f93a90dae2d7ee5eb676b50c014bf6b52d2b94"
+    },
+    "memory_recall": {
+      "records": [
+        {
+          "id": 1,
+          "created_at": 1793622330.1552894,
+          "category": "test",
+          "importance": 0.8,
+          "tags": "mcp,validation",
+          "content": "FastMCP validation record",
+          "rank": -2.375e-06
+        }
+      ],
+      "count": 1,
+      "elapsed_ms": 5.55
+    },
+    "path_escape_rejected": true
+  },
+  "git_status_latency_ms": {
+    "iterations": 30,
+    "median": 28.802,
+    "p95": 30.356,
+    "minimum": 26.243,
+    "maximum": 31.815
+  }
+}

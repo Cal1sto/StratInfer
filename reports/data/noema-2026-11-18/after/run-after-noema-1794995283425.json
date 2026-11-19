@@ -1,0 +1,91 @@
+{
+  "label": "after-noema",
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T09:48:03.425Z",
+  "results": [
+    {
+      "trial": 1,
+      "case": "code-8k",
+      "request_id": "9f32e1290a50",
+      "output_tokens": 512,
+      "reused": 0,
+      "prompt_read": 72,
+      "prompt_ms": 511.9,
+      "decode_tok_s": 97.8,
+      "hit_rate": 0.946,
+      "drafts_offered": 316,
+      "drafts_accepted": 226,
+      "finish": "length"
+    },
+    {
+      "trial": 1,
+      "case": "prose-2k",
+      "request_id": "a7dbe92e0baf",
+      "output_tokens": 900,
+      "reused": 0,
+      "prompt_read": 72,
+      "prompt_ms": 584.6,
+      "decode_tok_s": 81,
+      "hit_rate": 0.918,
+      "drafts_offered": 656,
+      "drafts_accepted": 534,
+      "finish": "length"
+    },
+    {
+      "trial": 1,
+      "case": "agent-32k",
+      "request_id": "b474f117aa9d",
+      "output_tokens": 300,
+      "reused": 0,
+      "prompt_read": 12684,
+      "prompt_ms": 4303.3,
+      "decode_tok_s": 60.6,
+      "hit_rate": 0.893,
+      "drafts_offered": 227,
+      "drafts_accepted": 169,
+      "finish": "length"
+    },
+    {
+      "trial": 2,
+      "case": "code-8k",
+      "request_id": "1523e88457d9",
+      "output_tokens": 512,
+      "reused": 0,
+      "prompt_read": 72,
+      "prompt_ms": 625.8,
+      "decode_tok_s": 96.7,
+      "hit_rate": 0.946,
+      "drafts_offered": 357,
+      "drafts_accepted": 231,
+      "finish": "length"
+    },
+    {
+      "trial": 2,
+      "case": "prose-2k",
+      "request_id": "cb60e4d0a90e",
+      "output_tokens": 900,
+      "reused": 0,
+      "prompt_read": 72,
+      "prompt_ms": 608.7,
+      "decode_tok_s": 80.5,
+      "hit_rate": 0.921,
+      "drafts_offered": 677,
+      "drafts_accepted": 511,
+      "finish": "length"
+    },
+    {
+      "trial": 2,
+      "case": "agent-32k",
+      "request_id": "6a7368257393",
+      "output_tokens": 300,
+      "reused": 12679,
+      "prompt_read": 5,
+      "prompt_ms": 187.5,
+      "decode_tok_s": 67.2,
+      "hit_rate": 0.895,
+      "drafts_offered": 217,
+      "drafts_accepted": 170,
+      "finish": "length"
+    }
+  ]
+}

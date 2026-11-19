@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "titre": {
+      "type": "string"
+    },
+    "categorie": {
+      "enum": [
+        "personnage",
+        "objet",
+        "lieu"
+      ]
+    },
+    "confiance": {
+      "type": "number"
+    },
+    "verifie": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "titre",
+    "categorie"
+  ],
+  "additionalProperties": false
+}

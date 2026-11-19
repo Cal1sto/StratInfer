@@ -1,0 +1,58 @@
+diff --git a/include/strata/core/conversation_cache.hpp b/include/strata/core/conversation_cache.hpp
+index 78ff9f1..05703ed 100644
+--- a/include/strata/core/conversation_cache.hpp
++++ b/include/strata/core/conversation_cache.hpp
+@@ -303,20 +303,23 @@ public:
+     }
+ 
+     template<class Token>
+-    Match best(const std::vector<Token>& prompt, const std::vector<ConversationImageKey>& images, bool cvec) const {
+-        Match best;
++    Match best(const std::vector<Token>& prompt, const std::vector<ConversationImageKey>& images, bool cvec,
++               int64_t minimum_tokens = 0) const {
++        Match best{0, minimum_tokens, false, 0};
+         // Ties prefer the most recently parked branch. The caller prefers its
+         // already-active state when that offers the same prefix length.
+         for (size_t i = entries_.size(); i-- > 0;) {
+             const auto& e = entries_[i];
+             if (e.cvec != cvec) continue;
+             auto consider = [&](const ConversationCheckpoint& c, bool live) {
++                if ((int64_t) c.ids.size() <= best.tokens) return;
+                 const int64_t n = conversation_prefix(c, prompt, images);
+                 if (n > best.tokens) best = {i, n, live, serials_[i]};
+             };
+             consider(e.live, true);
+             for (const auto& c : e.checkpoints) consider(c, false);
+         }
++        if (best.tokens == minimum_tokens) best.tokens = 0;
+         return best;
+     }
+ 
+diff --git a/src/core/conversation_cache_test.cpp b/src/core/conversation_cache_test.cpp
+index 7c4dba4..7a65e27 100644
+--- a/src/core/conversation_cache_test.cpp
++++ b/src/core/conversation_cache_test.cpp
+@@ -190,6 +190,8 @@ int main() {
+         check(cache.best(std::vector<int64_t>{1, 2}, {}, true).tokens == 0, "equal-length checkpoint cannot consume last token");
+         check(cache.best(std::vector<int64_t>{1}, {}, true).tokens == 0, "short prompt cannot match");
+         check(cache.best(std::vector<int64_t>{}, {}, true).tokens == 0, "empty prompt cannot match");
++        check(cache.best(a, {}, true, 3).tokens == 0, "minimum prefix skips parked states that cannot improve live state");
++        check(cache.best(a, {}, true, 2).tokens == 3, "minimum prefix still returns a longer parked state");
+         cache.put(image({1, 2, 3}));
+         check(cache.best(a, {}, true).index == 1, "ties prefer most recently parked");
+     }
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index 53c38a0..3fb90cc 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -14167,7 +14167,9 @@ int main(int argc, char** argv) {
+                                  k + 1, (long long) (k < now.size() ? now[k].start : -1));
+                 }
+             }
+-            const auto parked = conversations.best(ids, req_imgs, want_cvec);
++            // The live session and batch slots already proved this prefix. Parked states no longer than it cannot
++            // improve the request, so do not rescan their large token vectors on every hot continuation.
++            const auto parked = conversations.best(ids, req_imgs, want_cvec, std::max(resume, slot_tokens));
+             std::optional<strata::core::SavedConversation> incoming;
+             // A checkpoint inside ANOTHER parked conversation (a sibling subagent's system prompt and tools, say) is
+             // borrowed: its K/V up to there and the checkpoint come over, and that conversation stays parked for its

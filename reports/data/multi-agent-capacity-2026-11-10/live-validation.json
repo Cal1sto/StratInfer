@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-10",
+  "selected_engine": "stratinfer",
+  "model_context_tokens": 524288,
+  "target_agents": 8,
+  "target_context_tokens_per_agent": 131072,
+  "conversation_cache_mib": 12288,
+  "conversation_cache_slots": 8,
+  "helper_vram_mib": 6144,
+  "ssd_budget_gib": 64,
+  "ssd_free_floor_gib": 32,
+  "capacity": {
+    "ssd_target_snapshots": 23,
+    "host_hot_target_snapshots": 5,
+    "helper_vram_hot_target_snapshots": 2,
+    "estimated_snapshot_gib": 2.393,
+    "viable": true
+  },
+  "cutover": {
+    "backup": "E:\\Data\\JarvisMarc\\StratInferRuntime\\51f355f\\profile.json.multi-agent-20261110T194908.bak",
+    "llm_canary": "OK",
+    "asr_pid_before": 8808,
+    "asr_pid_after": 8808,
+    "tts_pid_before": 16296,
+    "tts_pid_after": 16296,
+    "mcp_servers": 1,
+    "mcp_tools": 6
+  },
+  "session_smoke": {
+    "first_restored": false,
+    "second_restored": true,
+    "snapshot_file": "stratinfer--architect.bin",
+    "snapshot_bytes": 248816800,
+    "snapshot_exists": true,
+    "run_checkpoints": 2
+  }
+}

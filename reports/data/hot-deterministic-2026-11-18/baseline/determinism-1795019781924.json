@@ -1,0 +1,86 @@
+{
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T16:36:21.925Z",
+  "seed": 424242,
+  "temperature": 0.8,
+  "noise_tokens": 24,
+  "max_tokens": 64,
+  "expected": "10d7b16a2e726596fda32707de7deb7993c7e9a29f3595fe2a250ddbabfa7b4f",
+  "pass": false,
+  "observations": [
+    {
+      "mode": "serial",
+      "index": 0,
+      "hash": "10d7b16a2e726596fda32707de7deb7993c7e9a29f3595fe2a250ddbabfa7b4f",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 1,
+      "hash": "6a9ce8edba3486cba1fad251afbcfa16132603621e05939df9d366127f4914ca",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 0,
+      "concurrency": 3,
+      "hash": "eb9985e13a0dc2350b1910f42657e826fbe3993e800610fb924f9e6c7e9acc70",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 1,
+      "concurrency": 3,
+      "hash": "d9c512bd6f35b861f4bffda66276d93949442c79e981122cbf3c12c4ab105013",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 2,
+      "concurrency": 3,
+      "hash": "2730ca944afcfd6ac776751128b29c950cd3fcde156d0cb39fbc2b5003fb17df",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    }
+  ],
+  "mismatches": [
+    "6a9ce8edba3486cba1fad251afbcfa16132603621e05939df9d366127f4914ca",
+    "eb9985e13a0dc2350b1910f42657e826fbe3993e800610fb924f9e6c7e9acc70",
+    "d9c512bd6f35b861f4bffda66276d93949442c79e981122cbf3c12c4ab105013",
+    "2730ca944afcfd6ac776751128b29c950cd3fcde156d0cb39fbc2b5003fb17df"
+  ]
+}

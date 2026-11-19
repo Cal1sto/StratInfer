@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-01",
+  "moaiVersion": "1.0.15",
+  "stratInferRevision": "51f355f",
+  "finalEngine": "stratinfer",
+  "qwenOrigin": "http://127.0.0.1:11441",
+  "fallbackOrigin": "http://127.0.0.1:11440",
+  "contextTokens": 524288,
+  "helperCacheBytes": 4294967296,
+  "switchSeconds": {
+    "firstCleanForward": 51.8,
+    "reverse": 28.3,
+    "secondForward": 40.5
+  },
+  "textCanary": {
+    "content": "OK",
+    "wallSeconds": 1.03
+  },
+  "voice": {
+    "stack": "qwen3-asr-tts",
+    "gpu": "RTX 4080 SUPER",
+    "asrPidPreserved": true,
+    "ttsPidPreserved": true,
+    "ttsAudioSeconds": 3.6,
+    "ttsWallSeconds": 3.49,
+    "asrWorkerMilliseconds": 891,
+    "asrWallSeconds": 0.93
+  },
+  "finalWholeCardMemoryMiB": {
+    "rtx5090Used": 29811,
+    "rtx4080Used": 4655
+  },
+  "tests": {
+    "moaiPassed": 142,
+    "moaiFailed": 0
+  },
+  "limitations": [
+    "Whole-card WDDM memory is not a per-model measurement.",
+    "The 4096 MiB helper cache is a cap allocated by eligible parked snapshots, not an idle reservation.",
+    "The 24-hour long-session gate is still pending.",
+    "The live ASR round trip is a functional canary, not a quality benchmark."
+  ]
+}

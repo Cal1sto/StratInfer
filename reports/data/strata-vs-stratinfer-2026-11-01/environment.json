@@ -1,0 +1,71 @@
+{
+  "captured_at": "2026-11-01T22:32:41.9215192Z",
+  "os": "Microsoft Windows 11 Professionnel 10.0.22631",
+  "cpu": "Intel(R) Core(TM) i9-14900K",
+  "ram_bytes": 137106870272,
+  "driver": "610.88",
+  "gpus": [
+    {
+      "index": 0,
+      "name": "NVIDIA GeForce RTX 5090",
+      "uuid": "GPU-7922452b-ed49-f2f2-4783-017366985308",
+      "memory_mib": 32607,
+      "power_limit_w": 400
+    },
+    {
+      "index": 1,
+      "name": "NVIDIA GeForce RTX 4080 SUPER",
+      "uuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+      "memory_mib": 16376,
+      "power_limit_w": 220
+    }
+  ],
+  "model": "qwen3.8-flash-next-iq3_s",
+  "model_native": "Qwen3.8-Flash-Next-GSQ-RCO-IQ3_S-00001-of-00002.gguf",
+  "model_ple": "Qwen3.8-Flash-Next-GSQ-RCO-IQ3_S-00002-of-00002.gguf",
+  "shared_profile": {
+    "max_context": 524288,
+    "kv": "k8v4",
+    "kv_resident": 65536,
+    "expert_cache": 8000,
+    "spec": 4,
+    "spec_min_p": 0.5,
+    "conversation_cache_mib": 8192,
+    "conversation_cache_slots": 8,
+    "rope_scaling": "yarn",
+    "rope_scale": 2,
+    "vram_reserve_mib": 1280
+  },
+  "strata": {
+    "version": "0.1.45",
+    "binary_sha256": "06c23a8dc8c1217848c5d10b705ac8f53f0b20e5ffcfdb29f7cee83c0963d15c",
+    "port": 11440
+  },
+  "stratinfer": {
+    "version": "0.1.54",
+    "revision": "51f355f",
+    "binary_sha256": "dcc22f47194329e08056084964a3e156075fa1efbcbfbe941cba66078e7effdf",
+    "cuda_arch": "sm_120",
+    "port": 11441,
+    "profile_additions": [
+      "--session-min-free-mib 4096",
+      "--session-save-reclaim",
+      "STRATA_PARK_ASYNC=1",
+      "STRATA_PARK_VRAM_MIB=4096",
+      "STRATA_PARK_VRAM_DEVICE=1",
+      "STRATA_CKPT_ASYNC=1",
+      "STRATA_CKPT_GATHER=1",
+      "STRATA_CKPT_POOL=1"
+    ]
+  },
+  "moai": {
+    "final_selected_engine": "stratinfer",
+    "final_switching": false,
+    "measured_switch_seconds": {
+      "to_strata": 27.63,
+      "to_stratinfer": 40.04
+    },
+    "voice_pids_preserved": true,
+    "voice_pids": [22132, 23792, 45764, 50480]
+  }
+}

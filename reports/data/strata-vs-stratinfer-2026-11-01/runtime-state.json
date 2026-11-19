@@ -1,0 +1,51 @@
+{
+  "captured_at": "2026-11-01T22:37:59.5020749Z",
+  "selected_engine": "stratinfer",
+  "health": "ok",
+  "conversation_cache": {
+    "enabled": true,
+    "budget_mib": 8192,
+    "slots": 8,
+    "parked": 7,
+    "bytes": 4632395620,
+    "evictions": 0,
+    "parks": 7,
+    "restores": 0,
+    "requests": 22,
+    "prompt_tokens": 235352,
+    "last_prompt": 70510
+  },
+  "gpu_board_memory_mib": [
+    {
+      "index": 0,
+      "name": "NVIDIA GeForce RTX 5090",
+      "used": 29883,
+      "free": 2305
+    },
+    {
+      "index": 1,
+      "name": "NVIDIA GeForce RTX 4080 SUPER",
+      "used": 4655,
+      "free": 11391
+    }
+  ],
+  "helper_cache": {
+    "configured_limit_mib": 4096,
+    "configured_device": 1,
+    "allocation_policy": "on demand",
+    "additional_board_allocation_observed": false,
+    "note": "The RTX 4080 board remained at 4655 MiB after the retained quality workload; this campaign validates the copy path separately but does not claim that 4 GiB was allocated live."
+  },
+  "earlier_full_battery_snapshot": {
+    "parked": 7,
+    "bytes": 7901186804,
+    "parks": 20,
+    "restores": 8,
+    "evictions": 4,
+    "largest_observed_restore_tokens": 70479,
+    "largest_observed_restore_ms": 101.5,
+    "largest_observed_repark_tokens": 70564,
+    "largest_observed_repark_ms": 21.7,
+    "largest_observed_reused_kv_bytes": 872774784
+  }
+}

@@ -1,0 +1,1049 @@
+{
+  "schema": 1,
+  "startedAt": "2026-11-18T10:19:00.186Z",
+  "completedAt": "2026-11-18T10:20:22.726Z",
+  "qualifiedTree": {
+    "gitHead": "7a1226f2a6a1225dc92d184c7ff32e487ab0607a",
+    "dirty": true,
+    "status": [
+      "M README.md",
+      " M RESULTS.md",
+      " M configs/long-session-4080.json",
+      " M docs/long-coding-sessions.md",
+      " M docs/moai-engine-switch.md",
+      " M scripts/bench_fastmcp.mjs",
+      " M scripts/lib/agent-orchestrator.mjs",
+      " M scripts/lib/context-memory.mjs",
+      " M scripts/long_session.mjs",
+      " M scripts/tests/agent-orchestrator.test.mjs",
+      " M scripts/tests/context-memory.test.mjs",
+      "?? configs/candidates/c12-multi-agent-capacity.json",
+      "?? configs/noema-resource-profiles.json",
+      "?? docs/chatgpt-memory-import.md",
+      "?? docs/noema-collaboration.md",
+      "?? reports/data/multi-agent-capacity-2026-11-10/",
+      "?? reports/data/noema-2026-11-18/",
+      "?? reports/multi-agent-capacity-2026-11-10.md",
+      "?? reports/noema-implementation-2026-11-17.md",
+      "?? reports/noema-live-benchmarks-2026-11-18.md",
+      "?? scripts/bench_noema.mjs",
+      "?? scripts/configure-multi-agent-profile.ps1",
+      "?? scripts/enable-noema-control.ps1",
+      "?? scripts/import-chatgpt-export.ps1",
+      "?? scripts/import_chatgpt_export.mjs",
+      "?? scripts/lib/capacity-planner.mjs",
+      "?? scripts/lib/chatgpt-export.mjs",
+      "?? scripts/lib/fastmcp-memory.mjs",
+      "?? scripts/qualify_noema_live.mjs",
+      "?? scripts/set-noema-resource-profile.ps1",
+      "?? scripts/start-noema.ps1",
+      "?? scripts/stop-noema.ps1",
+      "?? scripts/tests/capacity-planner.test.mjs",
+      "?? scripts/tests/chatgpt-import.test.mjs",
+      "?? services/",
+      "?? tools/noema_control_fastmcp.py"
+    ],
+    "trustFiles": [
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\services\\noema\\src\\core.mjs",
+        "bytes": 9986,
+        "sha256": "2e8d6f65a771d7f52ebf3458b75cef693c19fe2fa98666b9e6ffcabd05281a6c"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\services\\noema\\src\\store.mjs",
+        "bytes": 31915,
+        "sha256": "f02f1307921ec92362d8afeb32a12f74e72db4d17a102d964b2c93fb679ae268"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\services\\noema\\src\\server.mjs",
+        "bytes": 17489,
+        "sha256": "52a766d74a30689e3c2ccbcba7bb3b0baf8ad7fca62b247aa0255b11fcb6c21f"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\services\\noema\\src\\resources.mjs",
+        "bytes": 5974,
+        "sha256": "59a5ecb831dc003499d3ee3c3f303a6536d84f32a30e3dbed43aecbd0fac95af"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\services\\noema\\src\\codex-app-server.mjs",
+        "bytes": 9212,
+        "sha256": "6c8ef8c18a3c6621d33c7ad0705e65ed1106e0eb80e210fd2e6af742754050fe"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\services\\noema\\src\\worktree.mjs",
+        "bytes": 7186,
+        "sha256": "f8ef63196f7c7fb4955ded1690567ee4f4f147c7b4d5ed95ef9d72e0bae9f3d8"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\tools\\noema_control_fastmcp.py",
+        "bytes": 3104,
+        "sha256": "90a118187bfdfa2345187484c8edd49f6d89afd2d878b4a4add3a8027d224b07"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\scripts\\start-noema.ps1",
+        "bytes": 4987,
+        "sha256": "ff7dc169efa4af57364e875505213c806963db695db3f65989a03d4a9a9a667a"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\scripts\\stop-noema.ps1",
+        "bytes": 1082,
+        "sha256": "fa281bb811fd0b6c47fb36572d72f64f374a7aa1f0e4c30b0da29727b1fe3289"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\scripts\\set-noema-resource-profile.ps1",
+        "bytes": 5945,
+        "sha256": "ebbfc589ca74dd0a28ddf16e8afab41bb48af44df549ee1cbb69c6a308f3db87"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\scripts\\enable-noema-control.ps1",
+        "bytes": 2448,
+        "sha256": "e93a967def6849c936acf921bca9bc54c7748633308c0af376e777dace723b53"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\scripts\\bench_noema.mjs",
+        "bytes": 9142,
+        "sha256": "ea7def32d7990be994a7648a024b37944d3b3276329acaa80923efb1ee9830d3"
+      },
+      {
+        "path": "E:\\DEV\\StratInfer\\public-repo\\scripts\\bench_fastmcp.mjs",
+        "bytes": 8358,
+        "sha256": "adfb116ee6c32650f889d3bd3a34ac00ab6a007d40c080d2b8a79669d21717cb"
+      }
+    ],
+    "profile": {
+      "path": "E:\\Data\\JarvisMarc\\StratInferRuntime\\51f355f\\profile.json",
+      "bytes": 3860,
+      "sha256": "a6779a97eabe8588eeab079a6d97019c3ca03833aea2bbfa81118f43586b1201"
+    }
+  },
+  "configuration": {
+    "helperCacheMiB": 4096,
+    "helperDevice": 1,
+    "hostCacheMiB": 12288,
+    "mcpServers": [
+      "stratinfer",
+      "noema_control"
+    ]
+  },
+  "tests": {
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--test",
+      "scripts\\tests\\agent-orchestrator.test.mjs",
+      "scripts\\tests\\capacity-planner.test.mjs",
+      "scripts\\tests\\chatgpt-import.test.mjs",
+      "scripts\\tests\\context-memory.test.mjs",
+      "scripts\\tests\\deterministic-profile.test.mjs",
+      "services\\noema\\tests\\codex-app-server.test.mjs",
+      "services\\noema\\tests\\core.test.mjs",
+      "services\\noema\\tests\\resources.test.mjs",
+      "services\\noema\\tests\\server.test.mjs",
+      "services\\noema\\tests\\store.test.mjs",
+      "services\\noema\\tests\\worktree.test.mjs"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 789.5,
+    "stdout": "✔ specialists keep separate sessions and restore on the next run (86.4786ms)\n✔ transcript compaction keeps the newest turns (0.2286ms)\n✔ Strata client uses chat and native slot session endpoints (46.0251ms)\n✔ quality workflow reaches release only after final gates pass (52.9559ms)\n✔ MCP stages get a tool-free conclusion when the first answer is incomplete (13.4852ms)\n✔ an incomplete detached gate conclusion fails closed (10.974ms)\n✔ failed workflow resumes from the stored stage (24.2947ms)\n✔ capacity plan fits eight 128K specialists with guarded VRAM and SSD (1.5625ms)\n✔ capacity plan rejects an unsafe helper-GPU reservation (0.3071ms)\n✔ ChatGPT and Codex exports keep only visible selected text (12.9892ms)\n✔ both StratInfer memories import idempotently (44.9717ms)\n✔ feature matrix is normalized and deterministic (2.566ms)\n✔ canonical context is always present and relevant memory wins (30.5702ms)\n✔ transcripts are isolated by specialist role (14.2625ms)\n✔ external engine session roots use project-prefixed snapshots (12.8603ms)\n✔ bulk memories are source-deduplicated and keep provenance (15.5569ms)\n✔ candidate retrieval keeps an old exact match outside the recent window (23.0725ms)\n✔ matrix corruption is repaired from the durable ledger (18.9195ms)\n✔ matrix record count is bounded (9.3238ms)\n✔ SSD quota evicts LRU snapshots but preserves pinned state (22.7164ms)\n✔ unsafe names cannot escape the memory root (0.3074ms)\n✔ core, matrix and transcript survive a process restart (14.6917ms)\n✔ strict deterministic profile is idempotent and preserves unrelated settings (2.4326ms)\n✔ strict settings are explicit and detached from internal state (0.3814ms)\n✔ invalid profiles fail closed (0.5151ms)\n✔ Codex review parsing accepts strict and fenced JSON (0.9348ms)\n✔ Codex review parsing rejects missing verdicts (0.4503ms)\n✔ campaign specifications are bounded and receive safe defaults (1.0991ms)\n✔ campaign transitions fail closed (0.17ms)\n✔ risk classification and promotion enforce human and Codex gates (0.3256ms)\n✔ protected paths and common secrets are rejected (1.6191ms)\n✔ stable JSON ordering is deterministic (0.2243ms)\n✔ agent-max preserves four GiB and sizes only measured free VRAM (0.6006ms)\n✔ unsafe helper capacity fails closed (0.1235ms)\n✔ MOAI mutations authenticate, release voice transactionally and restore prior readiness (104.6462ms)\n✔ a partial MOAI release restores speech before failing (44.7078ms)\n✔ MOAI mutations fail before I/O without an administrator token (0.2403ms)\n✔ HTTP API authenticates mutations and completes a Codex-reviewed checkpoint (234.5692ms)\n✔ resource planner is exposed without mutating GPU state (62.9406ms)\n✔ MOAI activation is authenticated, campaign-scoped and auditable (84.5082ms)\n✔ agent-max fails before voice eviction until the helper engine is drained (64.7484ms)\n✔ campaigns, checkpoints and reviews create a valid event chain (79.6713ms)\n✔ Jarvis compatibility never reports an unqualified checkpoint as verified (58.6118ms)\n✔ approvals and candidates enforce promotion policy (66.6722ms)\n✔ durable memory is searchable with campaign scoping (58.5748ms)\n✔ skills remain quarantined until both reviewers pass (62.5618ms)\n✔ worktree execution is confined and command arguments are bounded (573.4043ms)\nℹ tests 47\nℹ suites 0\nℹ pass 47\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 732.5613\n",
+    "stderr": "",
+    "error": null
+  },
+  "authentication": {
+    "unauthorizedMutationStatus": 403,
+    "rejected": true,
+    "tokenPersistedInReceipt": false
+  },
+  "live": {
+    "noemaHealth": {
+      "status": 200,
+      "elapsedMs": 2.1,
+      "payload": {
+        "service": "NOEMA",
+        "version": "0.1.0",
+        "status": "ok",
+        "codex": true,
+        "worktrees": true,
+        "moai": true,
+        "metrics": {
+          "campaigns": 5,
+          "checkpoints": 2,
+          "events": 30,
+          "pendingApprovals": 0,
+          "quarantinedCandidates": 0,
+          "memoryRecords": 0,
+          "memoryVectors": 0,
+          "activeSkills": 0,
+          "root": "E:\\Data\\NOEMA",
+          "databasePath": "E:\\Data\\NOEMA\\noema.sqlite3"
+        }
+      }
+    },
+    "noemaMoai": {
+      "status": 200,
+      "elapsedMs": 933.4,
+      "payload": {
+        "health": {
+          "service": "MOAI",
+          "version": "1.0.15",
+          "mode": "exclusive_render",
+          "loaded": true,
+          "textEngine": {
+            "selected": "stratinfer",
+            "switching": false,
+            "choices": [
+              {
+                "id": "strata",
+                "label": "Strata stable",
+                "description": "Moteur officiel actuel, sans cache auxiliaire sur la RTX 4080.",
+                "helperVramBytes": 0,
+                "port": 11440,
+                "active": false
+              },
+              {
+                "id": "stratinfer",
+                "label": "StratInfer longue session",
+                "description": "sm120 sur RTX 5090, cache K/V exact plafonne a 4 Gio sur RTX 4080, sessions disque activees.",
+                "helperVramBytes": 4294967296,
+                "port": 11441,
+                "active": true
+              }
+            ]
+          },
+          "residentModels": {
+            "qwen": {
+              "required": true,
+              "ready": true,
+              "loading": false,
+              "error": null,
+              "waitingReason": null,
+              "retryAt": null
+            },
+            "asr": {
+              "required": true,
+              "ready": true,
+              "loading": false,
+              "error": null,
+              "waitingReason": null,
+              "retryAt": null
+            },
+            "speech": {
+              "required": true,
+              "ready": true,
+              "loading": false,
+              "error": null,
+              "waitingReason": null,
+              "retryAt": null
+            }
+          },
+          "voiceStack": {
+            "selected": "qwen3-asr-tts",
+            "switching": false,
+            "target": null,
+            "error": null,
+            "sharedApplications": [
+              "JARVIS",
+              "JAV",
+              "DAVCAW",
+              "Artist Studio"
+            ],
+            "fish": {
+              "engine": "Fish S2 Pro 4B",
+              "fastAR": true,
+              "note": "Fast AR est le décodeur de Fish S2 Pro ; il utilise les mêmes poids et les mêmes voix."
+            },
+            "choices": [
+              {
+                "id": "whisper-fish",
+                "label": "Whisper + Fish S2 Pro",
+                "asr": "Whisper large-v3-turbo",
+                "recipe": "whisper",
+                "tts": "fish",
+                "description": "Reconnaissance Whisper et voix Fish S2 Pro, avec son décodeur Fast AR optimisé.",
+                "active": false,
+                "available": true,
+                "reason": null
+              },
+              {
+                "id": "qwen3-fish-fast-ar",
+                "label": "Qwen3-ASR 0.6B + Fish · Fast AR",
+                "asr": "Qwen3-ASR 0.6B",
+                "recipe": "qwen3",
+                "tts": "fish",
+                "description": "Reconnaissance Qwen3-ASR 0.6B et les mêmes voix Fish S2 Pro, avec Fast AR optimisé.",
+                "active": false,
+                "available": true,
+                "reason": null
+              },
+              {
+                "id": "qwen3-asr-tts",
+                "label": "Qwen3-ASR 0.6B + Qwen3-TTS 0.6B",
+                "asr": "Qwen3-ASR 0.6B",
+                "recipe": "qwen3",
+                "tts": "qwen3tts",
+                "description": "Reconnaissance Qwen3-ASR et voix prédéfinies Qwen3-TTS CustomVoice, sur la RTX 4080.",
+                "active": true,
+                "available": true,
+                "reason": null
+              }
+            ]
+          },
+          "speech": {
+            "enabled": true,
+            "engine": "Qwen3-TTS 0.6B · voix",
+            "ready": true,
+            "busy": false,
+            "loading": false,
+            "pending": 0,
+            "pid": 12992,
+            "gpuUuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+            "contextTokens": null,
+            "cacheAllocation": null,
+            "idleTimeoutMs": null,
+            "keepResident": true,
+            "error": null,
+            "lastTiming": null
+          },
+          "asr": {
+            "enabled": true,
+            "engine": "Qwen3-ASR 0.6B",
+            "ready": true,
+            "busy": false,
+            "loading": false,
+            "pending": 0,
+            "pid": 58792,
+            "gpuUuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+            "contextTokens": null,
+            "cacheAllocation": null,
+            "idleTimeoutMs": null,
+            "keepResident": true,
+            "error": null,
+            "lastTiming": null,
+            "device": "GPU",
+            "computeType": "bfloat16",
+            "partial": false,
+            "cpuFallback": false
+          }
+        },
+        "textEngine": {
+          "selected": "stratinfer",
+          "switching": false,
+          "choices": [
+            {
+              "id": "strata",
+              "label": "Strata stable",
+              "description": "Moteur officiel actuel, sans cache auxiliaire sur la RTX 4080.",
+              "helperVramBytes": 0,
+              "port": 11440,
+              "active": false
+            },
+            {
+              "id": "stratinfer",
+              "label": "StratInfer longue session",
+              "description": "sm120 sur RTX 5090, cache K/V exact plafonne a 4 Gio sur RTX 4080, sessions disque activees.",
+              "helperVramBytes": 4294967296,
+              "port": 11441,
+              "active": true
+            }
+          ]
+        },
+        "helper": {
+          "uuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+          "name": "NVIDIA GeForce RTX 4080 SUPER",
+          "totalMiB": 16376,
+          "freeMiB": 10507,
+          "usedMiB": 5869
+        }
+      }
+    },
+    "before": {
+      "moai": {
+        "service": "MOAI",
+        "version": "1.0.15",
+        "mode": "exclusive_render",
+        "loaded": true,
+        "textEngine": {
+          "selected": "stratinfer",
+          "switching": false,
+          "choices": [
+            {
+              "id": "strata",
+              "label": "Strata stable",
+              "description": "Moteur officiel actuel, sans cache auxiliaire sur la RTX 4080.",
+              "helperVramBytes": 0,
+              "port": 11440,
+              "active": false
+            },
+            {
+              "id": "stratinfer",
+              "label": "StratInfer longue session",
+              "description": "sm120 sur RTX 5090, cache K/V exact plafonne a 4 Gio sur RTX 4080, sessions disque activees.",
+              "helperVramBytes": 4294967296,
+              "port": 11441,
+              "active": true
+            }
+          ]
+        },
+        "residentModels": {
+          "qwen": {
+            "required": true,
+            "ready": true,
+            "loading": false,
+            "error": null,
+            "waitingReason": null,
+            "retryAt": null
+          },
+          "asr": {
+            "required": true,
+            "ready": true,
+            "loading": false,
+            "error": null,
+            "waitingReason": null,
+            "retryAt": null
+          },
+          "speech": {
+            "required": true,
+            "ready": true,
+            "loading": false,
+            "error": null,
+            "waitingReason": null,
+            "retryAt": null
+          }
+        },
+        "voiceStack": {
+          "selected": "qwen3-asr-tts",
+          "switching": false,
+          "target": null,
+          "error": null,
+          "sharedApplications": [
+            "JARVIS",
+            "JAV",
+            "DAVCAW",
+            "Artist Studio"
+          ],
+          "fish": {
+            "engine": "Fish S2 Pro 4B",
+            "fastAR": true,
+            "note": "Fast AR est le décodeur de Fish S2 Pro ; il utilise les mêmes poids et les mêmes voix."
+          },
+          "choices": [
+            {
+              "id": "whisper-fish",
+              "label": "Whisper + Fish S2 Pro",
+              "asr": "Whisper large-v3-turbo",
+              "recipe": "whisper",
+              "tts": "fish",
+              "description": "Reconnaissance Whisper et voix Fish S2 Pro, avec son décodeur Fast AR optimisé.",
+              "active": false,
+              "available": true,
+              "reason": null
+            },
+            {
+              "id": "qwen3-fish-fast-ar",
+              "label": "Qwen3-ASR 0.6B + Fish · Fast AR",
+              "asr": "Qwen3-ASR 0.6B",
+              "recipe": "qwen3",
+              "tts": "fish",
+              "description": "Reconnaissance Qwen3-ASR 0.6B et les mêmes voix Fish S2 Pro, avec Fast AR optimisé.",
+              "active": false,
+              "available": true,
+              "reason": null
+            },
+            {
+              "id": "qwen3-asr-tts",
+              "label": "Qwen3-ASR 0.6B + Qwen3-TTS 0.6B",
+              "asr": "Qwen3-ASR 0.6B",
+              "recipe": "qwen3",
+              "tts": "qwen3tts",
+              "description": "Reconnaissance Qwen3-ASR et voix prédéfinies Qwen3-TTS CustomVoice, sur la RTX 4080.",
+              "active": true,
+              "available": true,
+              "reason": null
+            }
+          ]
+        },
+        "speech": {
+          "enabled": true,
+          "engine": "Qwen3-TTS 0.6B · voix",
+          "ready": true,
+          "busy": false,
+          "loading": false,
+          "pending": 0,
+          "pid": 12992,
+          "gpuUuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+          "contextTokens": null,
+          "cacheAllocation": null,
+          "idleTimeoutMs": null,
+          "keepResident": true,
+          "error": null,
+          "lastTiming": null
+        },
+        "asr": {
+          "enabled": true,
+          "engine": "Qwen3-ASR 0.6B",
+          "ready": true,
+          "busy": false,
+          "loading": false,
+          "pending": 0,
+          "pid": 58792,
+          "gpuUuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+          "contextTokens": null,
+          "cacheAllocation": null,
+          "idleTimeoutMs": null,
+          "keepResident": true,
+          "error": null,
+          "lastTiming": null,
+          "device": "GPU",
+          "computeType": "bfloat16",
+          "partial": false,
+          "cpuFallback": false
+        }
+      },
+      "mcp": {
+        "status": 200,
+        "elapsedMs": 3.7,
+        "payload": {
+          "servers": [
+            {
+              "name": "stratinfer",
+              "transport": "stdio",
+              "status": "ready",
+              "error": null,
+              "info": {
+                "name": "StratInfer FastMCP",
+                "version": "1.26.0",
+                "protocol": "2025-06-18"
+              },
+              "tools": [
+                {
+                  "name": "stratinfer__runtime_snapshot",
+                  "tool": "runtime_snapshot",
+                  "description": "Return live StratInfer health and native MCP status."
+                },
+                {
+                  "name": "stratinfer__code_search",
+                  "tool": "code_search",
+                  "description": "Search workspace text with ripgrep; paths cannot leave the configured root."
+                },
+                {
+                  "name": "stratinfer__file_read",
+                  "tool": "file_read",
+                  "description": "Read a bounded UTF-8 text range from one workspace file."
+                },
+                {
+                  "name": "stratinfer__git_status",
+                  "tool": "git_status",
+                  "description": "Return branch and concise Git status for the configured workspace."
+                },
+                {
+                  "name": "stratinfer__memory_remember",
+                  "tool": "memory_remember",
+                  "description": "Store one durable coding-memory record in the configured SSD database."
+                },
+                {
+                  "name": "stratinfer__memory_recall",
+                  "tool": "memory_recall",
+                  "description": "Recall relevant durable coding-memory records from the SSD database."
+                }
+              ]
+            },
+            {
+              "name": "noema_control",
+              "transport": "stdio",
+              "status": "ready",
+              "error": null,
+              "info": {
+                "name": "NOEMA Control",
+                "version": "1.26.0",
+                "protocol": "2025-06-18"
+              },
+              "tools": [
+                {
+                  "name": "noema_control__inspect",
+                  "tool": "inspect",
+                  "description": "Read a campaign, checkpoint, or candidate."
+                },
+                {
+                  "name": "noema_control__review",
+                  "tool": "review",
+                  "description": "Run the independent Codex checkpoint review."
+                },
+                {
+                  "name": "noema_control__approval",
+                  "tool": "approval",
+                  "description": "Request human approval for an R3/R4 action."
+                },
+                {
+                  "name": "noema_control__resource_plan",
+                  "tool": "resource_plan",
+                  "description": "Plan memory without changing live resources."
+                }
+              ]
+            }
+          ],
+          "tools": 10,
+          "settings": {
+            "timeout_s": 15,
+            "max_result_chars": 24000,
+            "max_rounds": 4
+          }
+        }
+      }
+    },
+    "switchToStrata": {
+      "status": 200,
+      "elapsedMs": 30864.8,
+      "payload": {
+        "changed": true,
+        "before": {
+          "selected": "stratinfer",
+          "switching": false,
+          "choices": [
+            {
+              "id": "strata",
+              "label": "Strata stable",
+              "description": "Moteur officiel actuel, sans cache auxiliaire sur la RTX 4080.",
+              "helperVramBytes": 0,
+              "port": 11440,
+              "active": false
+            },
+            {
+              "id": "stratinfer",
+              "label": "StratInfer longue session",
+              "description": "sm120 sur RTX 5090, cache K/V exact plafonne a 4 Gio sur RTX 4080, sessions disque activees.",
+              "helperVramBytes": 4294967296,
+              "port": 11441,
+              "active": true
+            }
+          ]
+        },
+        "after": {
+          "selected": "strata",
+          "switching": true,
+          "choices": [
+            {
+              "id": "strata",
+              "label": "Strata stable",
+              "description": "Moteur officiel actuel, sans cache auxiliaire sur la RTX 4080.",
+              "helperVramBytes": 0,
+              "port": 11440,
+              "active": true
+            },
+            {
+              "id": "stratinfer",
+              "label": "StratInfer longue session",
+              "description": "sm120 sur RTX 5090, cache K/V exact plafonne a 4 Gio sur RTX 4080, sessions disque activees.",
+              "helperVramBytes": 4294967296,
+              "port": 11441,
+              "active": false
+            }
+          ]
+        },
+        "rollback": {
+          "id": "stratinfer"
+        }
+      }
+    },
+    "switchToStratInfer": {
+      "status": 200,
+      "elapsedMs": 49742.6,
+      "payload": {
+        "changed": true,
+        "before": {
+          "selected": "strata",
+          "switching": false,
+          "choices": [
+            {
+              "id": "strata",
+              "label": "Strata stable",
+              "description": "Moteur officiel actuel, sans cache auxiliaire sur la RTX 4080.",
+              "helperVramBytes": 0,
+              "port": 11440,
+              "active": true
+            },
+            {
+              "id": "stratinfer",
+              "label": "StratInfer longue session",
+              "description": "sm120 sur RTX 5090, cache K/V exact plafonne a 4 Gio sur RTX 4080, sessions disque activees.",
+              "helperVramBytes": 4294967296,
+              "port": 11441,
+              "active": false
+            }
+          ]
+        },
+        "after": {
+          "selected": "stratinfer",
+          "switching": true,
+          "choices": [
+            {
+              "id": "strata",
+              "label": "Strata stable",
+              "description": "Moteur officiel actuel, sans cache auxiliaire sur la RTX 4080.",
+              "helperVramBytes": 0,
+              "port": 11440,
+              "active": false
+            },
+            {
+              "id": "stratinfer",
+              "label": "StratInfer longue session",
+              "description": "sm120 sur RTX 5090, cache K/V exact plafonne a 4 Gio sur RTX 4080, sessions disque activees.",
+              "helperVramBytes": 4294967296,
+              "port": 11441,
+              "active": true
+            }
+          ]
+        },
+        "rollback": {
+          "id": "strata"
+        }
+      }
+    },
+    "after": {
+      "moai": {
+        "service": "MOAI",
+        "version": "1.0.15",
+        "mode": "exclusive_render",
+        "loaded": true,
+        "textEngine": {
+          "selected": "stratinfer",
+          "switching": false,
+          "choices": [
+            {
+              "id": "strata",
+              "label": "Strata stable",
+              "description": "Moteur officiel actuel, sans cache auxiliaire sur la RTX 4080.",
+              "helperVramBytes": 0,
+              "port": 11440,
+              "active": false
+            },
+            {
+              "id": "stratinfer",
+              "label": "StratInfer longue session",
+              "description": "sm120 sur RTX 5090, cache K/V exact plafonne a 4 Gio sur RTX 4080, sessions disque activees.",
+              "helperVramBytes": 4294967296,
+              "port": 11441,
+              "active": true
+            }
+          ]
+        },
+        "residentModels": {
+          "qwen": {
+            "required": true,
+            "ready": true,
+            "loading": false,
+            "error": null,
+            "waitingReason": null,
+            "retryAt": null
+          },
+          "asr": {
+            "required": true,
+            "ready": true,
+            "loading": false,
+            "error": null,
+            "waitingReason": null,
+            "retryAt": null
+          },
+          "speech": {
+            "required": true,
+            "ready": true,
+            "loading": false,
+            "error": null,
+            "waitingReason": null,
+            "retryAt": null
+          }
+        },
+        "voiceStack": {
+          "selected": "qwen3-asr-tts",
+          "switching": false,
+          "target": null,
+          "error": null,
+          "sharedApplications": [
+            "JARVIS",
+            "JAV",
+            "DAVCAW",
+            "Artist Studio"
+          ],
+          "fish": {
+            "engine": "Fish S2 Pro 4B",
+            "fastAR": true,
+            "note": "Fast AR est le décodeur de Fish S2 Pro ; il utilise les mêmes poids et les mêmes voix."
+          },
+          "choices": [
+            {
+              "id": "whisper-fish",
+              "label": "Whisper + Fish S2 Pro",
+              "asr": "Whisper large-v3-turbo",
+              "recipe": "whisper",
+              "tts": "fish",
+              "description": "Reconnaissance Whisper et voix Fish S2 Pro, avec son décodeur Fast AR optimisé.",
+              "active": false,
+              "available": true,
+              "reason": null
+            },
+            {
+              "id": "qwen3-fish-fast-ar",
+              "label": "Qwen3-ASR 0.6B + Fish · Fast AR",
+              "asr": "Qwen3-ASR 0.6B",
+              "recipe": "qwen3",
+              "tts": "fish",
+              "description": "Reconnaissance Qwen3-ASR 0.6B et les mêmes voix Fish S2 Pro, avec Fast AR optimisé.",
+              "active": false,
+              "available": true,
+              "reason": null
+            },
+            {
+              "id": "qwen3-asr-tts",
+              "label": "Qwen3-ASR 0.6B + Qwen3-TTS 0.6B",
+              "asr": "Qwen3-ASR 0.6B",
+              "recipe": "qwen3",
+              "tts": "qwen3tts",
+              "description": "Reconnaissance Qwen3-ASR et voix prédéfinies Qwen3-TTS CustomVoice, sur la RTX 4080.",
+              "active": true,
+              "available": true,
+              "reason": null
+            }
+          ]
+        },
+        "speech": {
+          "enabled": true,
+          "engine": "Qwen3-TTS 0.6B · voix",
+          "ready": true,
+          "busy": false,
+          "loading": false,
+          "pending": 0,
+          "pid": 12992,
+          "gpuUuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+          "contextTokens": null,
+          "cacheAllocation": null,
+          "idleTimeoutMs": null,
+          "keepResident": true,
+          "error": null,
+          "lastTiming": null
+        },
+        "asr": {
+          "enabled": true,
+          "engine": "Qwen3-ASR 0.6B",
+          "ready": true,
+          "busy": false,
+          "loading": false,
+          "pending": 0,
+          "pid": 58792,
+          "gpuUuid": "GPU-085a2da5-b824-a910-d5cc-266d04a49757",
+          "contextTokens": null,
+          "cacheAllocation": null,
+          "idleTimeoutMs": null,
+          "keepResident": true,
+          "error": null,
+          "lastTiming": null,
+          "device": "GPU",
+          "computeType": "bfloat16",
+          "partial": false,
+          "cpuFallback": false
+        }
+      },
+      "mcp": {
+        "status": 200,
+        "elapsedMs": 2.8,
+        "payload": {
+          "servers": [
+            {
+              "name": "stratinfer",
+              "transport": "stdio",
+              "status": "ready",
+              "error": null,
+              "info": {
+                "name": "StratInfer FastMCP",
+                "version": "1.26.0",
+                "protocol": "2025-06-18"
+              },
+              "tools": [
+                {
+                  "name": "stratinfer__runtime_snapshot",
+                  "tool": "runtime_snapshot",
+                  "description": "Return live StratInfer health and native MCP status."
+                },
+                {
+                  "name": "stratinfer__code_search",
+                  "tool": "code_search",
+                  "description": "Search workspace text with ripgrep; paths cannot leave the configured root."
+                },
+                {
+                  "name": "stratinfer__file_read",
+                  "tool": "file_read",
+                  "description": "Read a bounded UTF-8 text range from one workspace file."
+                },
+                {
+                  "name": "stratinfer__git_status",
+                  "tool": "git_status",
+                  "description": "Return branch and concise Git status for the configured workspace."
+                },
+                {
+                  "name": "stratinfer__memory_remember",
+                  "tool": "memory_remember",
+                  "description": "Store one durable coding-memory record in the configured SSD database."
+                },
+                {
+                  "name": "stratinfer__memory_recall",
+                  "tool": "memory_recall",
+                  "description": "Recall relevant durable coding-memory records from the SSD database."
+                }
+              ]
+            },
+            {
+              "name": "noema_control",
+              "transport": "stdio",
+              "status": "ready",
+              "error": null,
+              "info": {
+                "name": "NOEMA Control",
+                "version": "1.26.0",
+                "protocol": "2025-06-18"
+              },
+              "tools": [
+                {
+                  "name": "noema_control__inspect",
+                  "tool": "inspect",
+                  "description": "Read a campaign, checkpoint, or candidate."
+                },
+                {
+                  "name": "noema_control__review",
+                  "tool": "review",
+                  "description": "Run the independent Codex checkpoint review."
+                },
+                {
+                  "name": "noema_control__approval",
+                  "tool": "approval",
+                  "description": "Request human approval for an R3/R4 action."
+                },
+                {
+                  "name": "noema_control__resource_plan",
+                  "tool": "resource_plan",
+                  "description": "Plan memory without changing live resources."
+                }
+              ]
+            }
+          ],
+          "tools": 10,
+          "settings": {
+            "timeout_s": 15,
+            "max_result_chars": 24000,
+            "max_rounds": 4
+          }
+        }
+      }
+    },
+    "voicePidPreserved": {
+      "asr": true,
+      "speech": true
+    },
+    "campaignEvents": {
+      "status": 200,
+      "elapsedMs": 1.9,
+      "payload": {
+        "events": [
+          {
+            "seq": 30,
+            "campaignId": "campaign-852fe941-eddb-4160-b262-1d608b0d5817",
+            "type": "campaign.created",
+            "actor": "user",
+            "payload": {
+              "spec": {
+                "acceptanceCriteria": [
+                  "47 tests pass",
+                  "Codex PASS gates completion",
+                  "MOAI double switch preserves voice",
+                  "Both MCP servers ready"
+                ],
+                "allowedExternalTargets": [],
+                "capabilities": [
+                  "text",
+                  "coding"
+                ],
+                "codexPolicy": {
+                  "checkpoints": "all",
+                  "maxTurns": 64,
+                  "maxTurnsPerCheckpoint": 3,
+                  "required": true
+                },
+                "maxCorrectionCycles": 3,
+                "objective": "Final qualification of NOEMA completion gate and live MOAI integration",
+                "resourceProfile": "voice-balanced",
+                "riskBudget": "R2",
+                "workspace": "E:\\DEV\\StratInfer\\public-repo"
+              }
+            },
+            "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
+            "hash": "538e5ed0a92fd221f467c1e424f148d45b4d97b9106d4c75247bc01249ec6b28",
+            "at": "2026-11-18T10:19:00.119Z"
+          },
+          {
+            "seq": 31,
+            "campaignId": "campaign-852fe941-eddb-4160-b262-1d608b0d5817",
+            "type": "moai.text-engine-activated",
+            "actor": "user",
+            "payload": {
+              "from": "stratinfer",
+              "to": "strata"
+            },
+            "previousHash": "538e5ed0a92fd221f467c1e424f148d45b4d97b9106d4c75247bc01249ec6b28",
+            "hash": "27c84ea0004678b003a8e6cead33e161bff4274059881cedb5fa3403722b8e30",
+            "at": "2026-11-18T10:19:32.812Z"
+          },
+          {
+            "seq": 32,
+            "campaignId": "campaign-852fe941-eddb-4160-b262-1d608b0d5817",
+            "type": "moai.text-engine-activated",
+            "actor": "user",
+            "payload": {
+              "from": "strata",
+              "to": "stratinfer"
+            },
+            "previousHash": "27c84ea0004678b003a8e6cead33e161bff4274059881cedb5fa3403722b8e30",
+            "hash": "685ae4af9843223e426b49e46b42a2e38c36f5e36101b9ef9738c3723c1fe507",
+            "at": "2026-11-18T10:20:22.566Z"
+          }
+        ],
+        "chain": {
+          "valid": true,
+          "head": "685ae4af9843223e426b49e46b42a2e38c36f5e36101b9ef9738c3723c1fe507"
+        }
+      }
+    },
+    "gpu": {
+      "command": [
+        "nvidia-smi",
+        "--query-gpu=index,uuid,name,memory.total,memory.used,memory.free,utilization.gpu,power.draw",
+        "--format=csv,noheader,nounits"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "elapsedMs": 69.5,
+      "stdout": "0, GPU-7922452b-ed49-f2f2-4783-017366985308, NVIDIA GeForce RTX 5090, 32607, 29861, 2327, 100, 131.21\r\n1, GPU-085a2da5-b824-a910-d5cc-266d04a49757, NVIDIA GeForce RTX 4080 SUPER, 16376, 5869, 10177, 0, 19.44\r\n",
+      "stderr": "",
+      "error": null
+    }
+  },
+  "rollback": {
+    "triggers": [
+      "NOEMA health failure",
+      "MCP server not ready",
+      "voice PID change during text-only switch",
+      "event-chain failure",
+      "helper cache mismatch"
+    ],
+    "knownGoodProfileBackup": "E:\\Data\\JarvisMarc\\StratInferRuntime\\51f355f\\profile.json.noema-mcp-20261118T104319.bak",
+    "steps": [
+      "Pause active campaigns and record the latest event sequence.",
+      "Switch MOAI text engine to strata through the campaign-scoped endpoint.",
+      "Stop NOEMA with scripts/stop-noema.ps1 so PID, executable, and start time are checked.",
+      "Restore the known-good profile backup and keep MOAI helperVramBytes at 4294967296.",
+      "Switch MOAI text engine back to stratinfer.",
+      "Verify /health, both voice services, /mcp readiness, helper cap 4096 MiB, and a plain completion."
+    ]
+  },
+  "boundaries": {
+    "network": "NOEMA and MOAI accept loopback HTTP only; NOEMA mutations require its bearer token.",
+    "codex": "Read-only app-server reviewer with approvalPolicy never.",
+    "worktree": "Path and command allowlist; not an OS/VM sandbox.",
+    "externalTargets": "R3/R4 promotion requires recorded human approval."
+  }
+}

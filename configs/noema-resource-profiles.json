@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "helper_device": 1,
+  "snapshot_mib": 2451,
+  "profiles": {
+    "voice-balanced": {
+      "description": "ASR/TTS remain available; StratInfer helper K/V is capped at 4 GiB.",
+      "helper_target_mib": 4096,
+      "helper_min_mib": 4096,
+      "helper_reserve_mib": 4096,
+      "host_cache_mib": 12288,
+      "voice_required_stopped": false
+    },
+    "agent-max": {
+      "description": "ASR/TTS are stopped for the full campaign; measured helper K/V may grow up to 10 GiB.",
+      "helper_target_mib": 10240,
+      "helper_min_mib": 8192,
+      "helper_reserve_mib": 4096,
+      "host_cache_mib": 16384,
+      "voice_required_stopped": true
+    }
+  }
+}

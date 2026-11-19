@@ -5,7 +5,7 @@
 //   node audit.mjs --once                 -> instant snapshot on stdout + logs/audit-<ts>.json
 //   node audit.mjs --watch --every 300    -> continuous sampling -> logs/baseline.jsonl
 //   node audit.mjs --report               -> aggregate logs/baseline.jsonl (mean/p95) on stdout
-import { mkdirSync, readFileSync, appendFileSync, existsSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, appendFileSync, existsSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -23,7 +23,7 @@ function stats(nums) {
   if (!nums.length) return null;
   const s = [...nums].sort((a, b) => a - b);
   const mean = s.reduce((a, b) => a + b, 0) / s.length;
-  return { n: s.length, mean: +mean.toFixed(2), p95: s[Math.min(s.length - 1, Math.floor(0.95 * s.length))] };
+  return { n: s.length, mean: +mean.toFixed(2), p95: s[Math.max(0, Math.ceil(0.95 * s.length) - 1)] };
 }
 
 function summarize(metrics) {
@@ -65,7 +65,11 @@ if (args.includes("--report")) {
 }
 
 if (args.includes("--watch")) {
-  const every = +(args[args.indexOf("--every") + 1] || 300) * 1000;
+  const everySeconds = +(args[args.indexOf("--every") + 1] || 300);
+  if (!Number.isFinite(everySeconds) || everySeconds <= 0) {
+    console.error("--every doit etre un nombre de secondes strictement positif"); process.exit(2);
+  }
+  const every = everySeconds * 1000;
   const out = join(LOGS, "baseline.jsonl");
   console.error(`audit: ${BASE} every ${every / 1000}s -> ${out} (Ctrl-C to stop)`);
   for (;;) {

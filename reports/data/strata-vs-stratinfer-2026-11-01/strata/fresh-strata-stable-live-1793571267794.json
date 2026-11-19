@@ -1,0 +1,59 @@
+{
+  "label": "strata-stable-live",
+  "base": "http://127.0.0.1:11440",
+  "tokens": 32000,
+  "at": "2026-11-01T22:14:27.794Z",
+  "mean_prompt_tok_s": 4618,
+  "results": [
+    {
+      "trial": 1,
+      "marker": "1793571196122-o75n9anrqmr",
+      "prompt_total": 61043,
+      "prompt_read": 61043,
+      "reused": 0,
+      "prompt_ms": 12994.8,
+      "prompt_tok_s": 4697,
+      "finish": "length"
+    },
+    {
+      "trial": 2,
+      "marker": "1793571210254-b5esq9n3ia",
+      "prompt_total": 61043,
+      "prompt_read": 61043,
+      "reused": 0,
+      "prompt_ms": 13354,
+      "prompt_tok_s": 4571,
+      "finish": "length"
+    },
+    {
+      "trial": 3,
+      "marker": "1793571224723-ft1rb5lwuvb",
+      "prompt_total": 61042,
+      "prompt_read": 61042,
+      "reused": 0,
+      "prompt_ms": 13207.1,
+      "prompt_tok_s": 4622,
+      "finish": "length"
+    },
+    {
+      "trial": 4,
+      "marker": "1793571239059-up1hg6eurak",
+      "prompt_total": 61041,
+      "prompt_read": 61041,
+      "reused": 0,
+      "prompt_ms": 13299.2,
+      "prompt_tok_s": 4590,
+      "finish": "length"
+    },
+    {
+      "trial": 5,
+      "marker": "1793571253454-hwpfjw13pka",
+      "prompt_total": 61044,
+      "prompt_read": 61044,
+      "reused": 0,
+      "prompt_ms": 13243.4,
+      "prompt_tok_s": 4609,
+      "finish": "length"
+    }
+  ]
+}

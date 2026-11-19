@@ -1,0 +1,503 @@
+{
+  "generated_at": "2026-11-01T22:37:39.290Z",
+  "sources": {
+    "strata": {
+      "fixed": "strata/run-strata-stable-live-1793571196082.json",
+      "fresh": "strata/fresh-strata-stable-live-1793571267794.json",
+      "concurrency": "strata/concurrency-1793571444742.json",
+      "replay": "strata/replay-1793571475781.json",
+      "quality": "strata/quality-strata-stable-cold-quality-v2-1793572518627.json",
+      "efficiency": "strata/efficiency-strata-stable-live-1793571556989.json",
+      "determinism": "strata/determinism-1793571590092.json"
+    },
+    "stratinfer": {
+      "fixed": "stratinfer/run-stratinfer-live-1793571884007.json",
+      "fresh": "stratinfer/fresh-stratinfer-live-1793571949860.json",
+      "concurrency": "stratinfer/concurrency-1793572103035.json",
+      "replay": "stratinfer/replay-1793572130082.json",
+      "quality": "stratinfer/quality-stratinfer-cold-quality-v2-1793572644268.json",
+      "efficiency": "stratinfer/efficiency-stratinfer-live-1793572218695.json",
+      "determinism": "stratinfer/determinism-1793572246813.json"
+    }
+  },
+  "fixed_decode": {
+    "cases": [
+      {
+        "case": "code-8k",
+        "strata": {
+          "n": 5,
+          "mean": 117.72,
+          "median": 114.2,
+          "min": 110.6,
+          "max": 135.6,
+          "standard_deviation": 10.347,
+          "cv_pct": 8.789
+        },
+        "stratinfer": {
+          "n": 5,
+          "mean": 133.1,
+          "median": 126.5,
+          "min": 122.3,
+          "max": 161.5,
+          "standard_deviation": 16.065,
+          "cv_pct": 12.07
+        },
+        "mean_gain_pct": 13.065,
+        "paired_gain": {
+          "n": 5,
+          "mean_pct": 12.875,
+          "median_pct": 10.771,
+          "ci95_low_pct": 6.832,
+          "ci95_high_pct": 18.919
+        }
+      },
+      {
+        "case": "prose-2k",
+        "strata": {
+          "n": 5,
+          "mean": 108.18,
+          "median": 107,
+          "min": 102.8,
+          "max": 115.7,
+          "standard_deviation": 4.862,
+          "cv_pct": 4.495
+        },
+        "stratinfer": {
+          "n": 5,
+          "mean": 117.02,
+          "median": 118.4,
+          "min": 113.4,
+          "max": 120.3,
+          "standard_deviation": 3.037,
+          "cv_pct": 2.595
+        },
+        "mean_gain_pct": 8.172,
+        "paired_gain": {
+          "n": 5,
+          "mean_pct": 8.384,
+          "median_pct": 9.763,
+          "ci95_low_pct": 0.402,
+          "ci95_high_pct": 16.367
+        }
+      },
+      {
+        "case": "agent-32k",
+        "strata": {
+          "n": 5,
+          "mean": 93.78,
+          "median": 93.5,
+          "min": 92.1,
+          "max": 95.6,
+          "standard_deviation": 1.272,
+          "cv_pct": 1.356
+        },
+        "stratinfer": {
+          "n": 5,
+          "mean": 98.94,
+          "median": 100.1,
+          "min": 93.6,
+          "max": 104,
+          "standard_deviation": 4.134,
+          "cv_pct": 4.178
+        },
+        "mean_gain_pct": 5.502,
+        "paired_gain": {
+          "n": 5,
+          "mean_pct": 5.541,
+          "median_pct": 7.059,
+          "ci95_low_pct": -0.952,
+          "ci95_high_pct": 12.035
+        }
+      }
+    ],
+    "overall": {
+      "strata": {
+        "n": 15,
+        "mean": 106.56,
+        "median": 107,
+        "min": 92.1,
+        "max": 135.6,
+        "standard_deviation": 11.898,
+        "cv_pct": 11.165
+      },
+      "stratinfer": {
+        "n": 15,
+        "mean": 116.353,
+        "median": 118.4,
+        "min": 93.6,
+        "max": 161.5,
+        "standard_deviation": 17.026,
+        "cv_pct": 14.633
+      },
+      "mean_gain_pct": 9.19,
+      "paired_gain": {
+        "n": 15,
+        "mean_pct": 8.934,
+        "median_pct": 9.763,
+        "ci95_low_pct": 5.603,
+        "ci95_high_pct": 12.264
+      }
+    }
+  },
+  "fresh_prefill": {
+    "strata": {
+      "n": 5,
+      "mean": 4617.8,
+      "median": 4609,
+      "min": 4571,
+      "max": 4697,
+      "standard_deviation": 48.298,
+      "cv_pct": 1.046
+    },
+    "stratinfer": {
+      "n": 5,
+      "mean": 5062.8,
+      "median": 5049,
+      "min": 5006,
+      "max": 5160,
+      "standard_deviation": 59.285,
+      "cv_pct": 1.171
+    },
+    "mean_gain_pct": 9.637,
+    "paired_gain": {
+      "n": 5,
+      "mean_pct": 9.637,
+      "median_pct": 10,
+      "ci95_low_pct": 8.711,
+      "ci95_high_pct": 10.564
+    }
+  },
+  "concurrency": [
+    {
+      "concurrency": 1,
+      "strata": {
+        "concurrency": 1,
+        "aggregate_tok_s_median": 122.36,
+        "latency_p95_ms": 3074.6
+      },
+      "stratinfer": {
+        "concurrency": 1,
+        "aggregate_tok_s_median": 143.23,
+        "latency_p95_ms": 2696.6
+      },
+      "throughput_gain_pct": 17.056,
+      "latency_p95_delta_pct": -12.294,
+      "paired_throughput_gain": {
+        "n": 5,
+        "mean_pct": 16.643,
+        "median_pct": 14.016,
+        "ci95_low_pct": 3.741,
+        "ci95_high_pct": 29.545
+      }
+    },
+    {
+      "concurrency": 2,
+      "strata": {
+        "concurrency": 2,
+        "aggregate_tok_s_median": 122.43,
+        "latency_p95_ms": 4296.4
+      },
+      "stratinfer": {
+        "concurrency": 2,
+        "aggregate_tok_s_median": 147.47,
+        "latency_p95_ms": 3537.6
+      },
+      "throughput_gain_pct": 20.453,
+      "latency_p95_delta_pct": -17.661,
+      "paired_throughput_gain": {
+        "n": 5,
+        "mean_pct": 20.229,
+        "median_pct": 21.179,
+        "ci95_low_pct": 18.431,
+        "ci95_high_pct": 22.027
+      }
+    },
+    {
+      "concurrency": 4,
+      "strata": {
+        "concurrency": 4,
+        "aggregate_tok_s_median": 123.98,
+        "latency_p95_ms": 8606
+      },
+      "stratinfer": {
+        "concurrency": 4,
+        "aggregate_tok_s_median": 145.42,
+        "latency_p95_ms": 7232.4
+      },
+      "throughput_gain_pct": 17.293,
+      "latency_p95_delta_pct": -15.961,
+      "paired_throughput_gain": {
+        "n": 5,
+        "mean_pct": 18.76,
+        "median_pct": 19.952,
+        "ci95_low_pct": 14.707,
+        "ci95_high_pct": 22.813
+      }
+    },
+    {
+      "concurrency": 8,
+      "strata": {
+        "concurrency": 8,
+        "aggregate_tok_s_median": 124.61,
+        "latency_p95_ms": 16916.9
+      },
+      "stratinfer": {
+        "concurrency": 8,
+        "aggregate_tok_s_median": 145.51,
+        "latency_p95_ms": 14414.8
+      },
+      "throughput_gain_pct": 16.772,
+      "latency_p95_delta_pct": -14.791,
+      "paired_throughput_gain": {
+        "n": 5,
+        "mean_pct": 17.146,
+        "median_pct": 17.33,
+        "ci95_low_pct": 14.065,
+        "ci95_high_pct": 20.227
+      }
+    }
+  ],
+  "replay": {
+    "strata": {
+      "prompt_total": 101453,
+      "cold_prompt_ms": 21553.4,
+      "resumed_prompt_ms": 792.8,
+      "reused_tokens": 101425,
+      "reuse_pct": 99.9724,
+      "speedup_x": 27.186,
+      "exact_reuse": true
+    },
+    "stratinfer": {
+      "prompt_total": 101453,
+      "cold_prompt_ms": 19522.8,
+      "resumed_prompt_ms": 843.7,
+      "reused_tokens": 101425,
+      "reuse_pct": 99.9724,
+      "speedup_x": 23.14,
+      "exact_reuse": true
+    },
+    "cold_prompt_delta_pct": -9.421,
+    "resumed_prompt_delta_pct": 6.42
+  },
+  "quality": {
+    "strata": {
+      "passed": 20,
+      "total": 20,
+      "score": 1,
+      "request_success_rate": 1,
+      "categories": [
+        {
+          "category": "reasoning",
+          "passed": 4,
+          "total": 4,
+          "score": 1
+        },
+        {
+          "category": "coding",
+          "passed": 4,
+          "total": 4,
+          "score": 1
+        },
+        {
+          "category": "instruction",
+          "passed": 4,
+          "total": 4,
+          "score": 1
+        },
+        {
+          "category": "long-context",
+          "passed": 8,
+          "total": 8,
+          "score": 1
+        }
+      ]
+    },
+    "stratinfer": {
+      "passed": 20,
+      "total": 20,
+      "score": 1,
+      "request_success_rate": 1,
+      "categories": [
+        {
+          "category": "reasoning",
+          "passed": 4,
+          "total": 4,
+          "score": 1
+        },
+        {
+          "category": "coding",
+          "passed": 4,
+          "total": 4,
+          "score": 1
+        },
+        {
+          "category": "instruction",
+          "passed": 4,
+          "total": 4,
+          "score": 1
+        },
+        {
+          "category": "long-context",
+          "passed": 8,
+          "total": 8,
+          "score": 1
+        }
+      ]
+    },
+    "long_context_latency": [
+      {
+        "case": "needle-2k",
+        "prompt_tokens": 2309,
+        "strata_latency_ms": {
+          "n": 2,
+          "mean": 1989.95,
+          "median": 1967.6,
+          "min": 1967.6,
+          "max": 2012.3,
+          "standard_deviation": 31.608,
+          "cv_pct": 1.588
+        },
+        "stratinfer_latency_ms": {
+          "n": 2,
+          "mean": 1883.95,
+          "median": 1868.9,
+          "min": 1868.9,
+          "max": 1899,
+          "standard_deviation": 21.284,
+          "cv_pct": 1.13
+        },
+        "mean_latency_delta_pct": -5.327
+      },
+      {
+        "case": "needle-8k",
+        "prompt_tokens": 8909,
+        "strata_latency_ms": {
+          "n": 2,
+          "mean": 3116.6,
+          "median": 3095.9,
+          "min": 3095.9,
+          "max": 3137.3,
+          "standard_deviation": 29.274,
+          "cv_pct": 0.939
+        },
+        "stratinfer_latency_ms": {
+          "n": 2,
+          "mean": 2913.6,
+          "median": 2870.9,
+          "min": 2870.9,
+          "max": 2956.3,
+          "standard_deviation": 60.387,
+          "cv_pct": 2.073
+        },
+        "mean_latency_delta_pct": -6.514
+      },
+      {
+        "case": "needle-32k",
+        "prompt_tokens": 35310,
+        "strata_latency_ms": {
+          "n": 2,
+          "mean": 8679.65,
+          "median": 8621.3,
+          "min": 8621.3,
+          "max": 8738,
+          "standard_deviation": 82.519,
+          "cv_pct": 0.951
+        },
+        "stratinfer_latency_ms": {
+          "n": 2,
+          "mean": 7901.35,
+          "median": 7827.3,
+          "min": 7827.3,
+          "max": 7975.4,
+          "standard_deviation": 104.723,
+          "cv_pct": 1.325
+        },
+        "mean_latency_delta_pct": -8.967
+      },
+      {
+        "case": "needle-64k",
+        "prompt_tokens": 70510,
+        "strata_latency_ms": {
+          "n": 2,
+          "mean": 15435.2,
+          "median": 15339.7,
+          "min": 15339.7,
+          "max": 15530.7,
+          "standard_deviation": 135.057,
+          "cv_pct": 0.875
+        },
+        "stratinfer_latency_ms": {
+          "n": 2,
+          "mean": 14082.6,
+          "median": 14056.1,
+          "min": 14056.1,
+          "max": 14109.1,
+          "standard_deviation": 37.477,
+          "cv_pct": 0.266
+        },
+        "mean_latency_delta_pct": -8.763
+      }
+    ]
+  },
+  "efficiency": {
+    "strata": {
+      "successful_requests": 5,
+      "total_requests": 5,
+      "request_success_rate": 1,
+      "ttft_ms_median": 467.2,
+      "ttft_ms_p95": 628.8,
+      "ttfc_ms_median": null,
+      "decode_tok_s_median": 135.5,
+      "wall_ms_median": 4211.3,
+      "energy_j_median": 1025.63,
+      "incremental_energy_j_median": 675.07,
+      "average_power_w_median": 249.95,
+      "peak_power_w": 322.26,
+      "tokens_per_joule_median": 0.4992,
+      "incremental_tokens_per_joule_median": 0.7584,
+      "peak_memory_mib": 29749
+    },
+    "stratinfer": {
+      "successful_requests": 5,
+      "total_requests": 5,
+      "request_success_rate": 1,
+      "ttft_ms_median": 428.9,
+      "ttft_ms_p95": 498.4,
+      "ttfc_ms_median": null,
+      "decode_tok_s_median": 153.7,
+      "wall_ms_median": 3746.3,
+      "energy_j_median": 974.44,
+      "incremental_energy_j_median": 636.27,
+      "average_power_w_median": 249.93,
+      "peak_power_w": 339.14,
+      "tokens_per_joule_median": 0.5254,
+      "incremental_tokens_per_joule_median": 0.8047,
+      "peak_memory_mib": 29909
+    },
+    "stratinfer_delta_pct": {
+      "ttft_ms_median": -8.198,
+      "ttft_ms_p95": -20.738,
+      "decode_tok_s_median": 13.432,
+      "wall_ms_median": -11.042,
+      "energy_j_median": -4.991,
+      "incremental_energy_j_median": -5.748,
+      "average_power_w_median": -0.008,
+      "peak_power_w": 5.238,
+      "tokens_per_joule_median": 5.248,
+      "incremental_tokens_per_joule_median": 6.105,
+      "peak_memory_mib": 0.538
+    }
+  },
+  "determinism": {
+    "strata": {
+      "pass": false,
+      "runs": 13,
+      "mismatches": 12
+    },
+    "stratinfer": {
+      "pass": false,
+      "runs": 13,
+      "mismatches": 12
+    }
+  }
+}

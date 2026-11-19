@@ -1,0 +1,28 @@
+{
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "cuda_architecture": "120-real",
+  "vocabulary": 248320,
+  "packed_bitset_kib": 30.3,
+  "trials": [
+    { "trial": 1, "kernel_us": 7.998, "upload_kernel_us": 89.388 },
+    { "trial": 2, "kernel_us": 7.696, "upload_kernel_us": 93.185 },
+    { "trial": 3, "kernel_us": 8.024, "upload_kernel_us": 95.999 },
+    { "trial": 4, "kernel_us": 8.140, "upload_kernel_us": 94.958 },
+    { "trial": 5, "kernel_us": 8.396, "upload_kernel_us": 91.999 },
+    { "trial": 6, "kernel_us": 7.905, "upload_kernel_us": 97.297 },
+    { "trial": 7, "kernel_us": 7.681, "upload_kernel_us": 97.569 },
+    { "trial": 8, "kernel_us": 7.657, "upload_kernel_us": 94.346 },
+    { "trial": 9, "kernel_us": 7.957, "upload_kernel_us": 101.457 },
+    { "trial": 10, "kernel_us": 7.893, "upload_kernel_us": 91.626 }
+  ],
+  "summary": {
+    "kernel_median_us": 7.931,
+    "kernel_min_us": 7.657,
+    "kernel_max_us": 8.396,
+    "upload_kernel_median_us": 94.652,
+    "upload_kernel_min_us": 89.388,
+    "upload_kernel_max_us": 101.457,
+    "parity": "passed"
+  }
+}
+

@@ -1,0 +1,123 @@
+{
+  "api_url": "http://127.0.0.1:11441",
+  "api_key_env": "STRATINFER_API_KEY",
+  "model": "qwen3.8-flash-next-iq3_s",
+  "memory_root": "%LOCALAPPDATA%/StratInfer/long-session-memory",
+  "engine_sessions_path": "E:/Data/JarvisMarc/StratInferSessions",
+  "ssd_budget_gib": 64,
+  "ssd_min_free_gib": 32,
+  "matrix_dimensions": 512,
+  "memory_results": 12,
+  "memory_chars": 32000,
+  "max_memory_record_chars": 24000,
+  "max_handoff_chars": 32000,
+  "max_transcript_chars": 1200000,
+  "max_tokens": 4096,
+  "temperature": 0.15,
+  "timeout_ms": 1800000,
+  "disk_sessions": true,
+  "pinned_roles": ["architect"],
+  "default_roles": ["architect", "analyst", "implementer", "reviewer", "tester", "performance", "integrator", "documenter"],
+  "capacity": {
+    "target_agents": 8,
+    "target_context_tokens_per_agent": 131072,
+    "model_context_tokens": 524288,
+    "context_reserve_tokens": 8192,
+    "chars_per_token": 3.5,
+    "transcript_context_fraction": 0.72,
+    "memory_context_fraction": 0.16,
+    "snapshot_bytes_per_token": 16333,
+    "snapshot_safety_factor": 1.2,
+    "ssd_metadata_reserve_gib": 8,
+    "host_cache_mib": 12288,
+    "host_min_free_gib": 8,
+    "helper_vram_mib": 6144,
+    "helper_vram_min_free_mib": 4096,
+    "matrix_max_records": 250000,
+    "matrix_candidate_records": 4096,
+    "matrix_recent_records": 2048
+  },
+  "workflow": {
+    "initial_roles": ["architect", "analyst", "implementer"],
+    "gate_roles": ["reviewer", "tester", "performance"],
+    "remediation_role": "integrator",
+    "final_gate_roles": ["reviewer", "tester"],
+    "final_roles": ["documenter"],
+    "max_revision_cycles": 2
+  },
+  "required_engine_env": {
+    "STRATA_PARK_ASYNC": "1",
+    "STRATA_PARK_VRAM_MIB": "6144",
+    "STRATA_PARK_VRAM_DEVICE": "1",
+    "STRATA_CKPT_ASYNC": "1",
+    "STRATA_CKPT_GATHER": "1",
+    "STRATA_CKPT_POOL": "1"
+  },
+  "required_engine_args": [
+    "--conversation-cache-mib", "12288",
+    "--conversation-cache-slots", "8",
+    "--conversation-cache-min-tokens", "2048",
+    "--conversation-cache-park-gain", "2048",
+    "--prompt-cache-spread",
+    "--session-min-free-mib", "4096",
+    "--session-save-reclaim"
+  ],
+  "roles": {
+    "architect": {
+      "system": "You are the architecture specialist for a long coding session. Preserve the canonical objective and invariants, map dependencies and failure domains, define measurable acceptance criteria, split work into reversible increments, and reject speculative facts. Do not implement before the plan is internally consistent.",
+      "max_tokens": 5120,
+      "temperature": 0.08,
+      "context_tokens": 131072,
+      "mcp": false
+    },
+    "analyst": {
+      "system": "You are the repository analysis specialist. Use available read-only tools to verify the real code, configuration, history and runtime evidence. Identify root causes, existing abstractions, hidden coupling and reusable tests. Never invent files, APIs or measurements.",
+      "max_tokens": 5120,
+      "temperature": 0.08,
+      "context_tokens": 131072,
+      "mcp": true
+    },
+    "implementer": {
+      "system": "You are the implementation specialist. Follow the accepted architecture and verified repository state. Produce the smallest root-cause change, exact file-level edits or patches, migration behavior and rollback. Preserve existing style and expose uncertainty instead of inventing state.",
+      "max_tokens": 7168,
+      "temperature": 0.12,
+      "context_tokens": 131072,
+      "mcp": true
+    },
+    "reviewer": {
+      "system": "You are the adversarial correctness and security reviewer. Check requirements, logic, races, data loss, injection, path confinement, compatibility, resource bounds and rollback. Cite evidence and finish quality-gate turns with VERDICT: PASS, REVISE or BLOCKED.",
+      "max_tokens": 5120,
+      "temperature": 0.05,
+      "context_tokens": 131072,
+      "mcp": true
+    },
+    "tester": {
+      "system": "You are the validation specialist. Convert every claim and review finding into deterministic tests, failure injection, restart and resume checks, capacity boundaries and acceptance thresholds. Distinguish executed evidence from proposed validation and finish quality-gate turns with VERDICT: PASS, REVISE or BLOCKED.",
+      "max_tokens": 5120,
+      "temperature": 0.05,
+      "context_tokens": 131072,
+      "mcp": true
+    },
+    "performance": {
+      "system": "You are the performance and capacity specialist. Check CPU, RAM, VRAM, SSD, context growth, latency, throughput and energy trade-offs. Reject linear projections presented as measurements, identify saturation points, and finish quality-gate turns with VERDICT: PASS, REVISE or BLOCKED.",
+      "max_tokens": 4096,
+      "temperature": 0.05,
+      "context_tokens": 98304,
+      "mcp": true
+    },
+    "integrator": {
+      "system": "You are the integration specialist. Reconcile architecture, implementation and all gate findings into one coherent minimal change set. Resolve contradictions, close actionable defects, preserve rollback and provide exact final edits plus the validation sequence. Do not dismiss an unresolved gate.",
+      "max_tokens": 7168,
+      "temperature": 0.08,
+      "context_tokens": 131072,
+      "mcp": true
+    },
+    "documenter": {
+      "system": "You are the documentation and release specialist. Document only the verified final state: setup, operation, capacity, security, limitations, recovery, rollback and remaining gates. Never convert an expectation or projection into a performance claim.",
+      "max_tokens": 4096,
+      "temperature": 0.05,
+      "context_tokens": 98304,
+      "mcp": true
+    }
+  }
+}

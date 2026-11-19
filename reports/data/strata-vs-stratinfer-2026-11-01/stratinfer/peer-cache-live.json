@@ -1,0 +1,17 @@
+﻿{
+  "source_device": 0,
+  "source_name": "NVIDIA GeForce RTX 5090",
+  "cache_device": 1,
+  "cache_name": "NVIDIA GeForce RTX 4080 SUPER",
+  "bytes": 536870912,
+  "rounds": 5,
+  "peer_access_source_to_cache": 0,
+  "peer_access_cache_to_source": 0,
+  "source_to_cache_ms": 230.375,
+  "source_to_cache_gib_s": 10.852,
+  "cache_to_source_ms": 217.133,
+  "cache_to_source_gib_s": 11.514,
+  "source_to_cache_validated": true,
+  "cache_to_source_validated": true,
+  "validated": true
+}

@@ -1,0 +1,97 @@
+{
+  "at": "2026-11-18T09:42:46.228Z",
+  "node": "v24.19.0",
+  "configuration": {
+    "healthTrials": 250,
+    "checkpointTrials": 100,
+    "memoryRecords": 1000,
+    "recallTrials": 100,
+    "concurrency": 16
+  },
+  "latency": {
+    "health": {
+      "samples": 250,
+      "median_ms": 15.546,
+      "p95_ms": 16.365,
+      "max_ms": 16.755,
+      "mean_ms": 14.548
+    },
+    "authenticatedMetrics": {
+      "samples": 250,
+      "median_ms": 15.431,
+      "p95_ms": 16.331,
+      "max_ms": 17.671,
+      "mean_ms": 13.891
+    },
+    "rejectedUnauthorizedMutation": {
+      "samples": 25,
+      "median_ms": 15.337,
+      "p95_ms": 16.838,
+      "max_ms": 17.689,
+      "mean_ms": 14.389
+    },
+    "concurrentHealth": {
+      "samples": 250,
+      "median_ms": 3.56,
+      "p95_ms": 8.815,
+      "max_ms": 12.15,
+      "mean_ms": 4.537,
+      "wall_ms": 71.379,
+      "requests_per_second": 3502.4
+    },
+    "checkpointCommit": {
+      "samples": 100,
+      "median_ms": 15.397,
+      "p95_ms": 17.203,
+      "max_ms": 18.167,
+      "mean_ms": 14.775
+    },
+    "eventChainReadAndVerify": {
+      "samples": 50,
+      "median_ms": 15.476,
+      "p95_ms": 16.586,
+      "max_ms": 16.992,
+      "mean_ms": 14.334
+    },
+    "matrixMemoryCommit": {
+      "samples": 1000,
+      "median_ms": 15.393,
+      "p95_ms": 17.245,
+      "max_ms": 20.743,
+      "mean_ms": 14.65
+    },
+    "hybridRecall": {
+      "samples": 100,
+      "median_ms": 29.193,
+      "p95_ms": 35.366,
+      "max_ms": 51.589,
+      "mean_ms": 28.728
+    }
+  },
+  "throughput": {
+    "checkpoint_commits_per_second": 67.7,
+    "memory_commits_per_second": 68.2
+  },
+  "resources": {
+    "rss_delta_mib": 76.9,
+    "heap_used_delta_mib": 2.91,
+    "temporary_storage_mib": 8.922,
+    "bytes_per_memory_record": 9355
+  },
+  "integrity": {
+    "unauthorized_mutations_rejected": 25,
+    "event_chain_valid": true,
+    "final_metrics": {
+      "campaigns": 1,
+      "checkpoints": 100,
+      "events": 1101,
+      "pendingApprovals": 0,
+      "quarantinedCandidates": 0,
+      "memoryRecords": 1000,
+      "memoryVectors": 1000,
+      "activeSkills": 0,
+      "root": "C:\\Users\\Cal1s\\AppData\\Local\\Temp\\noema-bench-oYIMdN",
+      "databasePath": "C:\\Users\\Cal1s\\AppData\\Local\\Temp\\noema-bench-oYIMdN\\noema.sqlite3"
+    }
+  }
+}

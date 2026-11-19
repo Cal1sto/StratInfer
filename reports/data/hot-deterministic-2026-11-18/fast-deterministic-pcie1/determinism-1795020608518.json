@@ -1,0 +1,86 @@
+{
+  "base": "http://127.0.0.1:11441",
+  "at": "2026-11-18T16:50:08.518Z",
+  "seed": 424242,
+  "temperature": 0.8,
+  "pcie_frac": 1,
+  "noise_tokens": 8,
+  "max_tokens": 64,
+  "expected": "713814e4c02c06729c72f6f88d03e33585fdc90608251e73d8e1bb347dc1c5dd",
+  "pass": false,
+  "observations": [
+    {
+      "mode": "serial",
+      "index": 0,
+      "hash": "713814e4c02c06729c72f6f88d03e33585fdc90608251e73d8e1bb347dc1c5dd",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 1,
+      "hash": "cc80048b2ca5dc650383193cbfddb8e5034ef4187d1546e068a348784035b6be",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "serial",
+      "index": 2,
+      "hash": "cc80048b2ca5dc650383193cbfddb8e5034ef4187d1546e068a348784035b6be",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 64
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 0,
+      "concurrency": 3,
+      "hash": "cc80048b2ca5dc650383193cbfddb8e5034ef4187d1546e068a348784035b6be",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    },
+    {
+      "mode": "concurrent",
+      "round": 1,
+      "concurrency": 3,
+      "hash": "006b7a79eb7867a9fa20bdc9ef10078c9894ba4e540ad8e8eac800b81a7b12eb",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 64,
+        "total_tokens": 133,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      }
+    }
+  ],
+  "mismatches": [
+    "cc80048b2ca5dc650383193cbfddb8e5034ef4187d1546e068a348784035b6be",
+    "cc80048b2ca5dc650383193cbfddb8e5034ef4187d1546e068a348784035b6be",
+    "cc80048b2ca5dc650383193cbfddb8e5034ef4187d1546e068a348784035b6be",
+    "006b7a79eb7867a9fa20bdc9ef10078c9894ba4e540ad8e8eac800b81a7b12eb"
+  ]
+}
